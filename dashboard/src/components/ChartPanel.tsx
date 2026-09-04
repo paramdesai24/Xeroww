@@ -1,5 +1,5 @@
 // src/components/ChartPanel.tsx
-// TradingView Lightweight Charts v5 candlestick panel with quote header.
+// TradingView Lightweight Charts v5 candlestick panel with institutional terminal quote bar.
 
 import { useEffect, useRef } from "react";
 import {
@@ -14,7 +14,6 @@ import { TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
 import type { QuoteData, OHLCData } from "../types/market";
 import config from "../config";
 
-// Color palette from central config (dashboard/src/config.ts)
 const CHART_COLORS = config.chart.colors;
 
 interface ChartPanelProps {
@@ -27,7 +26,6 @@ interface ChartPanelProps {
 export default function ChartPanel({ quote, ohlc, loading, error }: ChartPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  // Use 'unknown' for the series type to avoid version-specific type mismatches
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
 
   // Initialize chart once
@@ -36,26 +34,30 @@ export default function ChartPanel({ quote, ohlc, loading, error }: ChartPanelPr
 
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: CHART_COLORS.background },
+        background: { type: ColorType.Solid, color: "#000000" },
         textColor: CHART_COLORS.text,
-        fontFamily: "'Inter', 'Segoe UI', sans-serif",
-        fontSize: 12,
+        fontFamily: "'Inter', monospace, system-ui, sans-serif",
+        fontSize: 11,
       },
       grid: {
-        vertLines: { color: CHART_COLORS.gridLines },
-        horzLines: { color: CHART_COLORS.gridLines },
+        vertLines: { color: "#202020" },
+        horzLines: { color: "#202020" },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: CHART_COLORS.crosshair, labelBackgroundColor: "#1e293b" },
-        horzLine: { color: CHART_COLORS.crosshair, labelBackgroundColor: "#1e293b" },
+        vertLine: { color: CHART_COLORS.crosshair, labelBackgroundColor: "#171717" },
+        horzLine: { color: CHART_COLORS.crosshair, labelBackgroundColor: "#171717" },
       },
       rightPriceScale: {
-        borderColor: "#1c2333",
+        borderColor: "#262626",
         textColor: CHART_COLORS.text,
+        scaleMargins: {
+          top: 0.08,
+          bottom: 0.08,
+        },
       },
       timeScale: {
-        borderColor: "#1c2333",
+        borderColor: "#262626",
         timeVisible: true,
         secondsVisible: false,
         fixLeftEdge: true,
@@ -66,7 +68,6 @@ export default function ChartPanel({ quote, ohlc, loading, error }: ChartPanelPr
       height: containerRef.current.clientHeight,
     });
 
-    // Lightweight Charts v5 API: addSeries(SeriesType, options)
     const series = chart.addSeries(CandlestickSeries, {
       upColor: CHART_COLORS.upColor,
       downColor: CHART_COLORS.downColor,
@@ -79,7 +80,6 @@ export default function ChartPanel({ quote, ohlc, loading, error }: ChartPanelPr
     chartRef.current = chart;
     seriesRef.current = series as ISeriesApi<"Candlestick">;
 
-    // Resize observer
     const ro = new ResizeObserver(() => {
       if (containerRef.current) {
         chart.applyOptions({
@@ -101,7 +101,6 @@ export default function ChartPanel({ quote, ohlc, loading, error }: ChartPanelPr
   // Update candle data when ohlc changes
   useEffect(() => {
     if (!seriesRef.current || !ohlc?.candles) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = ohlc.candles.map((c) => ({
       time: c.time as unknown as import("lightweight-charts").Time,
       open: c.open,
@@ -117,68 +116,109 @@ export default function ChartPanel({ quote, ohlc, loading, error }: ChartPanelPr
   const negative = (quote?.change_pct ?? 0) < 0;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 bg-[#0D1117]">
-      {/* Quote header */}
-      <div className="px-6 py-4 border-b border-slate-800 flex items-start justify-between">
+    <div className="flex flex-col flex-1 min-w-0 bg-[#000000]">
+      {/* Compact Terminal Quote Bar — high density, crisp information */}
+      <div className="px-5 py-2.5 bg-[#0A0A0A] border-b border-[#262626] flex items-center justify-between shrink-0">
         {quote ? (
           <>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-white tracking-tight">
+            <div className="flex items-center gap-4">
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-bold font-mono tracking-wider text-[#FAFAFA]">
                   {quote.symbol.replace(".NS", "")}
-                </h1>
-                <span className="text-slate-500 text-sm">{quote.display_name}</span>
+                </span>
+                <span className="text-xs text-[#A1A1AA] hidden md:inline">
+                  {quote.display_name}
+                </span>
               </div>
-              <div className="flex items-baseline gap-3 mt-1">
-                <span className="text-3xl font-bold text-white">
+
+              <div className="h-4 w-px bg-[#262626]" />
+
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-mono font-bold text-[#FAFAFA] tabular-nums">
                   ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
                 <span
-                  className={`flex items-center gap-1 text-base font-semibold ${
-                    positive ? "text-emerald-400" : negative ? "text-red-400" : "text-slate-400"
+                  className={`flex items-center gap-0.5 text-xs font-mono font-semibold tabular-nums ${
+                    positive
+                      ? "text-[#22C55E]"
+                      : negative
+                      ? "text-[#EF4444]"
+                      : "text-[#A1A1AA]"
                   }`}
                 >
-                  {positive ? <TrendingUp size={16} /> : negative ? <TrendingDown size={16} /> : null}
+                  {positive ? (
+                    <TrendingUp size={12} className="stroke-[2.5]" />
+                  ) : negative ? (
+                    <TrendingDown size={12} className="stroke-[2.5]" />
+                  ) : null}
                   {quote.change > 0 ? "+" : ""}
                   {quote.change.toFixed(2)} ({quote.change_pct > 0 ? "+" : ""}
                   {quote.change_pct.toFixed(2)}%)
                 </span>
               </div>
             </div>
-            <div className="text-right text-xs text-slate-500 mt-1">
-              <p>Prev Close: ₹{quote.previous_close.toLocaleString("en-IN")}</p>
-              <p>Vol: {quote.volume.toLocaleString("en-IN")}</p>
+
+            {/* Quick Session Stats strip */}
+            <div className="hidden lg:flex items-center gap-5 text-[11px] font-mono text-[#A1A1AA]">
+              <div>
+                <span className="text-[#737373] mr-1.5">PREV</span>
+                <span className="text-[#FAFAFA] tabular-nums">
+                  ₹{quote.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div>
+                <span className="text-[#737373] mr-1.5">RANGE</span>
+                <span className="text-[#FAFAFA] tabular-nums">
+                  ₹{quote.day_low.toFixed(1)} – ₹{quote.day_high.toFixed(1)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[#737373] mr-1.5">VOL</span>
+                <span className="text-[#FAFAFA] tabular-nums">
+                  {(quote.volume / 1e5).toFixed(2)}L
+                </span>
+              </div>
               {quote.market_cap && (
-                <p>MCap: ₹{(quote.market_cap / 1e12).toFixed(2)}T</p>
+                <div>
+                  <span className="text-[#737373] mr-1.5">MCAP</span>
+                  <span className="text-[#FAFAFA] tabular-nums">
+                    ₹{(quote.market_cap / 1e12).toFixed(2)}T
+                  </span>
+                </div>
               )}
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2 text-slate-500">
-            <BarChart2 size={18} />
-            <span className="text-sm">{loading ? "Loading quote…" : error ?? "Select a stock"}</span>
+          <div className="flex items-center gap-2 text-[#A1A1AA] py-0.5">
+            <BarChart2 size={16} />
+            <span className="text-xs font-mono">
+              {loading ? "INITIALIZING FEED…" : error ?? "SELECT AN ASSET"}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Chart area */}
-      <div className="flex-1 relative">
+      {/* Candlestick Chart Canvas — enlarged viewport, pure pitch-black */}
+      <div className="flex-1 relative bg-[#000000]">
+        {/* Subtle skeleton overlay during stock switches */}
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0D1117]/80">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-slate-400 text-sm">Loading market data…</span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#000000]/60 backdrop-blur-[1px] transition-opacity duration-200">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#111111] border border-[#262626] text-[#A1A1AA] text-xs font-mono">
+              <div className="w-2 h-2 rounded-full bg-[#6366F1] animate-ping" />
+              <span>SYNCING OHLC BARS…</span>
             </div>
           </div>
         )}
+
         {error && !loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center">
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-6 py-4 text-center">
-              <p className="text-red-400 font-medium">Failed to load chart data</p>
-              <p className="text-slate-500 text-sm mt-1">{error}</p>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#000000]/80">
+            <div className="bg-[#171717] border border-[#262626] rounded px-5 py-3 text-center max-w-sm">
+              <p className="text-[#EF4444] text-xs font-mono font-medium">MARKET DATA ERROR</p>
+              <p className="text-[#A1A1AA] text-xs font-mono mt-1">{error}</p>
             </div>
           </div>
         )}
+
         <div ref={containerRef} className="w-full h-full" />
       </div>
     </div>

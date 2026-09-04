@@ -1,181 +1,187 @@
 // src/components/PatternCard.tsx
-// Right panel — Marubozu detection result and Latest Candle Summary.
+// Right panel — Varsity Marubozu detection & Latest Candle Summary (Terminal Refactor).
 
-import { Zap, Eye, BookOpen, ShieldAlert, Minus } from "lucide-react";
+import { ShieldCheck, ShieldAlert, MinusCircle, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
 import type { PatternData } from "../types/market";
 
 interface PatternCardProps {
   pattern: PatternData | null;
 }
 
-const PATTERN_CONFIG = {
-  bullish_marubozu: {
-    label: "Bullish Marubozu",
-    color: "emerald",
-    badgeBg: "bg-emerald-500/10 border-emerald-500/30",
-    badgeText: "text-emerald-400",
-    dotColor: "bg-emerald-400",
-    icon: "🟢",
-  },
-  bearish_marubozu: {
-    label: "Bearish Marubozu",
-    color: "red",
-    badgeBg: "bg-red-500/10 border-red-500/30",
-    badgeText: "text-red-400",
-    dotColor: "bg-red-400",
-    icon: "🔴",
-  },
-  none: {
-    label: "No Pattern",
-    color: "slate",
-    badgeBg: "bg-slate-700/40 border-slate-700",
-    badgeText: "text-slate-400",
-    dotColor: "bg-slate-500",
-    icon: "⚪",
-  },
-};
-
 export default function PatternCard({ pattern }: PatternCardProps) {
   if (!pattern) {
     return (
-      <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Zap size={14} className="text-violet-400" />
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
-            Pattern Detection
+      <div className="bg-[#171717] border border-[#262626] rounded p-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+          <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#A1A1AA]">
+            Pattern Engine
           </h3>
         </div>
-        <div className="py-6 text-center text-slate-600 text-sm">No data available</div>
+        <div className="py-6 text-center text-[#737373] text-xs font-mono">
+          SCANNING HISTORICAL BARS…
+        </div>
       </div>
     );
   }
 
-  const config = PATTERN_CONFIG[pattern.pattern];
+  const isDetected = pattern.pattern !== "none";
+  const isBullish = pattern.pattern === "bullish_marubozu";
   const candle = pattern.latest_candle;
-
-  const directionColor =
-    candle.direction === "bullish"
-      ? "text-emerald-400"
-      : candle.direction === "bearish"
-        ? "text-red-400"
-        : "text-slate-400";
 
   return (
     <div className="space-y-3">
       {/* Pattern Detection Card */}
-      <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap size={14} className="text-violet-400" />
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
-            Pattern Detection
+      <div className="bg-[#171717] border border-[#262626] rounded p-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-[#262626] mb-3">
+          <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#FAFAFA]">
+            Varsity Pattern Scan
           </h3>
+          <span className="text-[9px] font-mono text-[#737373]">
+            {pattern.signal_day ?? candle.date}
+          </span>
         </div>
 
-        {/* Pattern Badge */}
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ${config.badgeBg} ${config.badgeText} mb-3`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} ${pattern.pattern !== "none" ? "animate-pulse" : ""}`} />
-          {config.icon} {config.label}
-        </div>
-
-        {/* Signal day */}
-        {pattern.signal_day && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
-            <Eye size={11} />
-            <span>Signal detected: {pattern.signal_day}</span>
-          </div>
-        )}
-
-        {/* Varsity Action */}
-        <div className="bg-slate-900/60 rounded-lg p-3 mb-3 border border-slate-800/60">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <BookOpen size={11} className="text-amber-400" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">
-              Varsity Textbook Action
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed">{pattern.rationale}</p>
-        </div>
-
-        {/* Stop Loss */}
-        {pattern.stop_loss !== null && (
-          <div className="flex items-center justify-between bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2">
-            <div className="flex items-center gap-1.5">
-              <ShieldAlert size={12} className="text-red-400" />
-              <span className="text-xs text-red-400 font-medium">Stop Loss</span>
+        {/* State 1: Pattern Detected */}
+        {isDetected ? (
+          <div className="space-y-3">
+            {/* Strong Bullish/Bearish Badge */}
+            <div
+              className={`flex items-center justify-between px-3 py-2 rounded border font-mono text-xs font-bold ${
+                isBullish
+                  ? "bg-[#22C55E]/10 border-[#22C55E]/40 text-[#22C55E]"
+                  : "bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]"
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                {isBullish ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                <span>{isBullish ? "BULLISH MARUBOZU" : "BEARISH MARUBOZU"}</span>
+              </div>
+              <CheckCircle2 size={13} />
             </div>
-            <span className="text-sm font-bold text-red-300 tabular-nums">
-              ₹{pattern.stop_loss.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-        )}
 
-        {/* No pattern note */}
-        {pattern.pattern === "none" && (
-          <div className="flex items-center gap-1.5 text-slate-600 text-xs">
-            <Minus size={11} />
-            <span>{pattern.textbook_action.replace(/_/g, " ")}</span>
+            {/* Why Qualified & Entry Reminder */}
+            <div className="bg-[#0A0A0A] border border-[#262626] rounded p-2.5 space-y-1.5 text-xs font-mono">
+              <span className="text-[10px] text-[#A1A1AA] uppercase tracking-wider block font-semibold">
+                Setup Rationale
+              </span>
+              <p className="text-[#FAFAFA] text-[11px] leading-relaxed">
+                {pattern.rationale}
+              </p>
+            </div>
+
+            {/* Stop Loss Reminder */}
+            {pattern.stop_loss !== null && (
+              <div className="flex items-center justify-between bg-[#111111] border border-[#262626] rounded px-3 py-2 font-mono text-xs">
+                <div className="flex items-center gap-1.5 text-[#EF4444]">
+                  <ShieldAlert size={13} />
+                  <span className="text-[11px] uppercase tracking-wider font-semibold">
+                    Stop Loss
+                  </span>
+                </div>
+                <span className="font-bold text-[#FAFAFA] tabular-nums">
+                  ₹{pattern.stop_loss.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* State 2: No Marubozu Exists (Clean neutral layout, NO large empty badge) */
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#A1A1AA]">
+              <MinusCircle size={14} className="text-[#737373] shrink-0" />
+              <span className="font-semibold text-[#FAFAFA] tracking-wide">
+                No Textbook Pattern
+              </span>
+            </div>
+
+            {/* One-sentence explanation */}
+            <p className="text-[11px] font-mono text-[#A1A1AA] leading-relaxed">
+              {pattern.rationale}
+            </p>
+
+            {/* Varsity rule reminder */}
+            <div className="pt-2 border-t border-[#262626]/60 flex items-start gap-1.5 text-[10px] font-mono text-[#737373] leading-normal">
+              <ShieldCheck size={12} className="shrink-0 mt-0.5 text-[#A1A1AA]" />
+              <span>
+                <strong className="text-[#A1A1AA]">Varsity Rule:</strong> Marubozu requires open = low (or high) with ≥80% body and near-zero wicks.
+              </span>
+            </div>
           </div>
         )}
       </div>
 
       {/* Latest Candle Summary Card */}
-      <div className="bg-[#111827] border border-slate-800 rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Latest Candle · {candle.date}
+      <div className="bg-[#171717] border border-[#262626] rounded p-3.5 font-mono">
+        <div className="flex items-center justify-between pb-2 border-b border-[#262626] mb-2.5">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#FAFAFA]">
+            Candle Structure
+          </span>
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider ${
+              candle.direction === "bullish"
+                ? "text-[#22C55E]"
+                : candle.direction === "bearish"
+                ? "text-[#EF4444]"
+                : "text-[#A1A1AA]"
+            }`}
+          >
+            {candle.direction}
           </span>
         </div>
 
-        {/* Direction badge */}
-        <div className={`inline-flex items-center gap-1.5 text-xs font-bold mb-3 ${directionColor}`}>
-          <span className={`w-2 h-2 rounded-sm ${
-            candle.direction === "bullish" ? "bg-emerald-400" :
-            candle.direction === "bearish" ? "bg-red-400" : "bg-slate-400"
-          }`} />
-          {candle.direction.charAt(0).toUpperCase() + candle.direction.slice(1)} Session
-        </div>
-
-        {/* Candle metrics */}
+        {/* Body % and Range % bars */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-slate-900/60 rounded-lg p-2.5 border border-slate-800/50">
-            <p className="text-[10px] text-slate-600 mb-0.5">Body %</p>
-            <p className="text-sm font-bold text-slate-100 tabular-nums">{candle.body_pct.toFixed(1)}%</p>
-            <div className="mt-1.5 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div className="bg-[#0A0A0A] border border-[#262626] rounded p-2">
+            <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] mb-1">
+              <span>BODY RATIO</span>
+              <span className="text-[#FAFAFA] font-bold tabular-nums">
+                {candle.body_pct.toFixed(1)}%
+              </span>
+            </div>
+            <div className="h-1 bg-[#262626] rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-700 ${
-                  candle.direction === "bullish" ? "bg-emerald-500" : "bg-red-500"
+                className={`h-full rounded-full transition-all duration-300 ${
+                  candle.direction === "bullish" ? "bg-[#22C55E]" : "bg-[#EF4444]"
                 }`}
                 style={{ width: `${Math.min(candle.body_pct, 100)}%` }}
               />
             </div>
           </div>
-          <div className="bg-slate-900/60 rounded-lg p-2.5 border border-slate-800/50">
-            <p className="text-[10px] text-slate-600 mb-0.5">Range %</p>
-            <p className="text-sm font-bold text-slate-100 tabular-nums">{candle.range_pct.toFixed(2)}%</p>
-            <div className="mt-1.5 h-1 bg-slate-800 rounded-full overflow-hidden">
+
+          <div className="bg-[#0A0A0A] border border-[#262626] rounded p-2">
+            <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] mb-1">
+              <span>VOLATILITY</span>
+              <span className="text-[#FAFAFA] font-bold tabular-nums">
+                {candle.range_pct.toFixed(2)}%
+              </span>
+            </div>
+            <div className="h-1 bg-[#262626] rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                className="h-full bg-[#6366F1] rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(candle.range_pct * 10, 100)}%` }}
               />
             </div>
           </div>
         </div>
 
-        {/* OHLC mini grid */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-          {[
-            { l: "Open", v: candle.open },
-            { l: "Close", v: candle.close },
-            { l: "High", v: candle.high },
-            { l: "Low", v: candle.low },
-          ].map(({ l, v }) => (
-            <div key={l} className="flex items-center justify-between">
-              <span className="text-slate-600">{l}</span>
-              <span className="text-slate-300 font-medium tabular-nums">
-                ₹{v.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          ))}
+        {/* OHLC Mini Breakdown */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-[#A1A1AA] pt-1">
+          <div className="flex justify-between border-b border-[#262626]/30 pb-0.5">
+            <span>O:</span>
+            <span className="text-[#FAFAFA] tabular-nums">₹{candle.open.toFixed(1)}</span>
+          </div>
+          <div className="flex justify-between border-b border-[#262626]/30 pb-0.5">
+            <span>H:</span>
+            <span className="text-[#FAFAFA] tabular-nums">₹{candle.high.toFixed(1)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>L:</span>
+            <span className="text-[#FAFAFA] tabular-nums">₹{candle.low.toFixed(1)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>C:</span>
+            <span className="text-[#FAFAFA] tabular-nums">₹{candle.close.toFixed(1)}</span>
+          </div>
         </div>
       </div>
     </div>

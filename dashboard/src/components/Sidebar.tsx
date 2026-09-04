@@ -1,8 +1,8 @@
 // src/components/Sidebar.tsx
-// Watchlist panel — lists all tracked stocks with live price and % change.
+// Watchlist panel — institutional terminal style with 64px rows and crisp typography.
 
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Minus, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { api } from "../api/client";
 import type { StockMeta, QuoteData } from "../types/market";
 
@@ -12,7 +12,7 @@ interface SidebarProps {
   onSelectSymbol: (symbol: string) => void;
 }
 
-// Strip the .NS suffix for display
+// Strip the .NS suffix for clean terminal ticker display
 function ticker(symbol: string): string {
   return symbol.replace(".NS", "");
 }
@@ -44,43 +44,62 @@ function QuoteRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left px-4 py-3 transition-all duration-150 group border-l-2 ${
+      className={`w-full text-left px-4 h-16 flex items-center justify-between transition-colors duration-150 group border-l-2 ${
         isActive
-          ? "bg-indigo-500/10 border-indigo-500"
-          : "border-transparent hover:bg-slate-800/60 hover:border-slate-600"
+          ? "bg-[#111111] border-[#6366F1]"
+          : "border-transparent hover:bg-[#111111]/70"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <span
-            className={`text-sm font-bold tracking-wide ${isActive ? "text-indigo-300" : "text-slate-200 group-hover:text-white"}`}
-          >
-            {ticker(stock.symbol)}
-          </span>
-          <p className="text-[10px] text-slate-500 mt-0.5 truncate max-w-[110px]">
-            {stock.display_name}
-          </p>
-        </div>
+      {/* Left: Symbol and company name with intentional spacing */}
+      <div className="flex flex-col justify-center min-w-0 pr-2">
+        <span
+          className={`text-sm font-semibold tracking-wider ${
+            isActive ? "text-[#FAFAFA]" : "text-[#FAFAFA] group-hover:text-white"
+          }`}
+        >
+          {ticker(stock.symbol)}
+        </span>
+        <span className="text-[11px] text-[#A1A1AA] mt-1 truncate max-w-[120px]">
+          {stock.display_name}
+        </span>
+      </div>
 
+      {/* Right: Price aligned right, percentage change below price */}
+      <div className="text-right shrink-0 flex flex-col justify-center items-end">
         {loading ? (
-          <RefreshCw size={12} className="text-slate-600 animate-spin" />
+          <div className="space-y-1.5 w-16 flex flex-col items-end">
+            <div className="h-3.5 w-14 bg-[#171717] rounded animate-pulse" />
+            <div className="h-3 w-10 bg-[#171717] rounded animate-pulse" />
+          </div>
         ) : quote ? (
-          <div className="text-right">
-            <p className="text-sm font-semibold text-slate-100">
+          <>
+            <span className="text-sm font-mono font-medium text-[#FAFAFA] tabular-nums">
               ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-            </p>
+            </span>
             <div
-              className={`flex items-center justify-end gap-0.5 text-[11px] font-medium ${
-                positive ? "text-emerald-400" : negative ? "text-red-400" : "text-slate-500"
+              className={`flex items-center gap-0.5 text-[11px] font-mono font-medium mt-0.5 tabular-nums ${
+                positive
+                  ? "text-[#22C55E]"
+                  : negative
+                  ? "text-[#EF4444]"
+                  : "text-[#A1A1AA]"
               }`}
             >
-              {positive ? <TrendingUp size={11} /> : negative ? <TrendingDown size={11} /> : <Minus size={11} />}
-              {quote.change_pct > 0 ? "+" : ""}
-              {quote.change_pct.toFixed(2)}%
+              {positive ? (
+                <TrendingUp size={10} className="stroke-[2.5]" />
+              ) : negative ? (
+                <TrendingDown size={10} className="stroke-[2.5]" />
+              ) : (
+                <Minus size={10} />
+              )}
+              <span>
+                {quote.change_pct > 0 ? "+" : ""}
+                {quote.change_pct.toFixed(2)}%
+              </span>
             </div>
-          </div>
+          </>
         ) : (
-          <span className="text-xs text-slate-600">—</span>
+          <span className="text-xs font-mono text-[#A1A1AA]">—</span>
         )}
       </div>
     </button>
@@ -89,17 +108,19 @@ function QuoteRow({
 
 export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: SidebarProps) {
   return (
-    <aside className="w-56 shrink-0 bg-[#0D1117] border-r border-slate-800 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-800">
-        <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+    <aside className="w-60 shrink-0 bg-[#0A0A0A] border-r border-[#262626] flex flex-col overflow-hidden select-none">
+      {/* Watchlist Header */}
+      <div className="px-4 py-2.5 border-b border-[#262626] flex items-center justify-between bg-[#0A0A0A]">
+        <h2 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#A1A1AA]">
           Watchlist
         </h2>
-        <p className="text-[10px] text-slate-600 mt-0.5">NSE · {stocks.length} stocks</p>
+        <span className="text-[10px] font-mono text-[#737373]">
+          NSE · {stocks.length}
+        </span>
       </div>
 
-      {/* Stock list */}
-      <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+      {/* Stock list: ~64px rows */}
+      <div className="flex-1 overflow-y-auto divide-y divide-[#171717]">
         {stocks.map((stock) => (
           <QuoteRow
             key={stock.symbol}
@@ -110,13 +131,12 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
         ))}
       </div>
 
-      {/* Footer note */}
-      <div className="px-4 py-2 border-t border-slate-800">
-        <p className="text-[9px] text-slate-600 leading-relaxed">
-          Prices delayed ~15–20 min
-          <br />
-          Yahoo Finance · Xeroww V0
-        </p>
+      {/* Terminal metadata footer */}
+      <div className="px-4 py-2 border-t border-[#262626] bg-[#0A0A0A]">
+        <div className="flex items-center justify-between text-[10px] font-mono text-[#737373]">
+          <span>SOURCE: YAHOO</span>
+          <span>DELAY ~15M</span>
+        </div>
       </div>
     </aside>
   );
