@@ -27,7 +27,7 @@ async def get_patterns(
 
     Detection uses 1-month daily OHLC data from Yahoo Finance (near real-time, delayed).
     """
-    sym = symbol.upper()
+    sym = provider.normalize_symbol(symbol)
     try:
         candles = provider.get_ohlc(sym, period="1mo", interval="1d")
         meta = SYMBOL_META.get(sym, {})

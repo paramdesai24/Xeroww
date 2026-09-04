@@ -25,7 +25,7 @@ async def get_ohlc(
     The response format is directly compatible with TradingView Lightweight Charts
     (time field is YYYY-MM-DD string). Data is from Yahoo Finance (near real-time, delayed).
     """
-    sym = symbol.upper()
+    sym = provider.normalize_symbol(symbol)
     try:
         candles_raw = provider.get_ohlc(sym, period=period, interval=interval)
         candles = [OHLCBar(**c) for c in candles_raw]

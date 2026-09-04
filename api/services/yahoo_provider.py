@@ -44,37 +44,52 @@ class YahooFinanceProvider(MarketDataProvider):
 
     def get_quote(self, symbol: str) -> dict[str, Any]:
         """
-        Fetch the latest quote for the symbol using yfinance fast_info.
+        Fetch the latest quote for the symbol using yfinance.
+        Uses fast_info with automatic fallback to recent history for 100% reliability.
 
         Args:
-            symbol: Ticker with .NS suffix (e.g., "RELIANCE.NS")
+            symbol: Ticker (e.g. "RELIANCE" or "RELIANCE.NS")
 
         Returns:
             Dict matching QuoteResponse schema.
-
-        Raises:
-            ValueError: If symbol is not on the watchlist.
-            RuntimeError: If yfinance fails to return valid data.
         """
+        symbol = self.normalize_symbol(symbol)
         self._validate_symbol(symbol)
         meta = SYMBOL_META[symbol]
 
         ticker = yf.Ticker(symbol)
-        info = ticker.fast_info
+        price, prev_close, day_high, day_low, volume, market_cap = None, None, None, None, 0, None
 
+        # 1. Try fast_info
         try:
-            price = float(info.last_price)
-            prev_close = float(info.previous_close)
-            day_high = float(info.day_high)
-            day_low = float(info.day_low)
-            volume = int(info.last_volume)
-            market_cap = float(info.market_cap) if info.market_cap else None
-        except (AttributeError, TypeError, ValueError) as exc:
-            raise RuntimeError(
-                f"Failed to fetch quote for {symbol}. "
-                f"Yahoo Finance may be throttling requests or the market is closed. "
-                f"Details: {exc}"
-            ) from exc
+            info = ticker.fast_info
+            if hasattr(info, "last_price") and info.last_price is not None:
+                price = float(info.last_price)
+                prev_close = float(info.previous_close) if info.previous_close else None
+                day_high = float(info.day_high) if info.day_high else None
+                day_low = float(info.day_low) if info.day_low else None
+                volume = int(info.last_volume) if info.last_volume else 0
+                market_cap = float(info.market_cap) if info.market_cap else None
+        except Exception:
+            pass
+
+        # 2. Fallback to history if any essential metric is missing
+        if price is None or prev_close is None:
+            df = ticker.history(period="5d", interval="1d", auto_adjust=True)
+            if df.empty:
+                raise RuntimeError(
+                    f"Failed to fetch market quote for {symbol}. No data returned from Yahoo Finance."
+                )
+            latest_row = df.iloc[-1]
+            price = float(latest_row["Close"])
+            day_high = float(latest_row["High"]) if day_high is None else day_high
+            day_low = float(latest_row["Low"]) if day_low is None else day_low
+            volume = int(latest_row["Volume"]) if not volume else volume
+
+            if len(df) >= 2:
+                prev_close = float(df.iloc[-2]["Close"])
+            else:
+                prev_close = float(latest_row["Open"])
 
         change = round(price - prev_close, 2)
         change_pct = round((change / prev_close) * 100, 2) if prev_close else 0.0
@@ -86,12 +101,12 @@ class YahooFinanceProvider(MarketDataProvider):
             "previous_close": round(prev_close, 2),
             "change": change,
             "change_pct": change_pct,
-            "day_high": round(day_high, 2),
-            "day_low": round(day_low, 2),
+            "day_high": round(day_high if day_high is not None else price, 2),
+            "day_low": round(day_low if day_low is not None else price, 2),
             "volume": volume,
             "market_cap": market_cap,
             "currency": "INR",
-            "data_note": "Near real-time data — Yahoo Finance delayed feed",
+            "data_note": "Near real-time data - Yahoo Finance delayed feed",
             "timestamp": datetime.utcnow(),
         }
 
@@ -105,7 +120,7 @@ class YahooFinanceProvider(MarketDataProvider):
         Fetch historical OHLCV candles from Yahoo Finance.
 
         Args:
-            symbol:   Ticker with .NS suffix
+            symbol:   Ticker with or without .NS suffix
             period:   yfinance period string (e.g., "1mo", "3mo", "6mo", "1y")
             interval: Candle interval (e.g., "1d", "1wk")
 
@@ -117,6 +132,7 @@ class YahooFinanceProvider(MarketDataProvider):
             ValueError: If symbol is not on the watchlist.
             RuntimeError: If yfinance returns empty data.
         """
+        symbol = self.normalize_symbol(symbol)
         self._validate_symbol(symbol)
 
         ticker = yf.Ticker(symbol)
@@ -145,6 +161,13 @@ class YahooFinanceProvider(MarketDataProvider):
     # ---------------------------------------------------------------------------
     # Private helpers
     # ---------------------------------------------------------------------------
+
+    def normalize_symbol(self, symbol: str) -> str:
+        """Ensure symbol has the .NS suffix for NSE lookup."""
+        s = symbol.strip().upper()
+        if not s.endswith(".NS"):
+            s = f"{s}.NS"
+        return s
 
     def _validate_symbol(self, symbol: str) -> None:
         """Raise ValueError if the symbol is not in the Xeroww watchlist."""

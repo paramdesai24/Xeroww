@@ -11,7 +11,12 @@ Or from the project root:
 """
 
 import os
+import sys
+from pathlib import Path
 from contextlib import asynccontextmanager
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,12 +37,12 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle handler."""
-    print("━" * 60)
-    print(f"  Xeroww API v{settings.APP_VERSION} — Market Terminal")
+    print("=" * 60)
+    print(f"  Xeroww API v{settings.APP_VERSION} - Market Terminal")
     print("  Data Provider: Yahoo Finance (near real-time, delayed)")
-    print("  Database: Option B — no runtime DB required in V0")
+    print("  Database: Option B - no runtime DB required in V0")
     print("  Docs: http://localhost:8000/docs")
-    print("━" * 60)
+    print("=" * 60)
     yield
     print("Xeroww API shutting down.")
 
