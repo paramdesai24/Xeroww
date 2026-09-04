@@ -1,5 +1,5 @@
 // src/components/Sidebar.tsx
-// Watchlist panel — institutional terminal style with 64px rows and crisp typography.
+// Watchlist panel — institutional terminal style with 68px rows and subtle 1px border.
 
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -44,22 +44,22 @@ function QuoteRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left px-4 h-16 flex items-center justify-between transition-colors duration-150 group border-l-2 ${
+      className={`w-full text-left px-4 h-[68px] flex items-center justify-between transition-all duration-[180ms] ease-out group ${
         isActive
-          ? "bg-[#111111] border-[#6366F1]"
-          : "border-transparent hover:bg-[#111111]/70"
+          ? "bg-[#111111] border-l border-[#6366F1]"
+          : "border-l border-transparent hover:bg-[#111111]/70"
       }`}
     >
-      {/* Left: Symbol and company name with intentional spacing */}
+      {/* Left: Larger stock symbol with muted company name below */}
       <div className="flex flex-col justify-center min-w-0 pr-2">
         <span
-          className={`text-sm font-semibold tracking-wider ${
+          className={`text-base font-semibold tracking-wider transition-colors duration-[180ms] ${
             isActive ? "text-[#FAFAFA]" : "text-[#FAFAFA] group-hover:text-white"
           }`}
         >
           {ticker(stock.symbol)}
         </span>
-        <span className="text-[11px] text-[#A1A1AA] mt-1 truncate max-w-[120px]">
+        <span className="text-[11px] text-[#A1A1AA] mt-0.5 truncate max-w-[125px]">
           {stock.display_name}
         </span>
       </div>
@@ -119,7 +119,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
         </span>
       </div>
 
-      {/* Stock list: ~64px rows */}
+      {/* Stock list: ~68px rows */}
       <div className="flex-1 overflow-y-auto divide-y divide-[#171717]">
         {stocks.map((stock) => (
           <QuoteRow
@@ -134,7 +134,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
       {/* Terminal metadata footer */}
       <div className="px-4 py-2 border-t border-[#262626] bg-[#0A0A0A]">
         <div className="flex items-center justify-between text-[10px] font-mono text-[#737373]">
-          <span>SOURCE: YAHOO</span>
+          <span>FEED: YAHOO</span>
           <span>DELAY ~15M</span>
         </div>
       </div>
