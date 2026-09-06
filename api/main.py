@@ -1,7 +1,7 @@
 """
 api/main.py
 ───────────
-Xeroww FastAPI application entry point.
+Xeroww FastAPI application entry point — V0.6 Multi-Tenant Financial Intelligence Platform.
 
 Run with:
   uvicorn main:app --reload --port 8000
@@ -10,7 +10,6 @@ Or from the project root:
   uvicorn api.main:app --reload --port 8000
 """
 
-import os
 import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -23,7 +22,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from api.core.config import settings
+from api.database.session import create_all_tables
+
+# V0.5 routes (preserved)
 from api.routes import health, stocks, quote, ohlc, patterns
+
+# V0.6 routes (new)
+from api.routes import auth, watchlists, portfolios, alerts, journal
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
@@ -37,11 +42,14 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle handler."""
+    # Auto-create all SQLAlchemy tables (idempotent)
+    create_all_tables()
+
     print("=" * 60)
-    print(f"  Xeroww API v{settings.APP_VERSION} - Market Terminal")
-    print("  Data Provider: Yahoo Finance (near real-time, delayed)")
-    print("  Database: Option B - no runtime DB required in V0")
-    print("  Docs: http://localhost:8000/docs")
+    print(f"  Xeroww API v{settings.APP_VERSION} — Financial Intelligence Platform")
+    print(f"  Data Provider: Yahoo Finance (near real-time, delayed)")
+    print(f"  Database: {settings.DATABASE_URL.split('//')[0]}//...")
+    print(f"  Docs: http://localhost:8000/docs")
     print("=" * 60)
     yield
     print("Xeroww API shutting down.")
@@ -53,9 +61,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     description=(
-        "Xeroww V0 — Market Terminal API. "
+        "Xeroww V0.6 — Multi-Tenant Financial Intelligence Platform API. "
         "Serves near real-time Indian stock market data from Yahoo Finance. "
-        "Architecture designed for seamless migration to Kafka + Spark + Snowflake in V1–V3."
+        "Provides multi-tenant watchlists, simulated portfolios, alert evaluation, "
+        "and decision journaling. Architecture designed for Kafka + Spark migration in V1–V3."
     ),
     version=settings.APP_VERSION,
     docs_url="/docs",
@@ -75,13 +84,22 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# Register routers
+# Register V0.5 routers (preserved — market data, unchanged)
 # ---------------------------------------------------------------------------
 app.include_router(health.router)
 app.include_router(stocks.router)
 app.include_router(quote.router)
 app.include_router(ohlc.router)
 app.include_router(patterns.router)
+
+# ---------------------------------------------------------------------------
+# Register V0.6 routers (new — multi-tenant platform)
+# ---------------------------------------------------------------------------
+app.include_router(auth.router)
+app.include_router(watchlists.router)
+app.include_router(portfolios.router)
+app.include_router(alerts.router)
+app.include_router(journal.router)
 
 
 # ---------------------------------------------------------------------------
@@ -94,11 +112,27 @@ async def root():
         "version": settings.APP_VERSION,
         "docs": "/docs",
         "health": "/health",
-        "endpoints": [
+        "v05_endpoints": [
             "GET /health",
             "GET /stocks",
             "GET /quote/{symbol}",
             "GET /ohlc/{symbol}",
             "GET /patterns/{symbol}",
+        ],
+        "v06_endpoints": [
+            "POST /auth/register",
+            "POST /auth/login",
+            "POST /auth/refresh",
+            "GET  /auth/me",
+            "GET  /watchlists",
+            "POST /watchlists",
+            "GET  /portfolios",
+            "POST /portfolios",
+            "POST /portfolios/{id}/trade",
+            "GET  /alerts",
+            "POST /alerts",
+            "POST /alerts/evaluate-all",
+            "GET  /journal",
+            "POST /journal",
         ],
     }

@@ -1,1 +1,3 @@
-# core package
+"""
+api/core/__init__.py
+"""
