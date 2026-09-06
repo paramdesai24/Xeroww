@@ -248,7 +248,11 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify({ status, thesis }),
       }),
+
+    review: (id: number): Promise<any> =>
+      authFetch<any>(`/journal/${id}/review`),
   },
+
 
   // -------------------------------------------------------------------------
   // V0.6 — Market Structure Engine (Deterministic Analytics)
@@ -272,4 +276,60 @@ export const api = {
     getSummary: (symbol: string): Promise<MarketStructureSummaryResponse> =>
       apiFetch<MarketStructureSummaryResponse>(`/market-structure/${encodeURIComponent(symbol)}`),
   },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Historical Market Replay Engine
+  // -------------------------------------------------------------------------
+  replay: {
+    getTimeline: (symbol: string, period = "1mo"): Promise<import("../types/structure").ReplayTimelineResponse> =>
+      apiFetch<import("../types/structure").ReplayTimelineResponse>(`/replay/timeline/${encodeURIComponent(symbol)}?period=${period}`),
+
+    getStep: (symbol: string, step: number, period = "1mo"): Promise<import("../types/structure").ReplayStepResponse> =>
+      apiFetch<import("../types/structure").ReplayStepResponse>(`/replay/step/${encodeURIComponent(symbol)}?step=${step}&period=${period}`),
+
+    jump: (symbol: string, timestamp: string, period = "1mo"): Promise<import("../types/structure").ReplayStepResponse> =>
+      apiFetch<import("../types/structure").ReplayStepResponse>(`/replay/jump/${encodeURIComponent(symbol)}?timestamp=${encodeURIComponent(timestamp)}&period=${period}`),
+  },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Deterministic Event Diff ("What Changed?")
+  // -------------------------------------------------------------------------
+  eventDiff: {
+    getLatest: (symbol: string, period = "1mo"): Promise<import("../types/structure").EventDiffResponse> =>
+      apiFetch<import("../types/structure").EventDiffResponse>(`/event-diff/latest/${encodeURIComponent(symbol)}?period=${period}`),
+
+    compare: (symbol: string, fromStep: number, toStep: number, period = "1mo"): Promise<import("../types/structure").EventDiffResponse> =>
+      apiFetch<import("../types/structure").EventDiffResponse>(`/event-diff/compare/${encodeURIComponent(symbol)}?from_step=${fromStep}&to_step=${toStep}&period=${period}`),
+  },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Candle Forensics & Data Provenance
+  // -------------------------------------------------------------------------
+  forensics: {
+    inspect: (symbol: string, timestamp: string, period = "6mo"): Promise<import("../types/structure").CandleForensicsResponse> =>
+      apiFetch<import("../types/structure").CandleForensicsResponse>(`/forensics/inspect/${encodeURIComponent(symbol)}?timestamp=${encodeURIComponent(timestamp)}&period=${period}`),
+  },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Portfolio Today's Contribution
+  // -------------------------------------------------------------------------
+  portfolioContributions: {
+    get: (portfolioId: number): Promise<import("../types/structure").PortfolioContributionResponse> =>
+      authFetch<import("../types/structure").PortfolioContributionResponse>(`/portfolios/${portfolioId}/contributions`),
+  },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Market Breadth & Cross-Asset Relationship Explorer
+  // -------------------------------------------------------------------------
+  intelligence: {
+    getBreadth: (): Promise<import("../types/structure").MarketBreadthResponse> =>
+      apiFetch<import("../types/structure").MarketBreadthResponse>("/intelligence/breadth"),
+
+    getPairwiseCorrelation: (symbolA: string, symbolB: string, window = 20): Promise<any> =>
+      apiFetch<any>(`/intelligence/correlation/pairwise?symbol_a=${encodeURIComponent(symbolA)}&symbol_b=${encodeURIComponent(symbolB)}&window=${window}`),
+
+    getCorrelationMatrix: (window = 20): Promise<import("../types/structure").CorrelationMatrixResponse> =>
+      apiFetch<import("../types/structure").CorrelationMatrixResponse>(`/intelligence/correlation/matrix?window=${window}`),
+  },
 };
+

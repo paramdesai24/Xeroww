@@ -12,11 +12,12 @@ interface Props {
   user: UserProfile | null;
   onLogout: () => void;
   onLogin?: () => void;
+  onOpenBreadth?: () => void;
 }
 
 const MODULES: Module[] = ["MARKET", "WATCHLISTS", "PORTFOLIO", "ALERTS", "JOURNAL", "SYSTEM"];
 
-export default function ModuleNav({ activeModule, onModuleChange, user, onLogout, onLogin }: Props) {
+export default function ModuleNav({ activeModule, onModuleChange, user, onLogout, onLogin, onOpenBreadth }: Props) {
   return (
     <nav
       id="module-nav"
@@ -51,8 +52,20 @@ export default function ModuleNav({ activeModule, onModuleChange, user, onLogout
         })}
       </div>
 
+      {/* Market Breadth & Correlation quick trigger */}
+      {onOpenBreadth && (
+        <button
+          id="nav-breadth-btn"
+          onClick={onOpenBreadth}
+          className="ml-3 px-2 py-1 text-[10px] font-bold tracking-wider border border-[#222] hover:border-[#00E5FF] text-[#888] hover:text-[#00E5FF] bg-[#050505] transition-colors"
+        >
+          MARKET BREADTH
+        </button>
+      )}
+
       {/* Spacer */}
       <div className="flex-1" />
+
 
       {/* User badge */}
       <div className="flex items-center gap-3 px-4 border-l border-[#1E1E1E] shrink-0" style={{ height: 38 }}>

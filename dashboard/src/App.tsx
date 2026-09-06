@@ -10,6 +10,10 @@ import MarketRegimeCard from "./components/MarketRegimeCard";
 import SignalAlignmentCard from "./components/SignalAlignmentCard";
 import SupportResistancePanel from "./components/SupportResistancePanel";
 import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
+import ReplayControlBar from "./components/ReplayControlBar";
+import CandleForensicsModal from "./components/CandleForensicsModal";
+import EventDiffModal from "./components/EventDiffModal";
+import MarketBreadthModal from "./components/MarketBreadthModal";
 import Footer from "./components/Footer";
 
 // V0.6 Domain Components
@@ -23,6 +27,7 @@ import AuthModal from "./components/AuthModal";
 import { useMarketData } from "./hooks/useMarketData";
 import { useAuth } from "./hooks/useAuth";
 import type { OHLCBar } from "./types/market";
+import type { ReplayStepResponse } from "./types/structure";
 
 export default function App() {
   const auth = useAuth();
@@ -30,9 +35,17 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "ANATOMY">("STRUCTURE");
 
+  // Differentiated intelligence modals state
+  const [isReplayMode, setIsReplayMode] = useState<boolean>(false);
+  const [replayState, setReplayState] = useState<ReplayStepResponse | null>(null);
+  const [showForensicsModal, setShowForensicsModal] = useState<boolean>(false);
+  const [showDiffModal, setShowDiffModal] = useState<boolean>(false);
+  const [showBreadthModal, setShowBreadthModal] = useState<boolean>(false);
+
   // V0.5 Market Terminal State (Fully preserved + V0.6 Structure)
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
     useMarketData();
+
 
   // Selected candle for dynamic Candle Anatomy (defaults to latest if none selected)
   const [selectedCandle, setSelectedCandle] = useState<OHLCBar | null>(null);
@@ -86,7 +99,9 @@ export default function App() {
         user={auth.user}
         onLogout={auth.logout}
         onLogin={() => setShowAuthModal(true)}
+        onOpenBreadth={() => setShowBreadthModal(true)}
       />
+
 
       {/* Main Terminal Body — Module Switching */}
       <div className="flex flex-1 overflow-hidden">
@@ -101,20 +116,52 @@ export default function App() {
 
             {/* Center: Candlestick chart hero + 10-session OHLC table */}
             <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+              {isReplayMode && (
+                <ReplayControlBar
+                  symbol={activeSymbol}
+                  onStateUpdate={setReplayState}
+                  onExitReplay={() => {
+                    setIsReplayMode(false);
+                    setReplayState(null);
+                  }}
+                />
+              )}
               <ChartPanel
-                quote={quote}
-                ohlc={ohlc}
-                structure={structure}
+                quote={isReplayMode && replayState?.current_candle ? {
+                  ...quote!,
+                  price: replayState.current_candle.close,
+                  change: replayState.current_candle.close - replayState.current_candle.open,
+                  change_pct: ((replayState.current_candle.close - replayState.current_candle.open) / replayState.current_candle.open) * 100,
+                } : quote}
+                ohlc={isReplayMode && replayState ? {
+                  ...ohlc!,
+                  candles: replayState.candles_slice as any,
+                } : ohlc}
+                structure={isReplayMode && replayState ? {
+                  symbol: activeSymbol,
+                  current_price: replayState.current_candle?.close ?? 0,
+                  support_resistance: replayState.support_resistance!,
+                  volume: replayState.volume!,
+                  moving_averages: replayState.moving_averages!,
+                  market_regime: replayState.market_regime!,
+                  signal_alignment: replayState.signal_alignment!,
+                  detected_patterns: replayState.pattern ? [replayState.pattern as any] : [],
+                  contextual_pattern: null,
+                } : structure}
                 loading={loading}
                 error={error}
                 onSelectCandle={setSelectedCandle}
+                onOpenReplay={() => setIsReplayMode(true)}
+                onOpenDiff={() => setShowDiffModal(true)}
+                onOpenForensics={() => setShowForensicsModal(true)}
               />
               <OHLCTable
-                candles={ohlc?.candles}
+                candles={isReplayMode && replayState ? replayState.candles_slice as any : ohlc?.candles}
                 selectedDate={activeCandle?.time}
                 onSelectCandle={setSelectedCandle}
               />
             </div>
+
 
             {/* Right: Institutional Analytics & Market Structure Engine */}
             <aside className="w-80 shrink-0 bg-[#0A0A0A] border-l border-[#262626] flex flex-col overflow-hidden">
@@ -227,6 +274,31 @@ export default function App() {
       {showAuthModal && (
         <AuthModal auth={auth} onClose={() => setShowAuthModal(false)} />
       )}
+
+      {/* Candle Forensics Modal */}
+      {showForensicsModal && (
+        <CandleForensicsModal
+          symbol={activeSymbol}
+          timestamp={activeCandle?.time ?? new Date().toISOString().split("T")[0]}
+          onClose={() => setShowForensicsModal(false)}
+        />
+      )}
+
+      {/* What Changed Event Diff Modal */}
+      {showDiffModal && (
+        <EventDiffModal
+          symbol={activeSymbol}
+          onClose={() => setShowDiffModal(false)}
+        />
+      )}
+
+      {/* Market Breadth & Correlation Modal */}
+      {showBreadthModal && (
+        <MarketBreadthModal
+          onClose={() => setShowBreadthModal(false)}
+        />
+      )}
     </div>
   );
 }
+

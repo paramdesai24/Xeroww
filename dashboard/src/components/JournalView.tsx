@@ -18,6 +18,9 @@ export default function JournalView() {
   const [thesis, setThesis] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [activeReviewId, setActiveReviewId] = useState<number | null>(null);
+  const [reviewData, setReviewData] = useState<any>(null);
+
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -290,6 +293,26 @@ export default function JournalView() {
                         <span className="text-[10px] text-[#444]">
                           {new Date(entry.timestamp).toLocaleString()}
                         </span>
+                        <button
+                          id={`review-entry-${entry.id}`}
+                          onClick={async () => {
+                            if (activeReviewId === entry.id) {
+                              setActiveReviewId(null);
+                              setReviewData(null);
+                            } else {
+                              setActiveReviewId(entry.id);
+                              try {
+                                const rev = await api.journal.review(entry.id);
+                                setReviewData(rev);
+                              } catch {
+                                setReviewData(null);
+                              }
+                            }
+                          }}
+                          className="text-[9px] px-2 py-0.5 border border-[#00E5FF]/30 hover:border-[#00E5FF] text-[#00E5FF] bg-[#00E5FF]/5 transition-colors"
+                        >
+                          {activeReviewId === entry.id ? "HIDE AUDIT" : "THESIS REVIEW"}
+                        </button>
                         {isOpen && (
                           <div className="flex items-center gap-1.5">
                             <button
@@ -314,6 +337,39 @@ export default function JournalView() {
                     <p className="text-[11px] text-[#BBB] leading-relaxed pl-1 border-l-2 border-[#222]">
                       {entry.thesis}
                     </p>
+
+                    {/* Thesis Review Audit Box */}
+                    {activeReviewId === entry.id && reviewData && (
+                      <div className="mt-2 p-3 bg-[#020202] border border-[#00E5FF]/20 space-y-2 text-[10px]">
+                        <div className="flex items-center justify-between border-b border-[#1E1E1E] pb-1">
+                          <span className="text-[#00E5FF] font-bold uppercase tracking-widest">
+                            DETERMINISTIC THESIS OUTCOME AUDIT
+                          </span>
+                          <span className="text-[#888]">
+                            Price Move: {reviewData.price_delta > 0 ? "+" : ""}{reviewData.price_delta} ({reviewData.price_delta_pct > 0 ? "+" : ""}{reviewData.price_delta_pct}%)
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-[#777] font-bold block mb-1">INITIAL CONTEXT:</span>
+                            <ul className="list-disc list-inside text-[#AAA] space-y-0.5">
+                              {reviewData.initial_context?.map((c: string, idx: number) => (
+                                <li key={idx}>{c}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <span className="text-[#777] font-bold block mb-1">SUBSEQUENT OBSERVATION:</span>
+                            <ul className="list-disc list-inside text-[#AAA] space-y-0.5">
+                              {reviewData.later_observation?.map((o: string, idx: number) => (
+                                <li key={idx}>{o}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
 
                     {entry.context_snapshot && Object.keys(entry.context_snapshot).length > 0 && (
                       <div className="text-[9px] text-[#333] font-mono mt-1">

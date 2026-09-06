@@ -140,3 +140,149 @@ export interface MarketStructureSummaryResponse {
   detected_patterns: PatternDetection[];
   contextual_pattern: ContextualPattern | null;
 }
+
+export interface ReplayTimelineItem {
+  index: number;
+  time: string;
+  close: number;
+  volume: number;
+}
+
+
+export interface ReplayTimelineResponse {
+  symbol: string;
+  total_bars: number;
+  timeline: ReplayTimelineItem[];
+}
+
+export interface ReplayStepResponse {
+  symbol: string;
+  current_step: number;
+  total_steps: number;
+  is_complete: boolean;
+  current_candle: { time: string; open: number; high: number; low: number; close: number; volume: number } | null;
+  candles_slice: { time: string; open: number; high: number; low: number; close: number; volume: number }[];
+  moving_averages: MovingAveragesResponse | null;
+  support_resistance: SupportResistanceResponse | null;
+  volume: VolumeAnalyticsResponse | null;
+  market_regime: MarketRegimeResponse | null;
+  signal_alignment: SignalAlignmentResponse | null;
+  pattern: { pattern: string; direction: string; category: string; explanation: string } | null;
+}
+
+export interface EventDiffItem {
+  category: string;
+  type: string;
+  delta?: number;
+  delta_pct?: number;
+  description: string;
+  level?: number;
+  from_regime?: string;
+  to_regime?: string;
+}
+
+export interface EventDiffResponse {
+  symbol: string;
+  from_step: number;
+  to_step: number;
+  from_time: string | null;
+  to_time: string | null;
+  price_delta: number;
+  price_delta_pct: number;
+  event_count: number;
+  events: EventDiffItem[];
+  factual_narrative: string[];
+}
+
+export interface CandleForensicsResponse {
+  symbol: string;
+  timestamp: string;
+  ohlc: { open: number; high: number; low: number; close: number; day_range: number; is_bullish: boolean };
+  anatomy: {
+    body_size: number;
+    upper_shadow: number;
+    lower_shadow: number;
+    body_ratio_pct: number;
+    upper_shadow_ratio_pct: number;
+    lower_shadow_ratio_pct: number;
+  };
+  volume_context: {
+    volume: number;
+    baseline_volume: number;
+    rvol: number;
+    volume_state: string;
+    relationship: string;
+  };
+  pattern_context: { pattern: string; explanation: string };
+  support_resistance_context: {
+    nearest_support: SRZone | null;
+    nearest_resistance: SRZone | null;
+    active_zones_count: number;
+  };
+  moving_average_context: {
+    price_vs_ema20: string;
+    ema9_ema20_relationship: string;
+    sma50_sma200_relationship: string;
+  };
+  regime_context: { regime: string; reasons: string[] };
+  provenance: {
+    source_provider: string;
+    symbol: string;
+    timeframe: string;
+    input_interval: string;
+    calculation_window: string;
+    calculation_timestamp: string;
+    algorithm_version: string;
+    source_candle_range: { start: string | null; end: string | null; bar_count: number };
+  };
+}
+
+export interface HoldingContribution {
+  symbol: string;
+  quantity: number;
+  current_price: number;
+  previous_close: number;
+  price_change: number;
+  price_change_pct: number;
+  current_value: number;
+  allocation_pct: number;
+  pnl_contribution_inr: number;
+  pnl_contribution_pct: number;
+}
+
+export interface PortfolioContributionResponse {
+  portfolio_id: number;
+  portfolio_name: string;
+  total_value: number;
+  day_pnl_inr: number;
+  day_pnl_pct: number;
+  holdings: HoldingContribution[];
+  largest_contributor: HoldingContribution | null;
+  largest_detractor: HoldingContribution | null;
+  biggest_allocation: HoldingContribution | null;
+}
+
+export interface MarketBreadthResponse {
+  universe_size: number;
+  advancing: number;
+  declining: number;
+  unchanged: number;
+  breadth_ratio: number;
+  distribution_buckets: {
+    gain_gt_2pct: number;
+    gain_0_to_2pct: number;
+    loss_0_to_2pct: number;
+    loss_gt_2pct: number;
+  };
+  top_gainers: { symbol: string; change_pct: number; price: number }[];
+  top_losers: { symbol: string; change_pct: number; price: number }[];
+  most_active_by_volume: { symbol: string; volume: number; price: number }[];
+}
+
+export interface CorrelationMatrixResponse {
+  window: number;
+  symbols: string[];
+  matrix: Record<string, Record<string, number>>;
+  disclaimer: string;
+}
+

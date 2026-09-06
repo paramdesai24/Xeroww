@@ -29,6 +29,9 @@ interface ChartPanelProps {
   loading: boolean;
   error: string | null;
   onSelectCandle?: (candle: OHLCBar) => void;
+  onOpenReplay?: () => void;
+  onOpenDiff?: () => void;
+  onOpenForensics?: () => void;
 }
 
 export default function ChartPanel({
@@ -38,7 +41,11 @@ export default function ChartPanel({
   loading,
   error,
   onSelectCandle,
+  onOpenReplay,
+  onOpenDiff,
+  onOpenForensics,
 }: ChartPanelProps) {
+
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -393,8 +400,43 @@ export default function ChartPanel({
                   SMA 50/200
                 </button>
               </div>
+
+              {/* Differentiated Intelligence Feature Buttons */}
+              <div className="flex items-center gap-1.5 border-l border-[#262626] pl-3">
+                {onOpenReplay && (
+                  <button
+                    id="trigger-replay-btn"
+                    onClick={onOpenReplay}
+                    className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/40 hover:border-[#00E5FF] transition-colors"
+                    title="Launch Historical Market Replay Scrubber"
+                  >
+                    REPLAY
+                  </button>
+                )}
+                {onOpenDiff && (
+                  <button
+                    id="trigger-diff-btn"
+                    onClick={onOpenDiff}
+                    className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#111] text-[#FAFAFA] border border-[#262626] hover:border-[#444] transition-colors"
+                    title="Inspect What Changed Diff"
+                  >
+                    DIFF
+                  </button>
+                )}
+                {onOpenForensics && (
+                  <button
+                    id="trigger-forensics-btn"
+                    onClick={onOpenForensics}
+                    className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#111] text-[#FAFAFA] border border-[#262626] hover:border-[#444] transition-colors"
+                    title="Inspect Candle Forensics & Provenance"
+                  >
+                    FORENSICS
+                  </button>
+                )}
+              </div>
             </div>
           </>
+
         ) : (
           <div className="flex items-center gap-2 text-[#A1A1AA] py-0.5">
             <BarChart2 size={16} />

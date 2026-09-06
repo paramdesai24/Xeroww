@@ -27,7 +27,8 @@ export default function PortfolioView() {
   const [tradeError, setTradeError] = useState<string | null>(null);
   const [tradeSuccess, setTradeSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"holdings" | "transactions" | "trade">("holdings");
+  const [tab, setTab] = useState<"holdings" | "contributions" | "transactions" | "trade">("holdings");
+  const [contrib, setContrib] = useState<import("../types/structure").PortfolioContributionResponse | null>(null);
 
   const loadPortfolios = useCallback(async () => {
     try {
@@ -45,12 +46,22 @@ export default function PortfolioView() {
 
   useEffect(() => { loadPortfolios(); }, [loadPortfolios]);
 
+  useEffect(() => {
+    if (tab === "contributions" && active) {
+      api.portfolioContributions.get(active.id).then(setContrib).catch(() => setContrib(null));
+    }
+  }, [tab, active]);
+
   const selectPortfolio = async (id: number) => {
     const summary = await api.portfolios.get(id);
     setActive(summary);
     const t = await api.portfolios.transactions(id);
     setTxns(t);
+    if (tab === "contributions") {
+      api.portfolioContributions.get(id).then(setContrib).catch(() => setContrib(null));
+    }
   };
+
 
   const createPortfolio = async () => {
     if (!newPortName.trim()) return;
@@ -153,16 +164,17 @@ export default function PortfolioView() {
 
           {/* Tab strip */}
           <div className="flex border-b border-[#1E1E1E]">
-            {(["holdings", "transactions", "trade"] as const).map((t) => (
+            {(["holdings", "contributions", "transactions", "trade"] as const).map((t) => (
               <button key={t} onClick={() => setTab(t)}
                 className={`px-4 py-2 text-[10px] tracking-widest font-bold border-r border-[#1E1E1E] transition-colors ${
                   tab === t ? "text-[#00E5FF] bg-[#0a1015]" : "text-[#333] hover:text-[#666]"
                 }`}
               >
-                {t.toUpperCase()}
+                {t === "contributions" ? "TODAY'S CONTRIBUTION" : t.toUpperCase()}
               </button>
             ))}
           </div>
+
 
           {/* Holdings */}
           {tab === "holdings" && (
@@ -197,6 +209,76 @@ export default function PortfolioView() {
               )}
             </div>
           )}
+
+          {/* Today's Contribution Diff */}
+          {tab === "contributions" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Highlight cards */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 bg-[#000] border border-[#1E1E1E]">
+                  <div className="text-[9px] text-[#525252] uppercase tracking-widest">LARGEST CONTRIBUTOR</div>
+                  {contrib?.largest_contributor ? (
+                    <div className="mt-1">
+                      <span className="text-xs font-bold text-[#22C55E] mr-2">{contrib.largest_contributor.symbol}</span>
+                      <span className="text-[11px] text-[#22C55E]">+{fmt(contrib.largest_contributor.pnl_contribution_inr)} ({contrib.largest_contributor.pnl_contribution_pct}%)</span>
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-[#333] mt-1">— None today</div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-[#000] border border-[#1E1E1E]">
+                  <div className="text-[9px] text-[#525252] uppercase tracking-widest">LARGEST DETRACTOR</div>
+                  {contrib?.largest_detractor ? (
+                    <div className="mt-1">
+                      <span className="text-xs font-bold text-[#EF4444] mr-2">{contrib.largest_detractor.symbol}</span>
+                      <span className="text-[11px] text-[#EF4444]">{fmt(contrib.largest_detractor.pnl_contribution_inr)} ({contrib.largest_detractor.pnl_contribution_pct}%)</span>
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-[#333] mt-1">— None today</div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-[#000] border border-[#1E1E1E]">
+                  <div className="text-[9px] text-[#525252] uppercase tracking-widest">DAY P&amp;L CONTRIBUTION</div>
+                  <div className="mt-1">
+                    <span className={`text-xs font-bold ${pnlColor(contrib?.day_pnl_inr ?? 0)}`}>
+                      {fmt(contrib?.day_pnl_inr ?? 0)} ({contrib?.day_pnl_pct}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table */}
+              <table className="w-full text-[10px]">
+                <thead>
+                  <tr className="border-b border-[#1E1E1E] text-[#525252] tracking-widest">
+                    {["SYMBOL", "QTY", "PRICE", "MOVE", "VALUE", "P&L CONTRIBUTION", "PORTFOLIO ALLOC"].map((h) => (
+                      <th key={h} className="px-4 py-2 text-left font-bold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {contrib?.holdings.map((h) => (
+                    <tr key={h.symbol} className="border-b border-[#111] hover:bg-[#0d0d0d]">
+                      <td className="px-4 py-2 text-[#FAFAFA] font-bold">{h.symbol}</td>
+                      <td className="px-4 py-2 text-[#FAFAFA]">{h.quantity}</td>
+                      <td className="px-4 py-2 text-[#FAFAFA]">{fmt(h.current_price)}</td>
+                      <td className={`px-4 py-2 ${pnlColor(h.price_change)}`}>
+                        {h.price_change > 0 ? "+" : ""}{h.price_change.toFixed(2)} ({h.price_change_pct > 0 ? "+" : ""}{h.price_change_pct}%)
+                      </td>
+                      <td className="px-4 py-2 text-[#FAFAFA]">{fmt(h.current_value)}</td>
+                      <td className={`px-4 py-2 font-bold ${pnlColor(h.pnl_contribution_inr)}`}>
+                        {h.pnl_contribution_inr > 0 ? "+" : ""}{fmt(h.pnl_contribution_inr)} ({h.pnl_contribution_pct}%)
+                      </td>
+                      <td className="px-4 py-2 text-[#525252]">{h.allocation_pct}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
 
           {/* Transactions */}
           {tab === "transactions" && (
