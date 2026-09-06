@@ -75,6 +75,13 @@ def analyse_candle(candle: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+from api.services.pattern_engine import (
+    extract_metrics,
+    detect_marubozu_candle,
+    PatternDetection,
+)
+
+
 def detect_marubozu(
     candles: list[dict[str, Any]],
     symbol: str,
@@ -82,85 +89,36 @@ def detect_marubozu(
 ) -> dict[str, Any]:
     """
     Run Marubozu detection on the latest candle in the series.
-
-    Logic (Varsity-aligned):
-      - Compute upper shadow = high - max(open, close)
-      - Compute lower shadow = min(open, close) - low
-      - Bullish Marubozu:  upper_shadow ≤ threshold AND lower_shadow ≤ threshold AND close > open
-      - Bearish Marubozu: upper_shadow ≤ threshold AND lower_shadow ≤ threshold AND close < open
-      - Shadow threshold = MARUBOZU_SHADOW_THRESHOLD × body
-
-    Args:
-        candles:      Full list of OHLCV candle dicts (oldest → newest)
-        symbol:       Ticker symbol
-        display_name: Human-readable company name
-
-    Returns:
-        Dict matching PatternResponse schema.
+    Delegates to the deterministic pattern engine V2.
     """
     if not candles:
         return _no_pattern_response(symbol, display_name, candle_summary=None)
 
     latest = candles[-1]
     candle_summary = analyse_candle(latest)
+    metrics = extract_metrics(latest, index=len(candles) - 1)
 
-    o = float(latest["open"])
-    h = float(latest["high"])
-    l = float(latest["low"])   # noqa: E741
-    c = float(latest["close"])
-    body = abs(c - o)
-    shadow_limit = body * MARUBOZU_SHADOW_THRESHOLD
-
-    upper_shadow = h - max(o, c)
-    lower_shadow = min(o, c) - l
-    day_range = h - l
-    body_to_range = (body / day_range) if day_range > 0 else 0.0
-
-    is_marubozu = (
-        upper_shadow <= shadow_limit
-        and lower_shadow <= shadow_limit
-        and body_to_range >= MARUBOZU_BODY_RANGE_RATIO
+    detection = detect_marubozu_candle(
+        metrics,
+        shadow_threshold=MARUBOZU_SHADOW_THRESHOLD,
+        min_body_ratio=MARUBOZU_BODY_RANGE_RATIO,
     )
 
-    if is_marubozu and c > o:
-        # Bullish Marubozu
+    if detection:
+        pattern_key = "bullish_marubozu" if detection.direction == "bullish" else "bearish_marubozu"
+        stop_loss = detection.context.get("stop_loss")
         return {
             "symbol": symbol,
             "display_name": display_name,
-            "pattern": "bullish_marubozu",
-            "signal_day": latest["time"],
+            "pattern": pattern_key,
+            "signal_day": latest.get("time"),
             "textbook_action": "watch_next_session_for_confirmation",
-            "rationale": (
-                f"{display_name} formed a Bullish Marubozu on {latest['time']}. "
-                "Strong buying pressure dominated the entire session with negligible wicks. "
-                "Per Varsity rules: wait for the next session to trade above today's close "
-                "before initiating a long position. Entry on confirmation."
-            ),
-            "stop_loss": round(l, 2),  # Day's low is the stop-loss level
+            "rationale": detection.explanation,
+            "stop_loss": stop_loss,
             "latest_candle": candle_summary,
             "data_note": "Near real-time data — Yahoo Finance delayed feed",
         }
 
-    if is_marubozu and c < o:
-        # Bearish Marubozu
-        return {
-            "symbol": symbol,
-            "display_name": display_name,
-            "pattern": "bearish_marubozu",
-            "signal_day": latest["time"],
-            "textbook_action": "watch_next_session_for_confirmation",
-            "rationale": (
-                f"{display_name} formed a Bearish Marubozu on {latest['time']}. "
-                "Extreme selling pressure dominated the session from open to close. "
-                "Per Varsity rules: watch for the next session to confirm breakdown below today's close. "
-                "Potential short entry / exit signal on confirmation."
-            ),
-            "stop_loss": round(h, 2),  # Day's high is the stop-loss for shorts
-            "latest_candle": candle_summary,
-            "data_note": "Near real-time data — Yahoo Finance delayed feed",
-        }
-
-    # No Marubozu detected
     return _no_pattern_response(symbol, display_name, candle_summary)
 
 
