@@ -83,7 +83,13 @@ app.add_middleware(
 )
 
 from api.core.rate_limit import RateLimitMiddleware
+from api.core.metrics import PrometheusMetricsMiddleware, metrics_endpoint
 app.add_middleware(RateLimitMiddleware)
+app.add_middleware(PrometheusMetricsMiddleware)
+
+# Prometheus metrics endpoint
+app.add_api_route("/metrics", metrics_endpoint, methods=["GET"], include_in_schema=False)
+
 
 # ---------------------------------------------------------------------------
 # Global Exception Handlers
