@@ -1,162 +1,488 @@
-# Xeroww
+# Xeroww (V0.6)
 
-> A distributed financial analytics platform — built in evolutionary versions.
+> **Deterministic Financial Intelligence & Market Structure Platform**
+>
+> *"Do not predict what the market will do. Help the user understand what the market has already done, what conditions currently exist, and how those conditions relate to their own decisions."*
 
-**Xeroww V0** is the Market Terminal: an Indian stock market dashboard powered by Yahoo Finance (near real-time, delayed), FastAPI, and a React terminal interface with TradingView Lightweight Charts.
+[![CI Pipeline](https://github.com/paramdesai24/Xeroww/actions/workflows/ci.yml/badge.svg)](https://github.com/paramdesai24/Xeroww/actions/workflows/ci.yml)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg?style=flat&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg?style=flat&logo=postgresql)](https://www.postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D.svg?style=flat&logo=redis)](https://redis.io)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?style=flat&logo=docker)](https://www.docker.com)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C.svg?style=flat&logo=prometheus)](https://prometheus.io)
 
 ---
 
-## Architecture
+## Table of Contents
 
-```text
-                    Yahoo Finance API
-                    (near real-time — 15–20 min delay)
-                           │
-                           ▼
-              YahooFinanceProvider
-              (implements MarketDataProvider ABC)
-                           │
-                           ▼
-                       FastAPI
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-          /stocks      /ohlc      /patterns
-          /quote       /health
-                           │
-                           ▼
-                   React Dashboard
-           (Vite + TypeScript + Tailwind)
-           TradingView Lightweight Charts
+1. [Executive Summary & Philosophy](#1-executive-summary--philosophy)
+2. [System Architecture](#2-system-architecture)
+3. [Technology Stack](#3-technology-stack)
+4. [Key Engineering Principles](#4-key-engineering-principles)
+5. [Core Features & Market Engines](#5-core-features--market-engines)
+6. [API Design & Error Contracts](#6-api-design--error-contracts)
+7. [Data Layer & Database Schemas](#7-data-layer--database-schemas)
+8. [Security & Multi-Tenancy Architecture](#8-security--multi-tenancy-architecture)
+9. [Caching & Performance Boundary](#9-caching--performance-boundary)
+10. [Observability & Telemetry](#10-observability--telemetry)
+11. [Local Development Quickstart](#11-local-development-quickstart)
+12. [Deterministic Demo Seeding](#12-deterministic-demo-seeding)
+13. [Testing Strategy & Resilience](#13-testing-strategy--resilience)
+14. [Architecture Decision Records (ADRs)](#14-architecture-decision-records-adrs)
+15. [Roadmap: The Path to Xeroww V1.0](#15-roadmap-the-path-to-xeroww-v10)
+
+---
+
+## 1. Executive Summary & Philosophy
+
+Xeroww is an institutional-grade financial analytics and market structure intelligence platform. Engineered as a deterministic, modular monolith in V0.6, it provides retail and institutional traders with uncompromising clarity into price action, volume distribution, multi-candle patterns, and historical trade evaluation.
+
+### Core Philosophy
+- **Deterministic Analytics Only**: Zero machine learning hallucinations, zero black-box "confidence scores", and zero automated trade recommendations. Financial decisions belong to human intelligence; mathematical market conditions belong to Xeroww.
+- **Auditable & Point-in-Time Accurate**: Replay simulations and analytics strictly prevent look-ahead bias. Historical states are mathematically reproducible.
+- **V1.0 Distributed Readiness**: The codebase is architected with strict domain boundaries and service decoupling so that in-process services can transition seamlessly to Kafka producers, Spark streaming aggregators, and Apache Iceberg sinks in V1.0 without breaking frontend or API contracts.
+
+---
+
+## 2. System Architecture
+
+Xeroww enforces a unidirectional layered design:
+`Routes -> Services / Analytics Engines -> Provider / Repositories -> Storage / External Upstreams`
+
+```mermaid
+graph TD
+    subgraph Clients ["Client Layer"]
+        UI["React 18 + TS Dashboard<br/>(TradingView Lightweight Charts)"]
+        CLI["API Clients / cURL"]
+    end
+
+    subgraph Edge ["Edge & Reverse Proxy"]
+        NGINX["Nginx Proxy<br/>(:80 / :443)"]
+    end
+
+    subgraph CoreBackend ["Core FastAPI Monolith (:8000)"]
+        MW["Middleware Tier<br/>Tracing (W3C Trace-ID) | Rate Limiter | Auth"]
+        
+        subgraph Routes ["API Endpoints"]
+            R_Auth["/api/v1/auth"]
+            R_Market["/api/v1/market /ohlc"]
+            R_Patterns["/api/v1/patterns"]
+            R_Structure["/api/v1/structure"]
+            R_Replay["/api/v1/replay (REST & WS)"]
+            R_User["/api/v1/portfolio /journal /alerts"]
+        end
+
+        subgraph Services ["Service & Engine Layer"]
+            S_Market["MarketDataService"]
+            S_Pattern["PatternEngine V2 (Varsity)"]
+            S_Struct["MarketStructureEngine"]
+            S_Replay["HistoricalReplayEngine"]
+            S_Portfolio["PortfolioService"]
+            S_Journal["JournalService"]
+            S_Alert["AlertService"]
+            S_Cache["CacheService (Redis / Fallback)"]
+        end
+
+        subgraph Providers ["Data Abstraction Boundary"]
+            P_Interface["MarketDataProvider (ABC)"]
+            P_Yahoo["YahooProvider (yfinance)"]
+            P_Mock["MockProvider (Testing)"]
+        end
+    end
+
+    subgraph DataStorage ["Data & Cache Tier"]
+        PG[("PostgreSQL 16<br/>(User State & Journals)")]
+        REDIS[("Redis 7<br/>(Market Quotes & OHLC Caches)")]
+    end
+
+    subgraph Observability ["Observability Stack"]
+        PROM["Prometheus (:9090)<br/>Scrapes /metrics"]
+        GRAF["Grafana (:3000)<br/>Operational Dashboards"]
+    end
+
+    Clients -->|HTTP / WS| NGINX
+    NGINX -->|Reverse Proxy| MW
+    MW --> Routes
+    Routes --> Services
+    Services --> S_Cache
+    S_Cache -.-> REDIS
+    S_Market --> P_Interface
+    P_Interface --> P_Yahoo
+    Services --> PG
+    CoreBackend -.->|Metrics| PROM
+    PROM --> GRAF
 ```
 
-### Evolution Path
+---
 
-| Version | Data Layer |
-|---------|-----------|
-| **V0** (current) | Yahoo Finance → FastAPI → React |
-| **V1** | Yahoo Finance → **Kafka** → FastAPI → React |
-| **V2** | Yahoo Finance → Kafka → **Spark** → FastAPI → React |
-| **V3** | Yahoo Finance → Kafka → Spark → **Snowflake** → FastAPI → React |
+## 3. Technology Stack
 
-The `MarketDataProvider` abstract interface in `api/services/market_provider.py` is the architectural contract that enables this evolution without rewriting routes or frontend code.
+| Layer | Component | Version / Library | Purpose |
+|---|---|---|---|
+| **Frontend** | React & TypeScript | React 18.2, TypeScript 5.2 | High-performance SPA with institutional black terminal aesthetic |
+| | Charting Engine | TradingView Lightweight Charts 4.1 | Hardware-accelerated financial candlestick and line charts |
+| | Styling | Vanilla CSS + Tailwind | Zero-runtime CSS design tokens and dark institutional themes |
+| **Backend** | API Framework | FastAPI 0.110 (ASGI / Uvicorn) | High-throughput asynchronous HTTP and WebSocket endpoints |
+| | Validation | Pydantic v2 | Strict schema validation, serialisation, and OpenAPI specs |
+| | Security | PyJWT, Passlib (Bcrypt) | Cryptographic bearer tokens, Argon2/Bcrypt password hashing |
+| **Persistence** | Relational Store | PostgreSQL 16 / SQLAlchemy 2.0 | ACID-compliant storage for users, portfolios, journals, and alerts |
+| | Distributed Cache | Redis 7 (`redis-py`) | Multi-tier TTL caching for high-frequency market quotes and OHLC |
+| **Observability**| Metrics | Prometheus Client 0.20 | Custom counters, latency histograms, and cache hit/miss gauges |
+| | Visualization | Grafana 10.3 | Provisioned dashboards monitoring throughput, errors, and P95 latency |
+| | Tracing | Custom W3C Trace Middleware | `X-Trace-ID` and `X-Span-ID` request journey propagation |
+| **DevOps** | Containerization | Docker Engine, Compose v2 | Multi-stage production container builds with automated healthchecks |
+| | Web Server | Nginx Alpine | Reverse proxy, static asset delivery, and WebSocket connection upgrades |
+| | CI Pipeline | GitHub Actions | Automated linting, type-checking, matrix testing, and build validation |
 
 ---
 
-## Project Structure
+## 4. Key Engineering Principles
 
-```text
-xeroww/
-├── api/                     ← FastAPI backend
-│   ├── main.py              ← Entry point (uvicorn)
-│   ├── requirements.txt
-│   ├── routes/              ← HTTP endpoint handlers
-│   ├── services/            ← Business logic + provider abstraction
-│   │   ├── market_provider.py   ← Abstract Base Class (the key interface)
-│   │   ├── yahoo_provider.py    ← yfinance implementation
-│   │   └── pattern_service.py   ← Marubozu detection engine
-│   ├── models/              ← SQLAlchemy ORM models (V1 readiness)
-│   ├── schemas/             ← Pydantic request/response models
-│   └── database/            ← Session factory (no runtime DB in V0)
-├── dashboard/               ← React + Vite + TypeScript frontend
-│   └── src/
-│       ├── api/             ← Typed API client
-│       ├── components/      ← Navbar, Sidebar, ChartPanel, OHLCStats, PatternCard
-│       ├── hooks/           ← useMarketData
-│       └── types/           ← TypeScript interfaces
-├── database/                ← PostgreSQL schema DDL (V1 reference)
-├── docs/                    ← Architecture + Varsity pattern reference
-└── README.md
+1. **Deterministic Analytics**: Every calculation (Marubozu, Swing Pivots, VWAP, EMA) is a pure mathematical function of input OHLCV bars. No random seeds, stochastic approximations, or opaque scoring.
+2. **Strict Provider Abstraction**: Upstream data vendor libraries (e.g., `yfinance`) are restricted solely to `api/services/yahoo_provider.py`. The rest of the platform interacts exclusively with the abstract `MarketDataProvider`.
+3. **Separation of Market & User Data**: Public time-series market data is transiently cached and never mixed with private, tenant-isolated relational records (portfolios, journals, watchlists).
+4. **Zero Look-Ahead Bias**: Historical simulation strictly isolates time `t`. At candle index `k`, all calculators only have visibility over indices `0` through `k`.
+5. **Fail-Safe Graceful Degradation**: If external caches (Redis) or metric collectors encounter failures, the core application falls back to local in-process mechanisms without service interruption.
+
+---
+
+## 5. Core Features & Market Engines
+
+### 5.1 Historical Market Replay Engine
+- **Point-in-Time Stepping**: Step forward or backward through historical trading sessions bar by bar.
+- **Streaming Playback**: WebSocket endpoint (`/ws/replay`) streams historical events at configurable speeds (1x, 5x, 10x).
+- **Synchronized Context**: At every tick, indicators, volume profiles, detected patterns, and alert conditions recalculate strictly up to that point.
+
+### 5.2 Pattern Engine V2 (Zerodha Varsity Standards)
+Detects classic Japanese candlestick formations with strict mathematical thresholds:
+- **Single-Candle**: Bullish Marubozu, Bearish Marubozu, Doji, Spinning Top, Hammer, Hanging Man.
+- **Multi-Candle**: Bullish & Bearish Engulfing, Bullish & Bearish Harami, Morning Star, Evening Star.
+- Provides actionable structural context: Stop-loss levels, trigger candle ranges, confirmation requirements, and body/wick ratios.
+
+### 5.3 Market Structure Engine
+- **Fractal Swing Detection**: Deterministic identification of local Highs/Lows using swing pivot logic.
+- **Trend Categorization**: Mathematical identification of Higher Highs (HH), Higher Lows (HL), Lower Highs (LH), and Lower Lows (LL).
+- **Support & Resistance Clusters**: Density-based clustering of historical swing levels with strength weighting.
+- **Breakout & Breakdown Detection**: Close-confirmed violations of validated structural levels.
+
+### 5.4 Multi-Timeframe Alignment
+- Computes trend confluence across intraday (5m, 15m), intermediate (1h), and swing (1d) timeframes.
+- Exposes directional alignment matrix (Bullish Confluence, Bearish Confluence, or Divergent).
+
+### 5.5 Portfolio & Decision Tracking
+- **Holdings & P&L**: Average price calculation, realized/unrealized profit calculation, and asset allocation breakdown.
+- **Decision Journal**: Log entry rationale, emotional state, setup type, trade thesis, and exit execution notes.
+- **Chart Annotations**: Anchor analytical notes, horizontal price levels, and trade tags directly to price coordinates.
+- **Structural Alerts**: Price-threshold and pattern-formation triggers evaluated against live or replayed market events.
+
+---
+
+## 6. API Design & Error Contracts
+
+All API endpoints follow RESTful standards under the `/api/v1` namespace, complemented by WebSocket channels for real-time streaming.
+
+### Standardized Error Envelope
+Xeroww guarantees consistent error envelopes across all HTTP 4xx/5xx responses:
+
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "Portfolio with ID 42 was not found or access is denied.",
+    "details": {
+      "resource_type": "portfolio",
+      "resource_id": 42
+    }
+  },
+  "timestamp": "2026-09-07T00:30:00Z",
+  "request_id": "0191c78a-350e-7d6f-801a-cf2a9bb4c1a2"
+}
+```
+
+### Key API Routes
+| Method | Path | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/register` | Create user account | No |
+| `POST` | `/api/v1/auth/login` | Obtain JWT access token | No |
+| `POST` | `/api/v1/auth/logout` | Revoke active JWT token | Yes |
+| `GET` | `/api/v1/market/quote/{symbol}` | Near real-time market quote | No |
+| `GET` | `/api/v1/market/ohlc/{symbol}` | Historical OHLCV candle series | No |
+| `GET` | `/api/v1/patterns/{symbol}` | Pattern Engine V2 scan | No |
+| `GET` | `/api/v1/structure/{symbol}` | Swings, Trends, and Support/Resistance | No |
+| `POST` | `/api/v1/replay/session` | Initialize historical replay session | Yes |
+| `GET` | `/api/v1/replay/{id}/step` | Advance replay session one bar | Yes |
+| `WS` | `/api/v1/replay/{id}/stream` | WebSocket real-time playback stream | Yes |
+| `GET` | `/api/v1/portfolio` | User portfolio summary and holdings | Yes |
+| `GET` | `/api/v1/journal` | List trade decision journal entries | Yes |
+| `POST` | `/api/v1/alerts` | Create price or pattern alert | Yes |
+| `GET` | `/metrics` | Prometheus metrics scrape endpoint | No |
+| `GET` | `/health` | Deep healthcheck (DB, Cache, Provider) | No |
+
+---
+
+## 7. Data Layer & Database Schemas
+
+User state is modeled via SQLAlchemy 2.0 with strict relational integrity:
+
+```mermaid
+erDiagram
+    USERS ||--o{ PORTFOLIOS : owns
+    USERS ||--o{ WATCHLISTS : owns
+    USERS ||--o{ JOURNALS : records
+    USERS ||--o{ ANNOTATIONS : creates
+    USERS ||--o{ ALERTS : configures
+    PORTFOLIOS ||--o{ HOLDINGS : contains
+    PORTFOLIOS ||--o{ TRANSACTIONS : logs
+    WATCHLISTS ||--o{ WATCHLIST_ITEMS : contains
+
+    USERS {
+        int id PK
+        string email UK
+        string name
+        string password_hash
+        string role
+        datetime created_at
+    }
+    PORTFOLIOS {
+        int id PK
+        int user_id FK
+        string name
+        string currency
+    }
+    HOLDINGS {
+        int id PK
+        int portfolio_id FK
+        string symbol
+        float quantity
+        float average_price
+    }
+    JOURNALS {
+        int id PK
+        int user_id FK
+        string symbol
+        string trade_type
+        float entry_price
+        float exit_price
+        string thesis
+        datetime entry_date
+    }
+    ALERTS {
+        int id PK
+        int user_id FK
+        string symbol
+        string alert_type
+        float target_value
+        string status
+    }
 ```
 
 ---
 
-## Prerequisites
+## 8. Security & Multi-Tenancy Architecture
 
-- Python 3.11+
-- Node.js 18+
-- Internet access (Yahoo Finance API)
-
-No database required for V0.
+- **Stateless Bearer Authentication**: High-security HMAC-SHA256 JWT tokens with configurable TTL (default 60 minutes).
+- **Token Revocation Blacklist**: Explicit logout via `/api/v1/auth/logout` places the active token JTI in the distributed blacklist until natural expiration.
+- **Tenant Isolation (OWASP BOLA Protection)**: All mutating and querying operations against user-owned resources enforce ownership filters:
+  ```python
+  query = db.query(Portfolio).filter(Portfolio.id == portfolio_id, Portfolio.user_id == current_user.id)
+  ```
+  Attempting to inspect or modify another tenant's resource raises `404 Not Found` rather than leaking resource existence.
+- **Rate Limiting**: Sliding-window rate limiter enforcing:
+  - **Unauthenticated requests**: 60 requests per minute per client IP.
+  - **Authenticated requests**: 180 requests per minute per user ID.
+  Violations receive `429 Too Many Requests` with a standard `Retry-After: 60` header.
 
 ---
 
-## Running the Backend
+## 9. Caching & Performance Boundary
 
-```powershell
+To insulate upstream market APIs from high-frequency queries and optimize P95 latencies:
+
+- **Redis Caching Tier**: Caches market quotes (5–15s TTL) and OHLC historical bars (60–3600s TTL).
+- **Graceful In-Memory Fallback**: If Redis becomes unreachable, `CacheService` seamlessly transitions to a local in-process LRU cache. Zero HTTP 500 errors are returned to the user.
+- **Standardized Key Namespaces**:
+  - `quote:{symbol}`
+  - `ohlc:{symbol}:{timeframe}:{start}:{end}`
+  - `blacklist:{token_jti}`
+
+---
+
+## 10. Observability & Telemetry
+
+### Prometheus Metrics (`/metrics`)
+- `http_requests_total{method, endpoint, status_code}`: Total API request volume.
+- `http_request_duration_seconds{method, endpoint}`: Request latency histogram (P50, P90, P99).
+- `market_provider_requests_total{provider, status}`: Upstream market API calls.
+- `market_provider_latency_seconds{provider}`: Upstream latency distribution.
+- `cache_operations_total{operation, status}`: Redis/In-Memory hit vs. miss counters.
+- `active_replay_sessions`: Current concurrent historical replay sessions.
+
+### OpenTelemetry-Compatible Tracing
+Every request journey is assigned:
+- `X-Trace-ID`: 32-character hexadecimal identifier.
+- `X-Span-ID`: 16-character hexadecimal span identifier.
+Internal methods profile execution with the `trace_span("operation_name")` context manager.
+
+### Grafana Operational Dashboard
+Pre-configured dashboard provisioned automatically in `docker-compose`:
+- **Throughput**: Real-time requests per second.
+- **Error Budget**: HTTP 4xx and 5xx rates.
+- **Latencies**: P50, P95, and P99 service response times.
+- **Cache Hit Ratio**: Effectiveness of Redis caching tier.
+
+---
+
+## 11. Local Development Quickstart
+
+### Option A: Complete Docker Compose Environment (Recommended)
+
+Starts PostgreSQL, Redis, FastAPI Backend, React Frontend, Nginx, Prometheus, and Grafana:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/paramdesai24/Xeroww.git
+cd Xeroww
+
+# 2. Configure environment variables
+cp .env.example .env
+
+# 3. Build and run containers
+make docker-up
+# or: docker compose up -d --build
+```
+
+Access services:
+- **Terminal UI**: [http://localhost:5173](http://localhost:5173) (or via Nginx on [http://localhost](http://localhost))
+- **FastAPI OpenAPI Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Prometheus Metrics**: [http://localhost:9090](http://localhost:9090)
+- **Grafana Dashboard**: [http://localhost:3000](http://localhost:3000) (Default user: `admin` / `admin`)
+
+To shut down:
+```bash
+make docker-down
+```
+
+---
+
+### Option B: Native Host Execution
+
+#### 1. Backend Setup
+```bash
+# Navigate to backend directory
 cd api
 
-# Create and activate virtual environment
+# Setup Python virtual environment
 python -m venv venv
-.\venv\Scripts\Activate.ps1
+# On Windows:
+.\venv\Scripts\activate
+# On Linux/macOS:
+# source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Start the server
+# Run deterministic demo data seed
+python scripts/seed_demo_data.py
+
+# Start FastAPI development server
 uvicorn main:app --reload --port 8000
 ```
 
-API will be available at:
-- **Docs**: http://localhost:8000/docs
-- **Health**: http://localhost:8000/health
-
-### API Endpoints
-
-| Endpoint | Description |
-|---|---|
-| `GET /health` | Service health check |
-| `GET /stocks` | Watchlist (RELIANCE, TCS, INFY, HDFCBANK, ICICIBANK) |
-| `GET /quote/{symbol}` | Latest market quote |
-| `GET /ohlc/{symbol}` | 1-month OHLCV candles (TradingView format) |
-| `GET /patterns/{symbol}` | Marubozu detection + Varsity trade setup |
-
----
-
-## Running the Frontend
-
-```powershell
+#### 2. Frontend Setup
+```bash
+# Open a new terminal and navigate to dashboard
 cd dashboard
 
 # Install dependencies
 npm install
 
-# Start development server
+# Start Vite development server
 npm run dev
 ```
 
-Dashboard will be available at: **http://localhost:5173**
+---
 
-Make sure the FastAPI backend is running first (`http://localhost:8000`).
+## 12. Deterministic Demo Seeding
+
+The platform includes a zero-dependency deterministic database seeder:
+
+```bash
+make seed
+# or: python api/scripts/seed_demo_data.py
+```
+
+### Pre-Configured Test Accounts:
+- **Demo Trader**:
+  - Email: `trader@xeroww.internal`
+  - Password: `Trader123!`
+  - Pre-seeded with: Watchlists, RELIANCE holding, decision journal entries, chart annotations, and active alerts.
+- **Administrator**:
+  - Email: `admin@xeroww.internal`
+  - Password: `Admin123!`
+  - Role: `admin`
 
 ---
 
-## Candle Pattern Detection
+## 13. Testing Strategy & Resilience
 
-Xeroww detects **Marubozu** patterns using Zerodha Varsity textbook rules:
+Xeroww maintains comprehensive automated test suites covering happy paths, edge cases, failure injection, and security constraints.
 
-- **Bullish Marubozu**: Strong buying, open ≈ low, close ≈ high, shadows < 2% of body
-- **Bearish Marubozu**: Strong selling, open ≈ high, close ≈ low
+```bash
+# Run complete test suite with coverage
+make test
+# or: pytest api/tests -v
+```
 
-The API returns:
-- Pattern classification
-- Signal date
-- Varsity textbook action: `watch_next_session_for_confirmation`
-- Stop-loss level
-- Latest Candle Summary (body %, direction, range %)
-
-See [`docs/varsity_patterns.md`](docs/varsity_patterns.md) for full pattern documentation.
+### Test Coverage Summary
+- **Pattern Engine Tests** (`test_patterns.py`, `test_market_structure.py`): Validates Marubozu, Engulfing, Harami, Stars, and Doji against textbook definitions.
+- **Replay Engine Tests** (`test_replay_service.py`): Verifies bar-by-bar progression, state isolation, and zero look-ahead bias.
+- **Security & Multi-Tenancy Tests** (`test_authorization_security.py`): Verifies cross-tenant isolation, IDOR prevention, and token blacklist revocation.
+- **Rate Limiter Tests** (`test_rate_limiting.py`): Confirms 429 throttling and `Retry-After` headers.
+- **Resilience & Fallback Tests** (`test_resilience_and_failures.py`, `test_cache_service.py`): Confirms system survival when Redis disconnects or upstream providers return empty/malformed data.
 
 ---
 
-## Architecture Notes
+## 14. Architecture Decision Records (ADRs)
 
-- `api/services/market_provider.py` contains the `MarketDataProvider` ABC — **do not bypass this interface in routes**
-- `api/services/yahoo_provider.py` is the **only file** that imports `yfinance`
-- All routes depend on the abstract provider, not the concrete implementation
-- SQLAlchemy models in `api/models/` define schema for V1 persistence (no DB writes in V0)
+Key architectural decisions are documented under [`docs/adr/`](docs/adr/):
+
+- [ADR 0001: Market Data Provider Abstraction](docs/adr/0001-provider-abstraction.md)
+- [ADR 0002: Separation of Market Data and User State](docs/adr/0002-market-user-data-separation.md)
+- [ADR 0003: Deterministic Financial Analytics Architecture](docs/adr/0003-deterministic-analytics.md)
+- [ADR 0004: Historical Market Replay Engine Design](docs/adr/0004-replay-design.md)
+- [ADR 0005: Multi-Tiered Caching Strategy & Redis Fallback](docs/adr/0005-caching-strategy.md)
+- [ADR 0006: Observability, Metrics & Tracing Foundation](docs/adr/0006-observability-strategy.md)
+
+---
+
+## 15. Roadmap: The Path to Xeroww V1.0
+
+Xeroww V0.6 represents the feature-complete and architecture-stabilized modular monolith. The upcoming V1.0 release will scale the data tier horizontally into a distributed streaming architecture without modifying user-facing contracts.
+
+```text
+Current (V0.6):
+Market Provider ──> CacheService / In-Memory ──> Service Calculators ──> FastAPI ──> Client
+
+V1.0 Distributed Target:
+Market Provider ──> Kafka Ingestion Pipeline
+                         │
+                         ├──> Apache Spark Streaming (Real-time Candle & Structure Windows)
+                         │         │
+                         │         └──> Apache Iceberg / ClickHouse (Analytical Parquet Lakehouse)
+                         │
+                         └──> WebSocket Event Dispatcher ──> Client Terminals
+```
+
+### Planned V1.0 Milestones:
+1. **Kafka Market Ingestion**: Ingest live order book ticks and trade prints into distributed partitioned Kafka topics.
+2. **Spark Structured Streaming**: Shift multi-timeframe rolling aggregations and fractal swing detection into cluster computing jobs.
+3. **Analytical Lakehouse Storage**: Store multi-year tick history in Apache Iceberg on object storage for ultra-fast point-in-time backtesting.
+4. **Broker Execution Connectors**: Pluggable order execution adapters (Zerodha Kite, Interactive Brokers) for direct order submission from the terminal.
 
 ---
 
 ## License
 
-MIT — Xeroww is an open-source learning project.
+MIT © 2026 Xeroww Platform Authors. Built for disciplined, institutional-grade market intelligence.
