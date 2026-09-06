@@ -44,6 +44,7 @@ class EventDiffService:
                 "to_time": None,
                 "price_delta": 0.0,
                 "price_delta_pct": 0.0,
+                "event_count": 0,
                 "events": [],
                 "factual_narrative": ["Insufficient historical data to construct event diff."],
             }

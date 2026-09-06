@@ -18,12 +18,12 @@ Architecture:
 """
 
 from typing import Any
-from api.services.pattern_engine import PatternScanner
-from api.services.support_resistance_service import SupportResistanceService
-from api.services.volume_service import VolumeAnalyticsService
-from api.services.moving_average_service import MovingAverageService
-from api.services.market_regime_service import MarketRegimeService
-from api.services.signal_alignment_service import SignalAlignmentService
+from api.services.pattern_engine import scan_patterns
+from api.services.support_resistance_service import analyze_support_resistance
+from api.services.volume_service import analyze_volume
+from api.services.moving_average_service import analyze_moving_averages
+from api.services.market_regime_service import classify_market_regime
+from api.services.signal_alignment_service import evaluate_signal_alignment
 
 
 class ReplayEngine:
@@ -78,28 +78,23 @@ class ReplayEngine:
         current_candle = slice_candles[-1]
 
         # 1. Moving Averages computed exclusively on slice
-        ma_service = MovingAverageService(self.symbol, slice_candles)
-        ma_analysis = ma_service.get_full_analysis()
+        ma_analysis = analyze_moving_averages(slice_candles, self.symbol).to_dict()
 
         # 2. Support & Resistance computed exclusively on slice
-        sr_service = SupportResistanceService(self.symbol, slice_candles)
-        sr_analysis = sr_service.get_full_analysis()
+        sr_analysis = analyze_support_resistance(slice_candles, self.symbol).to_dict()
 
         # 3. Volume Analytics computed exclusively on slice
-        vol_service = VolumeAnalyticsService(self.symbol, slice_candles)
-        vol_analysis = vol_service.get_full_analysis()
+        vol_analysis = analyze_volume(slice_candles, self.symbol).to_dict()
 
         # 4. Market Regime computed exclusively on slice
-        regime_service = MarketRegimeService(self.symbol, slice_candles)
-        regime_analysis = regime_service.get_full_analysis()
+        regime_analysis = classify_market_regime(slice_candles, self.symbol).to_dict()
 
         # 5. Signal Alignment computed exclusively on slice
-        alignment_service = SignalAlignmentService(self.symbol, slice_candles)
-        alignment_analysis = alignment_service.get_full_analysis()
+        alignment_analysis = evaluate_signal_alignment(slice_candles, self.symbol).to_dict()
 
         # 6. Candlestick Patterns evaluated on current candle using slice history
-        scanner = PatternScanner()
-        active_pattern = scanner.evaluate_latest(slice_candles)
+        patterns = scan_patterns(slice_candles, lookback=1)
+        active_pattern = patterns[-1] if patterns else None
         pattern_dict = None
         if active_pattern:
             pattern_dict = {
@@ -126,6 +121,7 @@ class ReplayEngine:
             "signal_alignment": alignment_analysis,
             "pattern": pattern_dict,
         }
+
 
     def evaluate_at_timestamp(self, timestamp: str) -> dict[str, Any]:
         """Find the candle matching or closest preceding timestamp and evaluate."""
