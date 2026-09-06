@@ -97,3 +97,17 @@ def get_transactions(
 ):
     svc = PortfolioService(db, current_user.id)
     return svc.list_transactions(portfolio_id)
+
+
+@router.get(
+    "/{portfolio_id}/contributions",
+    summary="Get Today's Contribution and Holding Diff Analytics",
+)
+def get_contributions(
+    portfolio_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    svc = PortfolioService(db, current_user.id)
+    return svc.get_contribution_analysis(portfolio_id)
+

@@ -134,6 +134,73 @@ class PortfolioService:
             created_at=portfolio.created_at,
         )
 
+    def get_contribution_analysis(self, portfolio_id: int) -> dict[str, Any]:
+        """
+        Compute Today's Contribution for each holding in the portfolio:
+        - Value, allocation %
+        - Daily P&L contribution (₹ and % of portfolio)
+        - Identifies largest contributor, largest detractor, and biggest allocation.
+        Strictly factual with zero trading advice.
+        """
+        portfolio = self.get_portfolio(portfolio_id)
+        provider = self._get_provider()
+
+        holdings_data: list[dict[str, Any]] = []
+        total_holdings_value = 0.0
+        total_day_pnl = 0.0
+
+        for holding in portfolio.holdings:
+            try:
+                quote = provider.get_quote(holding.symbol)
+                cur_price = quote["price"]
+                prev_close = quote["previous_close"] or cur_price
+                price_change = round(cur_price - prev_close, 2)
+                price_change_pct = round((price_change / prev_close * 100) if prev_close > 0 else 0.0, 2)
+                cur_val = round(cur_price * holding.quantity, 2)
+                pnl_inr = round(price_change * holding.quantity, 2)
+
+                total_holdings_value += cur_val
+                total_day_pnl += pnl_inr
+
+                holdings_data.append({
+                    "symbol": holding.symbol,
+                    "quantity": holding.quantity,
+                    "current_price": cur_price,
+                    "previous_close": prev_close,
+                    "price_change": price_change,
+                    "price_change_pct": price_change_pct,
+                    "current_value": cur_val,
+                    "pnl_contribution_inr": pnl_inr,
+                    "allocation_pct": 0.0,
+                    "pnl_contribution_pct": 0.0,
+                })
+            except Exception:
+                continue
+
+        total_value = portfolio.cash_balance + total_holdings_value
+        day_pnl_pct = round((total_day_pnl / total_value * 100) if total_value > 0 else 0.0, 2)
+
+        for h in holdings_data:
+            if total_value > 0:
+                h["allocation_pct"] = round(h["current_value"] / total_value * 100, 2)
+                h["pnl_contribution_pct"] = round(h["pnl_contribution_inr"] / total_value * 100, 2)
+
+        largest_contributor = max(holdings_data, key=lambda x: x["pnl_contribution_inr"]) if holdings_data else None
+        largest_detractor = min(holdings_data, key=lambda x: x["pnl_contribution_inr"]) if holdings_data else None
+        biggest_alloc = max(holdings_data, key=lambda x: x["allocation_pct"]) if holdings_data else None
+
+        return {
+            "portfolio_id": portfolio.id,
+            "portfolio_name": portfolio.name,
+            "total_value": round(total_value, 2),
+            "day_pnl_inr": round(total_day_pnl, 2),
+            "day_pnl_pct": day_pnl_pct,
+            "holdings": holdings_data,
+            "largest_contributor": largest_contributor if largest_contributor and largest_contributor["pnl_contribution_inr"] > 0 else None,
+            "largest_detractor": largest_detractor if largest_detractor and largest_detractor["pnl_contribution_inr"] < 0 else None,
+            "biggest_allocation": biggest_alloc,
+        }
+
     def list_transactions(self, portfolio_id: int) -> list[TransactionResponse]:
         portfolio = self.get_portfolio(portfolio_id)
         txns = (
