@@ -76,6 +76,15 @@ class Settings:
         os.getenv("DEFAULT_PORTFOLIO_CASH", "1000000.0")  # ₹10 lakh virtual capital
     )
 
+    # Redis Cache & Rate Limiting
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    CACHE_QUOTE_TTL: int = int(os.getenv("CACHE_QUOTE_TTL", "15"))
+    CACHE_OHLC_TTL: int = int(os.getenv("CACHE_OHLC_TTL", "300"))
+    CACHE_BREADTH_TTL: int = int(os.getenv("CACHE_BREADTH_TTL", "60"))
+    RATE_LIMIT_UNAUTH_RPM: int = int(os.getenv("RATE_LIMIT_UNAUTH_RPM", "60"))
+    RATE_LIMIT_AUTH_RPM: int = int(os.getenv("RATE_LIMIT_AUTH_RPM", "180"))
+
 
 # Singleton instance — import this everywhere
 settings = Settings()
+
