@@ -7,7 +7,7 @@ Uses MockMarketProvider to avoid real Yahoo Finance calls.
 
 import pytest
 from api.services.portfolio_service import PortfolioService
-from api.models.portfolio import Portfolio, Holding, TradeSide
+from api.models.portfolio import Holding, TradeSide
 from .conftest import mock_provider
 
 

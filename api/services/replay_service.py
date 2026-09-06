@@ -52,7 +52,7 @@ class ReplayEngine:
     def evaluate_at_step(self, step_index: int) -> dict[str, Any]:
         """
         Evaluate full market structure state at step_index without future data.
-        
+
         step_index: 0-based index. If step_index >= total_bars, clamped to total_bars - 1.
         """
         if self.total_bars == 0:

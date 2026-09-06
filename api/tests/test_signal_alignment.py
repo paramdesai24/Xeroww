@@ -4,7 +4,6 @@ tests/test_signal_alignment.py
 Deterministic unit tests for Signal Alignment Confluence & Contextual Pattern Enrichment.
 """
 
-import pytest
 from api.services.signal_alignment_service import evaluate_signal_alignment
 from api.services.contextual_pattern_service import enrich_pattern_with_context
 from api.services.pattern_engine import PatternDetection

@@ -12,7 +12,6 @@ A thesis review says things like:
 Do not judge the user. Do not provide financial advice."
 """
 
-from datetime import datetime
 from typing import Any
 from api.models.intelligence import DecisionJournalEntry
 from api.services.yahoo_provider import YahooFinanceProvider

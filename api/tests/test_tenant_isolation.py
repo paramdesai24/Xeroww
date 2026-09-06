@@ -8,7 +8,6 @@ Tests that verify strict tenant isolation:
 Emails use UUID suffixes to prevent collisions across the session-scoped DB engine.
 """
 
-import pytest
 import uuid
 
 

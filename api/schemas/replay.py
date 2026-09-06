@@ -5,7 +5,7 @@ Pydantic schemas for the Historical Market Replay Engine.
 """
 
 from typing import Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from api.schemas.market_structure import (
     SupportResistanceResponse,
     VolumeAnalyticsResponse,

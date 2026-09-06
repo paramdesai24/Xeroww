@@ -7,7 +7,6 @@ request -> service -> provider/database boundaries.
 Prepares V0.6 for seamless OpenTelemetry exporter attachment in V1.0 distributed cluster.
 """
 
-import os
 import secrets
 import contextvars
 from contextlib import contextmanager

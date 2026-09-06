@@ -144,7 +144,7 @@ def refresh(payload: RefreshTokenRequest, db: Session = Depends(get_db)):
     return _make_tokens(user)
 
 
-from api.core.dependencies import get_current_user, bearer_scheme
+from api.core.dependencies import bearer_scheme
 from api.core.security import revoke_token
 from fastapi.security import HTTPAuthorizationCredentials
 

@@ -51,6 +51,11 @@ class CacheService(ABC):
         """Atomically increment an integer counter. Initializes with TTL if not exists."""
         ...
 
+    @abstractmethod
+    def flush(self) -> None:
+        """Clear all entries in the cache (used in testing and maintenance)."""
+        ...
+
 
 class InMemoryCacheService(CacheService):
     """
@@ -101,6 +106,10 @@ class InMemoryCacheService(CacheService):
                 expiry = item[1]
             self._store[key] = (val, expiry)
             return val
+
+    def flush(self) -> None:
+        with self._lock:
+            self._store.clear()
 
 
 class RedisCacheService(CacheService):
@@ -161,6 +170,13 @@ class RedisCacheService(CacheService):
         except Exception as exc:
             logger.warning(f"Redis incr failed for key {key}: {exc}. Using fallback.")
             return self._fallback.incr(key, ttl_seconds)
+
+    def flush(self) -> None:
+        try:
+            self._redis.flushdb()
+        except Exception as exc:
+            logger.warning(f"Redis flushdb failed: {exc}.")
+            self._fallback.flush()
 
 
 # ---------------------------------------------------------------------------

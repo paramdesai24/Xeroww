@@ -8,7 +8,6 @@ Unit test suite verifying:
 4. Non-causal narrative language integrity
 """
 
-import pytest
 from api.services.replay_service import ReplayEngine
 from api.services.event_diff_service import EventDiffService
 

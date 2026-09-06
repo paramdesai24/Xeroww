@@ -8,7 +8,6 @@ Implements Varsity-aligned Marubozu detection output with textbook trade setup g
 
 from pydantic import BaseModel, Field
 from typing import Literal, Any
-from datetime import date
 
 
 class CandleSummary(BaseModel):

@@ -5,7 +5,6 @@ Deterministic unit tests for Support and Resistance Zone Engine.
 Verifies swing point detection, zone clustering, touch counting, and nearest level classification.
 """
 
-import pytest
 from api.services.support_resistance_service import (
     find_swing_points,
     cluster_swing_points,

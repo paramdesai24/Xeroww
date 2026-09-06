@@ -13,7 +13,7 @@ FastAPI endpoints for deterministic Market Structure Engine V2:
 
 from fastapi import APIRouter, Depends, Path
 
-from api.core.dependencies import get_market_provider, get_market_data_service
+from api.core.dependencies import get_market_provider
 from api.services.market_data_service import MarketDataService
 from api.services.support_resistance_service import analyze_support_resistance
 from api.services.volume_service import analyze_volume

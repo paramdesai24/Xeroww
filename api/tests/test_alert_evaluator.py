@@ -5,7 +5,6 @@ Tests for the alert evaluation engine.
 Uses MockMarketProvider to avoid real Yahoo Finance calls.
 """
 
-import pytest
 from api.services.alert_evaluator import StandardAlertEvaluator
 from api.models.alert import Alert, AlertType
 from api.tests.conftest import mock_provider

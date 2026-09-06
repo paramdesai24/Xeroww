@@ -28,9 +28,10 @@ def test_rate_limit_headers_present():
 
 
 def test_rate_limit_exceeded_triggers_429():
+    from api.core.config import settings
     cache = get_cache_service()
     ip_key = "ratelimit:ip:testclient"
-    cache.set(ip_key, 999, ttl_seconds=60)
+    cache.set(ip_key, settings.RATE_LIMIT_UNAUTH_RPM + 1, ttl_seconds=60)
 
     try:
         res = client.get("/stocks")

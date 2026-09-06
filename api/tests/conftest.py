@@ -19,9 +19,25 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from api.database.session import Base, get_db
 from api.main import app
+from api.core.config import settings
+from api.services.cache_service import get_cache_service
+
+# Increase rate limits for test suite so sequential runs do not trigger 429
+settings.RATE_LIMIT_UNAUTH_RPM = 100000
+settings.RATE_LIMIT_AUTH_RPM = 100000
 
 # In-memory SQLite for tests — isolated per session
 TEST_DB_URL = "sqlite:///:memory:"
+
+
+@pytest.fixture(autouse=True)
+def reset_cache_state():
+    """Ensure clean cache and rate limit counters between every test function."""
+    cache = get_cache_service()
+    cache.flush()
+    yield
+    cache.flush()
+
 
 
 @pytest.fixture(scope="session")

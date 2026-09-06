@@ -47,9 +47,9 @@ async def lifespan(app: FastAPI):
 
     print("=" * 60)
     print(f"  Xeroww API v{settings.APP_VERSION} — Financial Intelligence Platform")
-    print(f"  Data Provider: Yahoo Finance (near real-time, delayed)")
+    print("  Data Provider: Yahoo Finance (near real-time, delayed)")
     print(f"  Database: {settings.DATABASE_URL.split('//')[0]}//...")
-    print(f"  Docs: http://localhost:8000/docs")
+    print("  Docs: http://localhost:8000/docs")
     print("=" * 60)
     yield
     print("Xeroww API shutting down.")

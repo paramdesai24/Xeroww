@@ -4,16 +4,16 @@ tests/test_market_regime.py
 Deterministic unit tests for the Market Regime Engine.
 """
 
-import pytest
 from api.services.market_regime_service import classify_market_regime
 
 
-def _bar(c, h=None, l=None, v=1000.0, t="2026-01-01"):
+def _bar(c, h=None, low=None, v=1000.0, t="2026-01-01", **kwargs):
+    eff_low = low if low is not None else kwargs.get("l", c - 2.0)
     return {
         "time": t,
         "open": c - 1.0,
         "high": h if h is not None else c + 2.0,
-        "low": l if l is not None else c - 2.0,
+        "low": eff_low,
         "close": c,
         "volume": v,
     }

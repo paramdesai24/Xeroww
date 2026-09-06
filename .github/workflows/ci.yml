@@ -34,16 +34,17 @@ jobs:
 
       - name: Static Analysis & Lint (Ruff)
         run: |
-          ruff check api --select=E,F,W --ignore=E501,E402
+          ruff check api --select=E,F,W --ignore=E501,E402,E741
 
       - name: Run Backend Pytest Test Suite
         env:
+          PYTHONPATH: .
           DATABASE_URL: sqlite:///./test_ci.db
           JWT_SECRET_KEY: ci_testing_secret_key_very_long_and_secure_12345
           RATE_LIMIT_UNAUTH_RPM: 1000
           RATE_LIMIT_AUTH_RPM: 1000
         run: |
-          pytest api/tests -v
+          python -m pytest api/tests
 
   # ============================================================================
   # Job 2: Frontend Verification (Typecheck, Lint & Production Build)

@@ -5,7 +5,6 @@ Unit tests for CacheService implementations and fallback behavior.
 """
 
 import time
-import pytest
 from api.services.cache_service import InMemoryCacheService, get_cache_service
 
 

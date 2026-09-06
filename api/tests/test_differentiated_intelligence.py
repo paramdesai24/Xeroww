@@ -13,7 +13,7 @@ import pytest
 from datetime import datetime
 from api.services.correlation_service import compute_pearson_correlation, CorrelationService
 from api.services.market_breadth_service import MarketBreadthService
-from api.models.intelligence import DecisionJournalEntry, JournalStatus, ChartAnnotation, AnnotationType
+from api.models.intelligence import DecisionJournalEntry, JournalStatus
 
 
 class MockProvider:

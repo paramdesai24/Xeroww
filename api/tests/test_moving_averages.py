@@ -5,7 +5,6 @@ Deterministic unit tests for Moving Average Engine: SMA(20,50,200) and EMA(9,20)
 Validates mathematical correctness against hand-calculated references and crossover logic.
 """
 
-import pytest
 from api.services.moving_average_service import (
     calculate_sma_series,
     calculate_ema_series,

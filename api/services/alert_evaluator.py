@@ -27,7 +27,6 @@ Supported alert types:
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any
 
 from api.models.alert import Alert

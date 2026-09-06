@@ -4,7 +4,6 @@ tests/test_watchlist.py
 Tests for the watchlist domain: create, rename, delete, add/remove symbols.
 """
 
-import pytest
 
 
 def _auth_headers(client, email: str) -> dict:

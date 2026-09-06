@@ -13,8 +13,6 @@ from api.core.security import (
     decode_token,
     validate_password_strength,
 )
-from api.models.user import User, UserRole
-from api.database.session import Base
 
 
 # ---------------------------------------------------------------------------

@@ -5,7 +5,6 @@ Deterministic unit tests for Candlestick Pattern Engine V2.
 Uses synthetic known candles to verify exact mathematical pattern detection.
 """
 
-import pytest
 from api.services.pattern_engine import (
     extract_metrics,
     detect_marubozu_candle,

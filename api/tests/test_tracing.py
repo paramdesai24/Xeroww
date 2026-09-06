@@ -6,7 +6,7 @@ Tests for distributed tracing preparation and trace propagation.
 
 from starlette.testclient import TestClient
 from api.main import app
-from api.core.tracing import trace_span, get_current_trace_id
+from api.core.tracing import trace_span
 
 client = TestClient(app)
 

@@ -78,7 +78,6 @@ def analyse_candle(candle: dict[str, Any]) -> dict[str, Any]:
 from api.services.pattern_engine import (
     extract_metrics,
     detect_marubozu_candle,
-    PatternDetection,
 )
 
 
