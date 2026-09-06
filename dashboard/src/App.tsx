@@ -1,8 +1,3 @@
-// src/App.tsx
-// Root application component — Xeroww V0.6 Institutional Financial Intelligence Platform.
-// Unifies the V0.5 Market Terminal with V0.6 multi-tenant modules:
-// Watchlists, Portfolios, Alerts Engine, Decision Journal, and System Telemetry.
-
 import { useState, useEffect } from "react";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
@@ -11,6 +6,10 @@ import OHLCTable from "./components/OHLCTable";
 import OHLCStats from "./components/OHLCStats";
 import CandleAnatomy from "./components/CandleAnatomy";
 import PatternCard from "./components/PatternCard";
+import MarketRegimeCard from "./components/MarketRegimeCard";
+import SignalAlignmentCard from "./components/SignalAlignmentCard";
+import SupportResistancePanel from "./components/SupportResistancePanel";
+import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
 import Footer from "./components/Footer";
 
 // V0.6 Domain Components
@@ -29,9 +28,10 @@ export default function App() {
   const auth = useAuth();
   const [activeModule, setActiveModule] = useState<Module>("MARKET");
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "ANATOMY">("STRUCTURE");
 
-  // V0.5 Market Terminal State (Fully preserved)
-  const { stocks, activeSymbol, quote, ohlc, pattern, loading, error, setActiveSymbol } =
+  // V0.5 Market Terminal State (Fully preserved + V0.6 Structure)
+  const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
     useMarketData();
 
   // Selected candle for dynamic Candle Anatomy (defaults to latest if none selected)
@@ -104,6 +104,7 @@ export default function App() {
               <ChartPanel
                 quote={quote}
                 ohlc={ohlc}
+                structure={structure}
                 loading={loading}
                 error={error}
                 onSelectCandle={setSelectedCandle}
@@ -115,19 +116,71 @@ export default function App() {
               />
             </div>
 
-            {/* Right: Institutional Analytics & Pattern Scan */}
-            <aside className="w-72 shrink-0 bg-[#0A0A0A] border-l border-[#262626] flex flex-col overflow-y-auto">
-              <div className="p-3 space-y-3">
-                <OHLCStats quote={quote} ohlc={ohlc} />
-                <CandleAnatomy
-                  candle={activeCandle}
-                  isLatest={!selectedCandle || selectedCandle.time === ohlc?.candles.at(-1)?.time}
-                />
-                <PatternCard pattern={pattern} />
+            {/* Right: Institutional Analytics & Market Structure Engine */}
+            <aside className="w-80 shrink-0 bg-[#0A0A0A] border-l border-[#262626] flex flex-col overflow-hidden">
+              {/* Tab Selector */}
+              <div className="flex items-center border-b border-[#262626] bg-[#000000] text-[11px] font-mono">
+                <button
+                  onClick={() => setSidebarTab("STRUCTURE")}
+                  className={`flex-1 py-2 text-center font-bold tracking-wider transition-colors border-b-2 ${
+                    sidebarTab === "STRUCTURE"
+                      ? "border-[#00E5FF] text-[#00E5FF] bg-[#0A0A0A]"
+                      : "border-transparent text-[#737373] hover:text-[#FAFAFA]"
+                  }`}
+                >
+                  STRUCTURE ENGINE
+                </button>
+                <button
+                  onClick={() => setSidebarTab("ANATOMY")}
+                  className={`flex-1 py-2 text-center font-bold tracking-wider transition-colors border-b-2 ${
+                    sidebarTab === "ANATOMY"
+                      ? "border-[#00E5FF] text-[#00E5FF] bg-[#0A0A0A]"
+                      : "border-transparent text-[#737373] hover:text-[#FAFAFA]"
+                  }`}
+                >
+                  OHLC & ANATOMY
+                </button>
+              </div>
+
+              {/* Scrollable Analytics Body */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                {sidebarTab === "STRUCTURE" ? (
+                  <>
+                    <MarketRegimeCard regime={structure?.market_regime ?? null} />
+                    <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />
+                    <PatternCard pattern={structure?.detected_patterns?.[0] ? {
+                      symbol: structure.symbol,
+                      pattern: structure.detected_patterns[0].pattern,
+                      direction: structure.detected_patterns[0].direction,
+                      category: structure.detected_patterns[0].category,
+                      contextual_summary: structure.contextual_pattern?.context_summary,
+                    } as any : pattern} />
+                    <SupportResistancePanel
+                      sr={structure?.support_resistance ?? null}
+                    />
+                    <VolumeAnalyticsPanel volume={structure?.volume ?? null} />
+                  </>
+                ) : (
+                  <>
+                    <OHLCStats quote={quote} ohlc={ohlc} />
+                    <CandleAnatomy
+                      candle={activeCandle}
+                      isLatest={!selectedCandle || selectedCandle.time === ohlc?.candles.at(-1)?.time}
+                    />
+                    <PatternCard pattern={structure?.detected_patterns?.[0] ? {
+                      symbol: structure.symbol,
+                      pattern: structure.detected_patterns[0].pattern,
+                      direction: structure.detected_patterns[0].direction,
+                      category: structure.detected_patterns[0].category,
+                      contextual_summary: structure.contextual_pattern?.context_summary,
+                    } as any : pattern} />
+                  </>
+                )}
               </div>
             </aside>
           </div>
         )}
+
 
         {activeModule === "WATCHLISTS" &&
           (auth.isAuthenticated ? (

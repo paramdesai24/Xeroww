@@ -13,6 +13,14 @@ import type {
   JournalEntry,
 } from "../types/platform";
 import type { TokenResponse, UserProfile } from "../types/auth";
+import type {
+  SupportResistanceResponse,
+  VolumeAnalyticsResponse,
+  MovingAveragesResponse,
+  MarketRegimeResponse,
+  SignalAlignmentResponse,
+  MarketStructureSummaryResponse,
+} from "../types/structure";
 import config from "../config";
 
 const BASE_URL = config.apiBaseUrl;
@@ -240,5 +248,28 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify({ status, thesis }),
       }),
+  },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Market Structure Engine (Deterministic Analytics)
+  // -------------------------------------------------------------------------
+  marketStructure: {
+    getSupportResistance: (symbol: string): Promise<SupportResistanceResponse> =>
+      apiFetch<SupportResistanceResponse>(`/support-resistance/${encodeURIComponent(symbol)}`),
+
+    getVolume: (symbol: string): Promise<VolumeAnalyticsResponse> =>
+      apiFetch<VolumeAnalyticsResponse>(`/volume/${encodeURIComponent(symbol)}`),
+
+    getMovingAverages: (symbol: string): Promise<MovingAveragesResponse> =>
+      apiFetch<MovingAveragesResponse>(`/moving-averages/${encodeURIComponent(symbol)}`),
+
+    getMarketRegime: (symbol: string): Promise<MarketRegimeResponse> =>
+      apiFetch<MarketRegimeResponse>(`/market-regime/${encodeURIComponent(symbol)}`),
+
+    getSignalAlignment: (symbol: string): Promise<SignalAlignmentResponse> =>
+      apiFetch<SignalAlignmentResponse>(`/signal-alignment/${encodeURIComponent(symbol)}`),
+
+    getSummary: (symbol: string): Promise<MarketStructureSummaryResponse> =>
+      apiFetch<MarketStructureSummaryResponse>(`/market-structure/${encodeURIComponent(symbol)}`),
   },
 };

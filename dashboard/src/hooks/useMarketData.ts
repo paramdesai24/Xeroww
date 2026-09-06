@@ -1,10 +1,7 @@
-// src/hooks/useMarketData.ts
-// Custom React hook — manages state for the active stock, quote, OHLC, and pattern data.
-// All API calls are centralized here; components receive props cleanly.
-
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../api/client";
 import type { StockMeta, QuoteData, OHLCData, PatternData } from "../types/market";
+import type { MarketStructureSummaryResponse } from "../types/structure";
 
 const DEFAULT_SYMBOL = "RELIANCE.NS";
 
@@ -14,6 +11,7 @@ export interface MarketState {
   quote: QuoteData | null;
   ohlc: OHLCData | null;
   pattern: PatternData | null;
+  structure: MarketStructureSummaryResponse | null;
   loading: boolean;
   error: string | null;
   setActiveSymbol: (symbol: string) => void;
@@ -26,6 +24,7 @@ export function useMarketData(): MarketState {
   const [quote, setQuote] = useState<QuoteData | null>(null);
   const [ohlc, setOhlc] = useState<OHLCData | null>(null);
   const [pattern, setPattern] = useState<PatternData | null>(null);
+  const [structure, setStructure] = useState<MarketStructureSummaryResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,14 +37,16 @@ export function useMarketData(): MarketState {
     setLoading(true);
     setError(null);
     try {
-      const [quoteData, ohlcData, patternData] = await Promise.all([
+      const [quoteData, ohlcData, patternData, structureData] = await Promise.all([
         api.getQuote(symbol),
         api.getOHLC(symbol),
         api.getPatterns(symbol),
+        api.marketStructure.getSummary(symbol).catch(() => null),
       ]);
       setQuote(quoteData);
       setOhlc(ohlcData);
       setPattern(patternData);
+      setStructure(structureData);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to load market data";
       setError(message);
@@ -65,9 +66,11 @@ export function useMarketData(): MarketState {
     quote,
     ohlc,
     pattern,
+    structure,
     loading,
     error,
     setActiveSymbol,
     refresh: () => fetchStockData(activeSymbol),
   };
 }
+

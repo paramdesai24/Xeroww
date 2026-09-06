@@ -63,6 +63,8 @@ export interface PatternData {
   rationale: string;
   stop_loss: number | null;
   latest_candle: CandleSummary;
+  detected_patterns?: import("./structure").PatternDetection[];
+  contextual_pattern?: import("./structure").ContextualPattern | null;
   data_note: string;
 }
 
