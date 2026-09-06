@@ -83,6 +83,28 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
+# Global Exception Handlers
+# ---------------------------------------------------------------------------
+from fastapi.responses import JSONResponse
+from api.core.exceptions import XerowwException
+
+
+@app.exception_handler(XerowwException)
+async def xeroww_exception_handler(request, exc: XerowwException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": exc.message,
+            "error": {
+                "code": exc.code,
+                "message": exc.message,
+                "details": exc.details,
+            },
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
 # Register V0.5 routers (preserved)
 # ---------------------------------------------------------------------------
 app.include_router(health.router)
