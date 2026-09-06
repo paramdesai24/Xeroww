@@ -7,7 +7,7 @@ Implements Varsity-aligned Marubozu detection output with textbook trade setup g
 """
 
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Any
 from datetime import date
 
 
@@ -58,6 +58,16 @@ class PatternResponse(BaseModel):
 
     # Latest candle analytics
     latest_candle: CandleSummary = Field(..., description="Analytical breakdown of the most recent candle")
+
+    # Pattern Engine V2 Multi-Pattern Additions (deterministic)
+    detected_patterns: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of all detected patterns across recent candles"
+    )
+    contextual_pattern: dict[str, Any] | None = Field(
+        None,
+        description="Enriched contextual analysis with S/R, RVOL, and moving average structure"
+    )
 
     data_note: str = Field(
         default="Near real-time data — Yahoo Finance delayed feed",

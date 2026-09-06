@@ -28,7 +28,7 @@ from api.database.session import create_all_tables
 from api.routes import health, stocks, quote, ohlc, patterns
 
 # V0.6 routes (new)
-from api.routes import auth, watchlists, portfolios, alerts, journal
+from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
@@ -60,20 +60,19 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 app = FastAPI(
     title=settings.APP_NAME,
-    description=(
-        "Xeroww V0.6 — Multi-Tenant Financial Intelligence Platform API. "
-        "Serves near real-time Indian stock market data from Yahoo Finance. "
-        "Provides multi-tenant watchlists, simulated portfolios, alert evaluation, "
-        "and decision journaling. Architecture designed for Kafka + Spark migration in V1–V3."
-    ),
     version=settings.APP_VERSION,
+    description=(
+        "Xeroww Financial Intelligence Platform API. "
+        "High-performance institutional market data, pattern scanning, "
+        "and deterministic market structure analysis."
+    ),
+    lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,
 )
 
 # ---------------------------------------------------------------------------
-# CORS Middleware — allow React dev server and any configured origins
+# CORS Middleware
 # ---------------------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -84,7 +83,7 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# Register V0.5 routers (preserved — market data, unchanged)
+# Register V0.5 routers (preserved)
 # ---------------------------------------------------------------------------
 app.include_router(health.router)
 app.include_router(stocks.router)
@@ -93,13 +92,14 @@ app.include_router(ohlc.router)
 app.include_router(patterns.router)
 
 # ---------------------------------------------------------------------------
-# Register V0.6 routers (new — multi-tenant platform)
+# Register V0.6 routers (multi-tenant platform & market structure engine)
 # ---------------------------------------------------------------------------
 app.include_router(auth.router)
 app.include_router(watchlists.router)
 app.include_router(portfolios.router)
 app.include_router(alerts.router)
 app.include_router(journal.router)
+app.include_router(market_structure.router)
 
 
 # ---------------------------------------------------------------------------
