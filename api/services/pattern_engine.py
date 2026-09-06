@@ -179,3 +179,261 @@ def detect_marubozu_candle(
                 },
             )
     return None
+
+
+# ---------------------------------------------------------------------------
+# Doji Detector (Standard, Dragonfly, Gravestone, Long-Legged)
+# ---------------------------------------------------------------------------
+def detect_doji_candle(
+    m: CandleMetrics,
+    max_body_ratio: float = 0.05,
+) -> PatternDetection | None:
+    """
+    Detect Doji variants on a single candle.
+    - Body is extremely small: body_ratio <= max_body_ratio (5% of range default)
+    - Valid non-zero day_range
+    """
+    if m.day_range <= 0:
+        return None
+
+    if m.body_ratio > max_body_ratio:
+        return None
+
+    # Classify Doji Subtype
+    if m.upper_shadow_ratio <= 0.08 and m.lower_shadow_ratio >= 0.55:
+        # Dragonfly Doji: Long lower shadow, open/high/close clustered at top
+        return PatternDetection(
+            pattern="Dragonfly Doji",
+            direction="bullish",
+            candle_index=m.index,
+            timestamp=m.time,
+            body_ratio=m.body_ratio,
+            upper_shadow_ratio=m.upper_shadow_ratio,
+            lower_shadow_ratio=m.lower_shadow_ratio,
+            category="reversal",
+            explanation=(
+                f"Dragonfly Doji formed at ₹{m.close:.2f}. Sellers drove price down to ₹{m.low:.2f}, "
+                f"but aggressive buyers rejected lower levels, closing near the high. "
+                f"Lower shadow accounts for {m.lower_shadow_ratio * 100:.1f}% of the range."
+            ),
+            context={
+                "subtype": "dragonfly",
+                "stop_loss": round(m.low, 2),
+                "open": m.open,
+                "high": m.high,
+                "low": m.low,
+                "close": m.close,
+            },
+        )
+    elif m.lower_shadow_ratio <= 0.08 and m.upper_shadow_ratio >= 0.55:
+        # Gravestone Doji: Long upper shadow, open/low/close clustered at bottom
+        return PatternDetection(
+            pattern="Gravestone Doji",
+            direction="bearish",
+            candle_index=m.index,
+            timestamp=m.time,
+            body_ratio=m.body_ratio,
+            upper_shadow_ratio=m.upper_shadow_ratio,
+            lower_shadow_ratio=m.lower_shadow_ratio,
+            category="reversal",
+            explanation=(
+                f"Gravestone Doji formed at ₹{m.close:.2f}. Buyers drove price up to ₹{m.high:.2f}, "
+                f"but sellers completely overwhelmed the advance, closing near the low. "
+                f"Upper shadow accounts for {m.upper_shadow_ratio * 100:.1f}% of the range."
+            ),
+            context={
+                "subtype": "gravestone",
+                "stop_loss": round(m.high, 2),
+                "open": m.open,
+                "high": m.high,
+                "low": m.low,
+                "close": m.close,
+            },
+        )
+    elif m.upper_shadow_ratio >= 0.25 and m.lower_shadow_ratio >= 0.25:
+        # Long-Legged Doji
+        return PatternDetection(
+            pattern="Long-Legged Doji",
+            direction="neutral",
+            candle_index=m.index,
+            timestamp=m.time,
+            body_ratio=m.body_ratio,
+            upper_shadow_ratio=m.upper_shadow_ratio,
+            lower_shadow_ratio=m.lower_shadow_ratio,
+            category="indecision",
+            explanation=(
+                f"Long-Legged Doji indicates extreme equilibrium and volatility between buyers and sellers. "
+                f"Wide total range (₹{m.day_range:.2f}) with close virtually matching open."
+            ),
+            context={
+                "subtype": "long_legged",
+                "open": m.open,
+                "high": m.high,
+                "low": m.low,
+                "close": m.close,
+            },
+        )
+    else:
+        # Standard Doji
+        return PatternDetection(
+            pattern="Doji",
+            direction="neutral",
+            candle_index=m.index,
+            timestamp=m.time,
+            body_ratio=m.body_ratio,
+            upper_shadow_ratio=m.upper_shadow_ratio,
+            lower_shadow_ratio=m.lower_shadow_ratio,
+            category="indecision",
+            explanation=(
+                f"Standard Doji candle indicates market indecision at ₹{m.close:.2f}. "
+                f"Neither buyers nor sellers could establish directional control."
+            ),
+            context={
+                "subtype": "standard",
+                "open": m.open,
+                "high": m.high,
+                "low": m.low,
+                "close": m.close,
+            },
+        )
+
+
+# ---------------------------------------------------------------------------
+# Spinning Top Detector
+# ---------------------------------------------------------------------------
+def detect_spinning_top_candle(
+    m: CandleMetrics,
+    min_body_ratio: float = 0.05,
+    max_body_ratio: float = 0.30,
+    min_shadow_ratio: float = 0.20,
+) -> PatternDetection | None:
+    """
+    Detect Spinning Top on a single candle.
+    - Small real body: min_body_ratio <= body_ratio <= max_body_ratio (5% to 30%)
+    - Both upper and lower shadows significant: shadow_ratio >= min_shadow_ratio (20% each)
+    - Represents balance of forces / pause in trend
+    """
+    if m.day_range <= 0:
+        return None
+
+    if (
+        min_body_ratio <= m.body_ratio <= max_body_ratio
+        and m.upper_shadow_ratio >= min_shadow_ratio
+        and m.lower_shadow_ratio >= min_shadow_ratio
+    ):
+        return PatternDetection(
+            pattern="Spinning Top",
+            direction="neutral",
+            candle_index=m.index,
+            timestamp=m.time,
+            body_ratio=m.body_ratio,
+            upper_shadow_ratio=m.upper_shadow_ratio,
+            lower_shadow_ratio=m.lower_shadow_ratio,
+            category="indecision",
+            explanation=(
+                f"Spinning Top observed with a tight body ({m.body_ratio * 100:.1f}% of range) "
+                f"and symmetric shadows (upper: {m.upper_shadow_ratio * 100:.1f}%, "
+                f"lower: {m.lower_shadow_ratio * 100:.1f}%). Signifies market standoff."
+            ),
+            context={
+                "open": m.open,
+                "high": m.high,
+                "low": m.low,
+                "close": m.close,
+                "body_ratio": m.body_ratio,
+            },
+        )
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Hammer & Hanging Man Detector
+# ---------------------------------------------------------------------------
+def detect_hammer_or_hanging_man(
+    current: CandleMetrics,
+    prior: CandleMetrics | None = None,
+    min_lower_ratio: float = 0.50,
+    max_upper_ratio: float = 0.12,
+    max_body_ratio: float = 0.35,
+) -> PatternDetection | None:
+    """
+    Detect Hammer (bullish reversal) or Hanging Man (bearish reversal).
+    - Small real body at the top of the price range (body_ratio <= 35%)
+    - Lower shadow is at least twice the size of the body (and >= 50% of range)
+    - Very small or absent upper shadow (upper_shadow_ratio <= 12%)
+    - Direction determined by prior trend context:
+        * Downtrend context (prior candle closing lower or bearish) -> Hammer
+        * Uptrend context (prior candle closing higher or bullish) -> Hanging Man
+    """
+    if current.day_range <= 0 or current.body_ratio <= 0.02:
+        return None
+
+    is_hammer_shape = (
+        current.body_ratio <= max_body_ratio
+        and current.lower_shadow_ratio >= min_lower_ratio
+        and current.upper_shadow_ratio <= max_upper_ratio
+        and current.lower_shadow >= (1.8 * current.body)
+    )
+
+    if not is_hammer_shape:
+        return None
+
+    # Contextual determination based on prior candle if available
+    is_downtrend = False
+    if prior:
+        is_downtrend = prior.is_bearish or (prior.close > current.close)
+    else:
+        # Default to Hammer geometry if no prior context
+        is_downtrend = True
+
+    if is_downtrend:
+        return PatternDetection(
+            pattern="Hammer",
+            direction="bullish",
+            candle_index=current.index,
+            timestamp=current.time,
+            body_ratio=current.body_ratio,
+            upper_shadow_ratio=current.upper_shadow_ratio,
+            lower_shadow_ratio=current.lower_shadow_ratio,
+            category="reversal",
+            explanation=(
+                f"Bullish Hammer formed at ₹{current.close:.2f}. "
+                f"Intraday sell-off to ₹{current.low:.2f} was vigorously rejected, "
+                f"with lower wick measuring {current.lower_shadow_ratio * 100:.1f}% of total range. "
+                f"Stop-loss reference at session low: ₹{current.low:.2f}."
+            ),
+            context={
+                "stop_loss": round(current.low, 2),
+                "lower_shadow_to_body_ratio": round(
+                    current.lower_shadow / current.body if current.body > 0 else 0.0, 2
+                ),
+                "open": current.open,
+                "high": current.high,
+                "low": current.low,
+                "close": current.close,
+            },
+        )
+    else:
+        return PatternDetection(
+            pattern="Hanging Man",
+            direction="bearish",
+            candle_index=current.index,
+            timestamp=current.time,
+            body_ratio=current.body_ratio,
+            upper_shadow_ratio=current.upper_shadow_ratio,
+            lower_shadow_ratio=current.lower_shadow_ratio,
+            category="reversal",
+            explanation=(
+                f"Bearish Hanging Man formed after upward advance at ₹{current.close:.2f}. "
+                f"Heavy intraday selling pressure emerged down to ₹{current.low:.2f}. "
+                f"Although buyers recovered by close, the long lower shadow warns of fragility at the top."
+            ),
+            context={
+                "stop_loss": round(current.high, 2),
+                "open": current.open,
+                "high": current.high,
+                "low": current.low,
+                "close": current.close,
+            },
+        )
+
