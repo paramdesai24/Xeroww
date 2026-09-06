@@ -82,6 +82,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from api.core.rate_limit import RateLimitMiddleware
+app.add_middleware(RateLimitMiddleware)
+
 # ---------------------------------------------------------------------------
 # Global Exception Handlers
 # ---------------------------------------------------------------------------
@@ -91,8 +94,12 @@ from api.core.exceptions import XerowwException
 
 @app.exception_handler(XerowwException)
 async def xeroww_exception_handler(request, exc: XerowwException):
+    headers = {}
+    if exc.status_code == 429:
+        headers["Retry-After"] = "60"
     return JSONResponse(
         status_code=exc.status_code,
+        headers=headers,
         content={
             "detail": exc.message,
             "error": {
@@ -102,6 +109,7 @@ async def xeroww_exception_handler(request, exc: XerowwException):
             },
         },
     )
+
 
 
 # ---------------------------------------------------------------------------
