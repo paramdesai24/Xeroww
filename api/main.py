@@ -28,7 +28,7 @@ from api.database.session import create_all_tables
 from api.routes import health, stocks, quote, ohlc, patterns
 
 # V0.6 routes (new)
-from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay
+from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay, diff
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
@@ -101,6 +101,7 @@ app.include_router(alerts.router)
 app.include_router(journal.router)
 app.include_router(market_structure.router)
 app.include_router(replay.router)
+app.include_router(diff.router)
 
 
 # ---------------------------------------------------------------------------
