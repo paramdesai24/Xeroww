@@ -31,3 +31,34 @@ class JournalEntryResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class AnnotationCreate(BaseModel):
+    symbol: str
+    timeframe: str = "1d"
+    timestamp: datetime
+    annotation_type: str = "note"
+    content: str
+    metadata_json: dict = Field(default_factory=dict)
+
+
+class AnnotationResponse(BaseModel):
+    id: int
+    user_id: int
+    symbol: str
+    timeframe: str
+    timestamp: datetime
+    annotation_type: str
+    content: str
+    metadata_json: dict
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class SymbolMemorySummary(BaseModel):
+    symbol: str
+    total_annotations: int
+    total_journal_entries: int
+    saved_observations: list[str]
+    last_observation_date: str | None
