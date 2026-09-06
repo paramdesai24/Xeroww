@@ -28,6 +28,7 @@ class MarketBreadthService:
         for s in stocks:
             try:
                 q = self.provider.get_quote(s["symbol"])
+                q.setdefault("symbol", s["symbol"])
                 quotes.append(q)
             except Exception:
                 continue

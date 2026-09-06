@@ -12,6 +12,7 @@ from api.database.session import get_db
 from api.core.dependencies import get_current_user
 from api.models.user import User
 from api.models.intelligence import DecisionJournalEntry, JournalStatus
+from api.schemas.intelligence import JournalEntryCreate, JournalEntryUpdate, JournalEntryResponse
 from api.services.thesis_review_service import ThesisReviewService
 
 router = APIRouter(prefix="/journal", tags=["Decision Journal"])

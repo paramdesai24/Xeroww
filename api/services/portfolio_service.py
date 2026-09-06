@@ -16,6 +16,7 @@ Future: This service can be consumed by a Kafka/Spark consumer event handler
 """
 
 from datetime import datetime
+from typing import Any
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
