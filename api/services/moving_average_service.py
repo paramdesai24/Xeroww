@@ -177,9 +177,9 @@ def analyze_moving_averages(
             series=[],
         )
 
-    closes = [float(c.get("close", 0.0)) for c in candles]
+    closes = [float(c.get("close") or 0.0) for c in candles]
     times = [str(c.get("time", "")) for c in candles]
-    current_price = closes[-1]
+    current_price = closes[-1] if closes else 0.0
 
     sma20_series = calculate_sma_series(closes, 20)
     sma50_series = calculate_sma_series(closes, 50)
