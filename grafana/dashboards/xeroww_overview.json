@@ -1,0 +1,162 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "API Performance & Latency",
+      "type": "row"
+    },
+    {
+      "id": 2,
+      "title": "API Request Rate (Throughput)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(rate(xeroww_http_requests_total[1m])) by (endpoint)",
+          "legendFormat": "{{endpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "HTTP Latency (P50 & P95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 1 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.50, sum(rate(xeroww_http_request_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "P50 Latency"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "histogram_quantile(0.95, sum(rate(xeroww_http_request_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "P95 Latency"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "HTTP Error Rate (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 1 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "100 * (sum(rate(xeroww_http_requests_total{status_code=~\"5..|4..\"}[1m])) or vector(0)) / (sum(rate(xeroww_http_requests_total[1m])) or vector(1))",
+          "legendFormat": "Error Rate %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": { "fixedColor": "red", "mode": "fixed" }
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 5,
+      "title": "Application Analytics & External Dependencies",
+      "type": "row"
+    },
+    {
+      "id": 6,
+      "title": "Active Client Connections",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 10 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "xeroww_active_connections",
+          "legendFormat": "Active Connections"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Analytics Engine Execution Duration",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 9, "x": 6, "y": 10 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "rate(xeroww_analytics_duration_seconds_sum[1m]) / rate(xeroww_analytics_duration_seconds_count[1m])",
+          "legendFormat": "{{engine}} Duration"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Provider Failure Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 9, "x": 15, "y": 10 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(rate(xeroww_provider_failures_total[1m])) by (provider, error_type)",
+          "legendFormat": "{{provider}} ({{error_type}})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "errps",
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["xeroww", "financial-intelligence", "v0.6"],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "title": "Xeroww V0.6 Operational Intelligence",
+  "uid": "xeroww-overview"
+}

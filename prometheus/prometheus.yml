@@ -1,0 +1,16 @@
+# ==============================================================================
+# Prometheus Configuration for Xeroww Platform
+# ==============================================================================
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "xeroww-api"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["backend:8000"]
+        labels:
+          app: "xeroww-backend"
+          env: "production"
