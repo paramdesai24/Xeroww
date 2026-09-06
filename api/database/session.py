@@ -3,19 +3,48 @@ database/session.py
 ───────────────────
 SQLAlchemy engine and session factory for Xeroww.
 
-V0 Status: No active database connection is required at runtime.
-           Models are defined for schema documentation and V1 readiness.
-           The session will only bind to a live DB when DATABASE_URL is set in .env.
+V0.5 Status: No active database connection was required at runtime.
+V0.6 Status: SQLite is used by default (zero external dependencies).
+             Set DATABASE_URL in .env to use PostgreSQL in production.
 
-V1 Upgrade Path: Set DATABASE_URL in .env and call `Base.metadata.create_all(engine)`
-                 at startup to enable persistence.
+Upgrade Path:
+  - Set DATABASE_URL=postgresql+psycopg2://user:pass@host/db in .env
+  - Tables are auto-created on application startup via lifespan event
+  - For production: use Alembic for managed migrations
 """
 
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from dotenv import load_dotenv
 
-DATABASE_URL: str | None = os.getenv("DATABASE_URL")
+load_dotenv()
+
+# Import settings here after load_dotenv so environment is ready
+DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./xeroww.db")
+
+# SQLite needs connect_args for check_same_thread safety with FastAPI
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    connect_args=connect_args,
+)
+
+# Enable SQLite foreign key enforcement on every connection
+if DATABASE_URL.startswith("sqlite"):
+    @event.listens_for(engine, "connect")
+    def _enable_sqlite_fk(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
 
 
 class Base(DeclarativeBase):
@@ -23,29 +52,24 @@ class Base(DeclarativeBase):
     pass
 
 
-# Engine is only created when DATABASE_URL is set.
-# This allows V0 to run purely in-memory / live-fetch mode without any DB dependency.
-engine = create_engine(DATABASE_URL, echo=False) if DATABASE_URL else None
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-) if engine else None
-
-
 def get_db():
     """
     FastAPI dependency that yields a SQLAlchemy database session.
-    Only functional when DATABASE_URL is configured (V1+).
+    Works with both SQLite (dev) and PostgreSQL (prod).
     """
-    if SessionLocal is None:
-        raise RuntimeError(
-            "DATABASE_URL is not configured. "
-            "Xeroww V0 runs without a database — set DATABASE_URL in .env to enable persistence."
-        )
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+def create_all_tables() -> None:
+    """
+    Create all tables from registered ORM models.
+    Called once at application startup.
+    Idempotent — safe to call multiple times (CREATE IF NOT EXISTS semantics).
+    """
+    # Import all models so their metadata is registered with Base before create_all
+    from api.models import user, watchlist, portfolio, alert, intelligence, stock  # noqa: F401
+    Base.metadata.create_all(bind=engine)

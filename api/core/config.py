@@ -8,6 +8,7 @@ Loaded once at startup from environment variables / .env file.
 """
 
 import os
+import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,7 +17,7 @@ load_dotenv()
 class Settings:
     # App metadata
     APP_NAME: str = "Xeroww API"
-    APP_VERSION: str = os.getenv("APP_VERSION", "0.1.0")
+    APP_VERSION: str = os.getenv("APP_VERSION", "0.6.0")
     APP_ENV: str = os.getenv("APP_ENV", "development")
 
     # CORS
@@ -28,8 +29,8 @@ class Settings:
         ).split(",")
     ]
 
-    # Database (V0 — optional)
-    DATABASE_URL: str | None = os.getenv("DATABASE_URL", None)
+    # Database — defaults to SQLite for zero-config local dev; set DATABASE_URL for PostgreSQL
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./xeroww.db")
 
     # Market data provider selection
     # Future values: "kafka", "spark", "snowflake"
@@ -55,6 +56,25 @@ class Settings:
             "RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,ICICIBANK.NS",
         ).split(",")
     ]
+
+    # JWT configuration
+    # IMPORTANT: Override JWT_SECRET_KEY in production with a long random secret
+    JWT_SECRET_KEY: str = os.getenv(
+        "JWT_SECRET_KEY",
+        secrets.token_urlsafe(32),  # Random per-process in dev; set explicitly in prod
+    )
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
+        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+    )
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(
+        os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7")
+    )
+
+    # Default portfolio cash balance for new portfolios
+    DEFAULT_PORTFOLIO_CASH: float = float(
+        os.getenv("DEFAULT_PORTFOLIO_CASH", "1000000.0")  # ₹10 lakh virtual capital
+    )
 
 
 # Singleton instance — import this everywhere
