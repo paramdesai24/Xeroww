@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL 16 — Relational store for user, portfolio, watchlist, and journal
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: xeroww-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-xeroww}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-xeroww_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-xeroww_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - xeroww-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-xeroww} -d ${POSTGRES_DB:-xeroww_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ----------------------------------------------------------------------------
+  # Redis 7 — High-performance short-lived cache & rate limiting
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: xeroww-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - xeroww-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  # ----------------------------------------------------------------------------
+  # Backend — FastAPI Institutional Market Intelligence Platform
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: xeroww-backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-xeroww}:${POSTGRES_PASSWORD:-xeroww_secret}@postgres:5432/${POSTGRES_DB:-xeroww_db}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change_this_to_a_secure_random_key_in_production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:80,http://localhost:3000,http://localhost:5173}
+      CACHE_QUOTE_TTL: 15
+      CACHE_OHLC_TTL: 300
+      CACHE_BREADTH_TTL: 60
+      RATE_LIMIT_UNAUTH_RPM: 60
+      RATE_LIMIT_AUTH_RPM: 180
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    networks:
+      - xeroww-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ----------------------------------------------------------------------------
+  # Frontend — React + TypeScript Institutional Terminal UI
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    container_name: xeroww-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - xeroww-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  xeroww-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
