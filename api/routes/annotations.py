@@ -1,108 +1,64 @@
 """
 routes/annotations.py
-─────────────────────
-Personal Market Memory & Chart Annotation endpoints.
-
-Allows users to:
-- Annotate charts (notes, levels, zones)
-- View personal timeline and observation history for a stock
+──────────────────────
+Personal market memory and chart annotation endpoints — thin routes delegating to AnnotationService.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from api.database.session import get_db
 from api.core.dependencies import get_current_user
 from api.models.user import User
-from api.models.intelligence import ChartAnnotation, AnnotationType, DecisionJournalEntry
-from api.schemas.intelligence import AnnotationCreate, AnnotationResponse, SymbolMemorySummary
+from api.schemas.intelligence import AnnotationCreate, AnnotationResponse
+from api.services.annotation_service import AnnotationService
 
 router = APIRouter(prefix="/annotations", tags=["Personal Market Memory"])
 
 
-@router.get("", response_model=list[AnnotationResponse], summary="List user chart annotations")
+@router.get("", response_model=list[AnnotationResponse], summary="List annotations with optional symbol filter")
 def list_annotations(
-    symbol: str | None = Query(None, description="Optional symbol filter"),
+    symbol: str | None = None,
+    timeframe: str | None = None,
+    skip: int = 0,
+    limit: int = 50,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    q = db.query(ChartAnnotation).filter(ChartAnnotation.user_id == current_user.id)
-    if symbol:
-        q = q.filter(ChartAnnotation.symbol == symbol.strip().upper())
-    return q.order_by(ChartAnnotation.timestamp.desc()).all()
+    svc = AnnotationService(db, current_user.id)
+    return svc.list_annotations(symbol=symbol, timeframe=timeframe, skip=skip, limit=limit)
 
 
-@router.post("", response_model=AnnotationResponse, status_code=status.HTTP_201_CREATED, summary="Create chart annotation")
+@router.get("/timeline/{symbol}", response_model=list[AnnotationResponse], summary="Chronological observation timeline for symbol")
+def symbol_timeline(
+    symbol: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    svc = AnnotationService(db, current_user.id)
+    return svc.get_symbol_timeline(symbol)
+
+
+@router.post(
+    "",
+    response_model=AnnotationResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record a chart annotation or market observation",
+)
 def create_annotation(
     body: AnnotationCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    try:
-        atype = AnnotationType(body.annotation_type.lower())
-    except ValueError:
-        atype = AnnotationType.NOTE
-
-    annotation = ChartAnnotation(
-        user_id=current_user.id,
-        symbol=body.symbol.strip().upper(),
-        timeframe=body.timeframe,
-        timestamp=body.timestamp,
-        annotation_type=atype,
-        content=body.content.strip(),
-        metadata_json=body.metadata_json,
-    )
-    db.add(annotation)
-    db.commit()
-    db.refresh(annotation)
-    return annotation
+    svc = AnnotationService(db, current_user.id)
+    return svc.create_annotation(body)
 
 
-@router.delete("/{annotation_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete chart annotation")
+@router.delete("/{annotation_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete an annotation")
 def delete_annotation(
     annotation_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    ann = (
-        db.query(ChartAnnotation)
-        .filter(ChartAnnotation.id == annotation_id, ChartAnnotation.user_id == current_user.id)
-        .first()
-    )
-    if not ann:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Annotation not found.")
-    db.delete(ann)
-    db.commit()
-    return None
-
-
-@router.get("/memory/{symbol}", response_model=SymbolMemorySummary, summary="Get personal market memory for symbol")
-def get_symbol_memory(
-    symbol: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    sym = symbol.strip().upper()
-    annotations = (
-        db.query(ChartAnnotation)
-        .filter(ChartAnnotation.user_id == current_user.id, ChartAnnotation.symbol == sym)
-        .all()
-    )
-    journals = (
-        db.query(DecisionJournalEntry)
-        .filter(DecisionJournalEntry.user_id == current_user.id, DecisionJournalEntry.symbol == sym)
-        .all()
-    )
-
-    observations = [a.content for a in annotations if a.content]
-    last_date = None
-    if annotations:
-        last_date = max(a.timestamp for a in annotations).strftime("%Y-%m-%d")
-
-    return {
-        "symbol": sym,
-        "total_annotations": len(annotations),
-        "total_journal_entries": len(journals),
-        "saved_observations": observations,
-        "last_observation_date": last_date,
-    }
+    svc = AnnotationService(db, current_user.id)
+    svc.delete_annotation(annotation_id)

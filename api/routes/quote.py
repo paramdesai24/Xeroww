@@ -1,12 +1,12 @@
 """routes/quote.py — GET /quote/{symbol} endpoint."""
 
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, Path
 
+from api.core.dependencies import get_market_data_service
 from api.schemas.quote import QuoteResponse
-from api.services.yahoo_provider import YahooFinanceProvider
+from api.services.market_data_service import MarketDataService
 
 router = APIRouter(tags=["Market Data"])
-provider = YahooFinanceProvider()
 
 
 @router.get(
@@ -16,19 +16,13 @@ provider = YahooFinanceProvider()
 )
 async def get_quote(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ) -> QuoteResponse:
     """
     Returns the latest market quote for the given NSE stock symbol.
 
     Includes: price, previous close, change, day high/low, volume, market cap.
-    Data is sourced from Yahoo Finance (near real-time, delayed ~15–20 minutes for NSE).
+    Data is sourced from the configured MarketDataProvider (near real-time, delayed ~15–20 minutes for NSE).
     """
-    try:
-        data = provider.get_quote(symbol.upper())
-        return QuoteResponse(**data)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {exc}")
+    data = market_data.get_quote(symbol)
+    return QuoteResponse(**data)

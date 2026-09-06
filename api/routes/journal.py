@@ -1,22 +1,19 @@
 """
 routes/journal.py
 ──────────────────
-Decision journal API endpoints — tenant-scoped trade thesis logging.
+Decision journal API endpoints — thin routes delegating to JournalService.
 """
 
-from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from api.database.session import get_db
 from api.core.dependencies import get_current_user
 from api.models.user import User
-from api.models.intelligence import DecisionJournalEntry, JournalStatus
 from api.schemas.intelligence import JournalEntryCreate, JournalEntryUpdate, JournalEntryResponse
-from api.services.thesis_review_service import ThesisReviewService
+from api.services.journal_service import JournalService
 
 router = APIRouter(prefix="/journal", tags=["Decision Journal"])
-_thesis_reviewer = ThesisReviewService()
 
 
 @router.get("/{entry_id}/review", summary="Thesis review audit against subsequent market observations")
@@ -25,84 +22,52 @@ def review_journal_entry(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    entry = (
-        db.query(DecisionJournalEntry)
-        .filter(
-            DecisionJournalEntry.id == entry_id,
-            DecisionJournalEntry.user_id == current_user.id,
-        )
-        .first()
-    )
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Journal entry {entry_id} not found.",
-        )
-    return _thesis_reviewer.review_entry(entry)
+    svc = JournalService(db, current_user.id)
+    return svc.review_entry(entry_id)
 
 
 @router.get("", response_model=list[JournalEntryResponse], summary="List journal entries")
 def list_entries(
+    skip: int = 0,
+    limit: int = 50,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return (
-        db.query(DecisionJournalEntry)
-        .filter(DecisionJournalEntry.user_id == current_user.id)
-        .order_by(DecisionJournalEntry.timestamp.desc())
-        .all()
-    )
+    svc = JournalService(db, current_user.id)
+    return svc.list_entries(skip=skip, limit=limit)
 
 
 @router.post(
     "",
     response_model=JournalEntryResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a journal entry",
+    summary="Log a new trading decision thesis",
 )
 def create_entry(
     body: JournalEntryCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    entry = DecisionJournalEntry(
-        user_id=current_user.id,
-        symbol=body.symbol.strip().upper(),
-        action=body.action.upper(),
-        thesis=body.thesis,
-        context_snapshot=body.context_snapshot,
-        timestamp=datetime.utcnow(),
-        status=JournalStatus.OPEN,
-    )
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    return entry
+    svc = JournalService(db, current_user.id)
+    return svc.create_entry(body)
 
 
-@router.patch("/{entry_id}", response_model=JournalEntryResponse, summary="Update journal entry status")
+@router.get("/{entry_id}", response_model=JournalEntryResponse, summary="Get single journal entry")
+def get_entry(
+    entry_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    svc = JournalService(db, current_user.id)
+    return svc.get_entry_or_404(entry_id)
+
+
+@router.put("/{entry_id}", response_model=JournalEntryResponse, summary="Update post-trade review/outcome")
 def update_entry(
     entry_id: int,
     body: JournalEntryUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    entry = (
-        db.query(DecisionJournalEntry)
-        .filter(
-            DecisionJournalEntry.id == entry_id,
-            DecisionJournalEntry.user_id == current_user.id,
-        )
-        .first()
-    )
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Journal entry {entry_id} not found.",
-        )
-    entry.status = JournalStatus(body.status)
-    if body.thesis is not None:
-        entry.thesis = body.thesis
-    db.commit()
-    db.refresh(entry)
-    return entry
+    svc = JournalService(db, current_user.id)
+    return svc.update_entry(entry_id, body)

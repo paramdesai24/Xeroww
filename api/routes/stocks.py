@@ -1,23 +1,22 @@
 """routes/stocks.py — GET /stocks endpoint."""
 
-from fastapi import APIRouter, HTTPException
 from typing import Any
+from fastapi import APIRouter, Depends
 
-from api.services.yahoo_provider import YahooFinanceProvider
+from api.core.dependencies import get_market_data_service
+from api.services.market_data_service import MarketDataService
 
 router = APIRouter(tags=["Market Data"])
-provider = YahooFinanceProvider()
 
 
 @router.get("/stocks", summary="Get watchlist")
-async def get_stocks() -> list[dict[str, Any]]:
+async def get_stocks(
+    market_data: MarketDataService = Depends(get_market_data_service),
+) -> list[dict[str, Any]]:
     """
     Returns the predefined Xeroww Indian stock watchlist.
 
     Includes: RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS, ICICIBANK.NS
     with human-readable names, exchange, and sector metadata.
     """
-    try:
-        return provider.get_stocks()
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+    return market_data.get_stocks()

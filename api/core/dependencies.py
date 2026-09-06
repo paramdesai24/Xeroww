@@ -90,3 +90,29 @@ def require_role(role: str):
         return current_user
 
     return _check_role
+
+
+# ---------------------------------------------------------------------------
+# Market Provider & Market Data Service Dependencies
+# ---------------------------------------------------------------------------
+_default_provider = None
+_default_market_service = None
+
+
+def get_market_provider():
+    """Return singleton or configured MarketDataProvider."""
+    global _default_provider
+    if _default_provider is None:
+        from api.services.yahoo_provider import YahooFinanceProvider
+        _default_provider = YahooFinanceProvider()
+    return _default_provider
+
+
+def get_market_data_service():
+    """Return singleton or configured MarketDataService."""
+    global _default_market_service
+    if _default_market_service is None:
+        from api.services.market_data_service import MarketDataService
+        _default_market_service = MarketDataService(get_market_provider())
+    return _default_market_service
+

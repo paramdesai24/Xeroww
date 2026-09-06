@@ -11,9 +11,10 @@ FastAPI endpoints for deterministic Market Structure Engine V2:
   - /market-structure/{symbol} (unified summary)
 """
 
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, Path
 
-from api.services.yahoo_provider import YahooFinanceProvider
+from api.core.dependencies import get_market_provider, get_market_data_service
+from api.services.market_data_service import MarketDataService
 from api.services.support_resistance_service import analyze_support_resistance
 from api.services.volume_service import analyze_volume
 from api.services.moving_average_service import analyze_moving_averages
@@ -34,23 +35,11 @@ from api.schemas.market_structure import (
 )
 
 router = APIRouter(tags=["Market Structure Engine"])
-provider = YahooFinanceProvider()
+provider = get_market_provider()
 
 
-def _fetch_candles(symbol: str) -> tuple[str, list[dict]]:
-    """Helper to normalize symbol and fetch historical candles."""
-    sym = provider.normalize_symbol(symbol)
-    try:
-        candles = provider.get_ohlc(sym, period="1y", interval="1d")
-        if not candles:
-            raise ValueError(f"No OHLC data available for symbol {sym}.")
-        return sym, candles
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Unexpected error fetching candles: {exc}")
+def _get_service() -> MarketDataService:
+    return MarketDataService(provider)
 
 
 @router.get(
@@ -60,8 +49,9 @@ def _fetch_candles(symbol: str) -> tuple[str, list[dict]]:
 )
 def get_support_resistance(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> SupportResistanceResponse:
-    sym, candles = _fetch_candles(symbol)
+    sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
     analysis = analyze_support_resistance(candles, sym)
     return SupportResistanceResponse(**analysis.to_dict())
 
@@ -73,8 +63,9 @@ def get_support_resistance(
 )
 def get_volume_analytics(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> VolumeAnalyticsResponse:
-    sym, candles = _fetch_candles(symbol)
+    sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
     analysis = analyze_volume(candles, sym)
     return VolumeAnalyticsResponse(**analysis.to_dict())
 
@@ -86,8 +77,9 @@ def get_volume_analytics(
 )
 def get_moving_averages(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> MovingAveragesResponse:
-    sym, candles = _fetch_candles(symbol)
+    sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
     analysis = analyze_moving_averages(candles, sym)
     return MovingAveragesResponse(**analysis.to_dict())
 
@@ -99,8 +91,9 @@ def get_moving_averages(
 )
 def get_trend_alias(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> MovingAveragesResponse:
-    return get_moving_averages(symbol)
+    return get_moving_averages(symbol, market_data=market_data)
 
 
 @router.get(
@@ -110,8 +103,9 @@ def get_trend_alias(
 )
 def get_market_regime(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> MarketRegimeResponse:
-    sym, candles = _fetch_candles(symbol)
+    sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
     analysis = classify_market_regime(candles, sym)
     return MarketRegimeResponse(**analysis.to_dict())
 
@@ -123,8 +117,9 @@ def get_market_regime(
 )
 def get_signal_alignment(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> SignalAlignmentResponse:
-    sym, candles = _fetch_candles(symbol)
+    sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
     analysis = evaluate_signal_alignment(candles, sym)
     return SignalAlignmentResponse(**analysis.to_dict())
 
@@ -136,8 +131,9 @@ def get_signal_alignment(
 )
 def get_market_structure_summary(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
+    market_data: MarketDataService = Depends(_get_service),
 ) -> MarketStructureSummaryResponse:
-    sym, candles = _fetch_candles(symbol)
+    sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
     current_price = float(candles[-1]["close"])
 
     sr = analyze_support_resistance(candles, sym)
