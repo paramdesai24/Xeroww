@@ -138,3 +138,24 @@ def decode_token(token: str) -> dict[str, Any]:
         settings.JWT_SECRET_KEY,
         algorithms=[settings.JWT_ALGORITHM],
     )
+
+
+# ---------------------------------------------------------------------------
+# Token Revocation / Blacklist (backed by CacheService)
+# ---------------------------------------------------------------------------
+
+def revoke_token(token: str, ttl_seconds: int = 3600) -> None:
+    """Add a token signature to the revocation blacklist."""
+    from api.services.cache_service import get_cache_service
+    cache = get_cache_service()
+    token_sig = token[-32:] if len(token) >= 32 else token
+    cache.set(f"blacklist:{token_sig}", "revoked", ttl_seconds=ttl_seconds)
+
+
+def is_token_revoked(token: str) -> bool:
+    """Check if a token signature exists on the revocation blacklist."""
+    from api.services.cache_service import get_cache_service
+    cache = get_cache_service()
+    token_sig = token[-32:] if len(token) >= 32 else token
+    return cache.exists(f"blacklist:{token_sig}")
+

@@ -144,14 +144,24 @@ def refresh(payload: RefreshTokenRequest, db: Session = Depends(get_db)):
     return _make_tokens(user)
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Logout (client-side)")
-def logout():
+from api.core.dependencies import get_current_user, bearer_scheme
+from api.core.security import revoke_token
+from fastapi.security import HTTPAuthorizationCredentials
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Logout and revoke current token")
+def logout(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    current_user: User = Depends(get_current_user),
+):
     """
-    Logout endpoint — stateless JWT strategy.
-    Clients must delete stored tokens. In future V1+, a token blocklist
-    can be added here (Redis/DB) without changing this interface.
+    Logout endpoint — revokes the current access token via CacheService.
+    Subsequent requests with this token are rejected with 401.
     """
+    if credentials:
+        revoke_token(credentials.credentials)
     return
+
 
 
 @router.get("/me", response_model=UserResponse, summary="Get current authenticated user")

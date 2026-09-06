@@ -53,8 +53,17 @@ def get_current_user(
     except jwt.InvalidTokenError:
         raise _CREDENTIALS_EXC
 
+    from api.core.security import is_token_revoked
+    if is_token_revoked(credentials.credentials):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     if payload.get("type") != "access":
         raise _CREDENTIALS_EXC
+
 
     user_id: int = int(payload["sub"])
     user = db.query(User).filter(User.id == user_id).first()
