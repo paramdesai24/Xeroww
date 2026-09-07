@@ -62,7 +62,7 @@ export interface PatternData {
   textbook_action: "watch_next_session_for_confirmation" | "no_marubozu_detected";
   rationale: string;
   stop_loss: number | null;
-  latest_candle: CandleSummary;
+  latest_candle?: CandleSummary | null;
   detected_patterns?: import("./structure").PatternDetection[];
   contextual_pattern?: import("./structure").ContextualPattern | null;
   data_note: string;

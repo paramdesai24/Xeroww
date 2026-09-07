@@ -67,7 +67,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
           <span className="text-[8.5px] px-1 bg-[#222] text-[#00E5FF] font-semibold">V2</span>
         </div>
         <span className="text-[9px] text-[#737373]">
-          {pattern.signal_day ?? pattern.latest_candle.date}
+          {pattern.signal_day ?? pattern.latest_candle?.date ?? "Latest Session"}
         </span>
       </div>
 
