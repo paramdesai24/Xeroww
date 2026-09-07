@@ -92,7 +92,7 @@ export default function MarketBreadthModal({ onClose }: Props) {
                 </div>
                 <div>
                   <div className="text-[11px] text-[#64748B]">Breadth Ratio</div>
-                  <div className="text-base font-bold font-mono text-[#F59E0B] tabular-nums mt-0.5">
+                  <div className="text-base font-bold font-mono text-[#1E90FF] tabular-nums mt-0.5">
                     {breadth.breadth_ratio}
                   </div>
                 </div>

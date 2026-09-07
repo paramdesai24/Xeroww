@@ -52,7 +52,7 @@ export default function AuthModal({ auth, onClose }: Props) {
         <div className="border-b border-[#1E2538] p-5 flex items-start justify-between bg-[#0B0E14]">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-[#F59E0B] tracking-wider font-mono">
+              <span className="text-xs font-bold text-[#1E90FF] tracking-wider font-mono">
                 XEROWW
               </span>
               <span className="text-[#334155] text-xs">·</span>
@@ -87,7 +87,7 @@ export default function AuthModal({ auth, onClose }: Props) {
                 onClick={() => { setMode(m); setLocalError(null); }}
                 className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
                   active
-                    ? "text-[#F8FAFC] bg-[#0B0E14] border-b-2 border-b-[#F59E0B]"
+                    ? "text-[#F8FAFC] bg-[#0B0E14] border-b-2 border-b-[#1E90FF]"
                     : "text-[#64748B] hover:text-[#94A3B8] border-b-2 border-b-transparent"
                 }`}
               >
@@ -155,7 +155,7 @@ export default function AuthModal({ auth, onClose }: Props) {
             id="auth-submit"
             type="submit"
             disabled={submitting}
-            className="w-full mt-1 py-2.5 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black transition-colors disabled:opacity-50"
+            className="w-full mt-1 py-2.5 text-xs font-semibold bg-[#1E90FF] hover:bg-[#1C86EE] text-white transition-colors disabled:opacity-50"
           >
             {submitting ? "Processing…" : mode === "login" ? "Sign In" : "Create Account"}
           </button>

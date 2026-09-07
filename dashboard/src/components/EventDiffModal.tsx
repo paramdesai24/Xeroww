@@ -50,7 +50,7 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
               "What Changed?" Event Diff
             </span>
             <span className="text-[#334155]">·</span>
-            <span className="text-xs text-[#F59E0B] font-mono font-semibold">{symbol}</span>
+            <span className="text-xs text-[#1E90FF] font-mono font-semibold">{symbol}</span>
           </div>
 
           <button
@@ -95,7 +95,7 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
                 </div>
                 <div>
                   <div className="text-[11px] text-[#64748B]">Observed Events</div>
-                  <div className="text-sm font-bold font-mono text-[#F59E0B] tabular-nums mt-0.5">
+                  <div className="text-sm font-bold font-mono text-[#1E90FF] tabular-nums mt-0.5">
                     {data.event_count}
                   </div>
                 </div>
@@ -114,7 +114,7 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
                     >
                       <Activity size={14} className="text-[#3B82F6] shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <span className="font-semibold text-[#F59E0B] mr-1.5">[{ev.category}]</span>
+                        <span className="font-semibold text-[#1E90FF] mr-1.5">[{ev.category}]</span>
                         <span className="text-[#F8FAFC]">{ev.description}</span>
                       </div>
                     </div>

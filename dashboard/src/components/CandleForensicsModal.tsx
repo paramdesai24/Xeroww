@@ -51,7 +51,7 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
               Candle Forensic Inspection
             </span>
             <span className="text-[#334155]">·</span>
-            <span className="text-xs text-[#F59E0B] font-mono font-semibold">{symbol}</span>
+            <span className="text-xs text-[#1E90FF] font-mono font-semibold">{symbol}</span>
             <span className="text-[#334155]">·</span>
             <span className="text-xs text-[#94A3B8] font-mono">{timestamp}</span>
           </div>
@@ -159,7 +159,7 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#94A3B8]">Relative Volume (RVOL):</span>
-                    <span className="text-[#F59E0B] font-mono tabular-nums font-bold">
+                    <span className="text-[#1E90FF] font-mono tabular-nums font-bold">
                       {data.volume_context.rvol}x
                     </span>
                   </div>
@@ -206,7 +206,7 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#94A3B8]">Market Regime:</span>
-                    <span className="text-[#F59E0B] font-semibold">
+                    <span className="text-[#1E90FF] font-semibold">
                       {data.regime_context.regime}
                     </span>
                   </div>
