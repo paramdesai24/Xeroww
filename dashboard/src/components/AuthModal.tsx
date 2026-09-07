@@ -1,6 +1,6 @@
 // src/components/AuthModal.tsx
-// Institutional-grade authentication modal — login & registration.
-// Maintains the black terminal aesthetic.
+// Authentication modal — graphite-and-paper design system.
+// Clean, functional form. No decoration.
 
 import { useState } from "react";
 import type { AuthHook } from "../hooks/useAuth";
@@ -10,6 +10,29 @@ interface Props {
   onClose?: () => void;
 }
 
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  backgroundColor: "var(--surface-inset)",
+  border: "1px solid var(--border-default)",
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-mono)",
+  fontSize: 11,
+  padding: "8px 12px",
+  outline: "none",
+  boxSizing: "border-box",
+  transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1)",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontFamily: "var(--font-mono)",
+  fontSize: 9,
+  letterSpacing: "0.10em",
+  textTransform: "uppercase",
+  color: "var(--text-tertiary)",
+  marginBottom: 5,
+};
+
 export default function AuthModal({ auth, onClose }: Props) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -17,6 +40,7 @@ export default function AuthModal({ auth, onClose }: Props) {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +50,7 @@ export default function AuthModal({ auth, onClose }: Props) {
       if (mode === "login") {
         await auth.login(email, password);
       } else {
-        if (!name.trim()) {
-          setLocalError("Name is required.");
-          return;
-        }
+        if (!name.trim()) { setLocalError("Display name is required."); return; }
         await auth.register(name, email, password);
       }
       onClose?.();
@@ -45,24 +66,45 @@ export default function AuthModal({ auth, onClose }: Props) {
   return (
     <div
       id="auth-modal-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.85)" }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.72)",
+      }}
     >
       <div
         id="auth-modal"
-        className="w-full max-w-sm border border-[#262626] bg-[#0A0A0A]"
-        style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+        style={{
+          width: "100%",
+          maxWidth: 380,
+          border: "1px solid var(--border-default)",
+          backgroundColor: "var(--surface-raised)",
+        }}
       >
         {/* Header */}
-        <div className="border-b border-[#262626] px-6 py-4 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[#00E5FF] text-xs font-bold tracking-[0.2em]">XEROWW</span>
-              <span className="text-[#3a3a3a] text-xs">|</span>
-              <span className="text-[#525252] text-xs tracking-widest">FINANCIAL INTELLIGENCE PLATFORM</span>
+        <div style={{
+          borderBottom: "1px solid var(--border-subtle)",
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, letterSpacing: "0.18em", color: "var(--text-primary)" }}>
+                XEROWW
+              </span>
+              <span style={{ color: "var(--border-strong)", fontSize: 10 }}>·</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", color: "var(--text-tertiary)", textTransform: "uppercase" }}>
+                Financial Intelligence Platform
+              </span>
             </div>
-            <div className="mt-2 text-[#FAFAFA] text-sm tracking-wider font-bold">
-              {mode === "login" ? "AUTHENTICATE" : "CREATE ACCOUNT"}
+            <div style={{ fontFamily: "var(--font-sans)", fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+              {mode === "login" ? "Sign In" : "Create Account"}
             </div>
           </div>
           {onClose && (
@@ -70,7 +112,19 @@ export default function AuthModal({ auth, onClose }: Props) {
               id="close-auth-modal"
               type="button"
               onClick={onClose}
-              className="text-[#666] hover:text-[#FFF] text-sm font-mono px-2 py-1"
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 9,
+                letterSpacing: "0.08em",
+                color: "var(--text-tertiary)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px 6px",
+                transition: "color 160ms cubic-bezier(0.16,1,0.3,1)",
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)"}
             >
               [ESC]
             </button>
@@ -78,69 +132,82 @@ export default function AuthModal({ auth, onClose }: Props) {
         </div>
 
         {/* Mode toggle */}
-        <div className="flex border-b border-[#262626]">
-          {(["login", "register"] as const).map((m) => (
-            <button
-              key={m}
-              id={`auth-tab-${m}`}
-              onClick={() => { setMode(m); setLocalError(null); }}
-              className={`flex-1 py-2.5 text-xs tracking-widest font-bold transition-colors ${
-                mode === m
-                  ? "bg-[#111] text-[#00E5FF] border-b border-[#00E5FF]"
-                  : "text-[#525252] hover:text-[#888]"
-              }`}
-            >
-              {m === "login" ? "LOGIN" : "REGISTER"}
-            </button>
-          ))}
+        <div style={{ display: "flex", borderBottom: "1px solid var(--border-subtle)" }}>
+          {(["login", "register"] as const).map((m) => {
+            const active = mode === m;
+            return (
+              <button
+                key={m}
+                id={`auth-tab-${m}`}
+                onClick={() => { setMode(m); setLocalError(null); }}
+                style={{
+                  flex: 1,
+                  padding: "9px 0",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 9,
+                  fontWeight: 600,
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  border: "none",
+                  borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
+                  backgroundColor: active ? "var(--surface-overlay)" : "transparent",
+                  color: active ? "var(--text-primary)" : "var(--text-disabled)",
+                  transition: "all 160ms cubic-bezier(0.16,1,0.3,1)",
+                }}
+              >
+                {m === "login" ? "Sign In" : "Register"}
+              </button>
+            );
+          })}
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
           {mode === "register" && (
             <div>
-              <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">
-                DISPLAY NAME
-              </label>
+              <label style={labelStyle}>Display Name</label>
               <input
                 id="auth-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="w-full bg-[#111] border border-[#2a2a2a] text-[#FAFAFA] text-xs px-3 py-2.5 outline-none focus:border-[#00E5FF] placeholder-[#333] transition-colors"
+                style={{ ...inputStyle, borderColor: focusedField === "name" ? "var(--border-strong)" : "var(--border-default)" }}
+                onFocus={() => setFocusedField("name")}
+                onBlur={() => setFocusedField(null)}
                 autoComplete="name"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">
-              EMAIL ADDRESS
-            </label>
+            <label style={labelStyle}>Email Address</label>
             <input
               id="auth-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="trader@example.com"
-              className="w-full bg-[#111] border border-[#2a2a2a] text-[#FAFAFA] text-xs px-3 py-2.5 outline-none focus:border-[#00E5FF] placeholder-[#333] transition-colors"
+              style={{ ...inputStyle, borderColor: focusedField === "email" ? "var(--border-strong)" : "var(--border-default)" }}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
               autoComplete="email"
               required
             />
           </div>
 
           <div>
-            <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">
-              PASSWORD
-            </label>
+            <label style={labelStyle}>Password</label>
             <input
               id="auth-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={mode === "register" ? "Min 8 chars, uppercase + number" : "••••••••"}
-              className="w-full bg-[#111] border border-[#2a2a2a] text-[#FAFAFA] text-xs px-3 py-2.5 outline-none focus:border-[#00E5FF] placeholder-[#333] transition-colors"
+              style={{ ...inputStyle, borderColor: focusedField === "password" ? "var(--border-strong)" : "var(--border-default)" }}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               required
             />
@@ -149,7 +216,15 @@ export default function AuthModal({ auth, onClose }: Props) {
           {errorMsg && (
             <div
               id="auth-error"
-              className="text-[10px] text-[#ff4d4d] border border-[#3a1818] bg-[#1a0a0a] px-3 py-2 tracking-wide"
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 10,
+                lineHeight: 1.6,
+                color: "var(--negative)",
+                border: "1px solid var(--negative-border)",
+                backgroundColor: "var(--negative-subtle)",
+                padding: "7px 10px",
+              }}
             >
               {errorMsg}
             </div>
@@ -159,14 +234,33 @@ export default function AuthModal({ auth, onClose }: Props) {
             id="auth-submit"
             type="submit"
             disabled={submitting}
-            className="w-full bg-[#00E5FF] text-black text-xs font-bold tracking-widest py-2.5 disabled:opacity-40 hover:bg-[#00cfea] transition-colors"
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              fontFamily: "var(--font-mono)",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              cursor: submitting ? "not-allowed" : "pointer",
+              border: "1px solid var(--border-strong)",
+              backgroundColor: "var(--surface-overlay)",
+              color: submitting ? "var(--text-disabled)" : "var(--text-primary)",
+              opacity: submitting ? 0.5 : 1,
+              transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1)",
+            }}
+            onMouseEnter={e => { if (!submitting) (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; }}
+            onMouseLeave={e => { if (!submitting) (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)"; }}
           >
-            {submitting ? "PROCESSING..." : mode === "login" ? "AUTHENTICATE" : "CREATE ACCOUNT"}
+            {submitting ? "Processing…" : mode === "login" ? "Sign In" : "Create Account"}
           </button>
         </form>
 
-        <div className="border-t border-[#1a1a1a] px-6 py-3">
-          <p className="text-[10px] text-[#303030] tracking-wider">
+        <div style={{
+          borderTop: "1px solid var(--border-subtle)",
+          padding: "10px 20px",
+        }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.06em", color: "var(--text-disabled)", margin: 0 }}>
             XEROWW V0.6 · SIMULATED PORTFOLIOS · NO REAL TRADES
           </p>
         </div>
