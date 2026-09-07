@@ -40,7 +40,7 @@ export default function MarketRegimeCard({ regime, loading }: Props) {
       />
 
       {/* Metrics Row */}
-      <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-3">
+      <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-2">
         <Metric label="ATR Vol" value={`${regime.atr_pct}%`} size="sm" />
         <Metric label="RVOL" value={`${regime.rvol}x`} size="sm" />
         <Metric label="EMA Trend" value={regime.ema_trend.replace(/_/g, " ")} size="sm" />

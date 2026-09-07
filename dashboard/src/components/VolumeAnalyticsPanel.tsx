@@ -44,7 +44,7 @@ export default function VolumeAnalyticsPanel({ volume, loading }: Props) {
       />
 
       {/* Primary Volume Metrics */}
-      <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-3">
+      <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-2">
         <Metric label="RVOL" value={`${volume.rvol}x`} size="sm" />
         <Metric label="State" value={volume.volume_state} size="sm" />
         <Metric label="Baseline" value={`${(volume.baseline_avg_volume / 1e5).toFixed(1)}L`} size="sm" />

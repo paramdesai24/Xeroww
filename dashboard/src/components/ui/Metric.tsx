@@ -32,22 +32,25 @@ export const Metric: React.FC<MetricProps> = ({
       : "text-[var(--text-tertiary)]";
 
   return (
-    <div className={`flex flex-col gap-0.5 ${className}`}>
+    <div className={`flex flex-col gap-0.5 min-w-0 ${className}`}>
       <span
-        className="text-[10px] text-[var(--text-tertiary)] font-normal tracking-wide"
+        className="text-[10px] text-[var(--text-tertiary)] font-normal tracking-wide truncate"
         style={{ fontFamily: "var(--font-sans)" }}
       >
         {label}
       </span>
-      <div className="flex items-baseline gap-1.5">
+      <div className="flex items-baseline gap-1.5 flex-wrap">
         <span
-          className={`font-semibold text-[var(--text-primary)] tabular-nums ${valueSizes[size]}`}
-          style={{ fontFamily: "var(--font-mono)" }}
+          className={`font-semibold text-[var(--text-primary)] leading-tight ${
+            typeof value === "string" && /[a-zA-Z]{4,}/.test(value)
+              ? "text-xs font-sans tracking-wide"
+              : `tabular-nums font-mono ${valueSizes[size]}`
+          }`}
         >
           {value}
         </span>
         {delta !== undefined && (
-          <span className={`text-[10px] tabular-nums font-medium ${trendColor}`} style={{ fontFamily: "var(--font-mono)" }}>
+          <span className={`text-[10px] tabular-nums font-medium font-mono ${trendColor}`}>
             {delta}
           </span>
         )}
@@ -55,3 +58,4 @@ export const Metric: React.FC<MetricProps> = ({
     </div>
   );
 };
+

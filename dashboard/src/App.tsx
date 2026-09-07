@@ -161,7 +161,7 @@ export default function App() {
             </div>
 
             {/* Right: Analytics Sidebar */}
-            <aside className="w-[304px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col overflow-hidden">
+            <aside className="w-[360px] xl:w-[380px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 overflow-hidden">
               {/* Tab selector */}
               <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
                 {(["STRUCTURE", "ANATOMY"] as const).map((tab) => {
@@ -170,7 +170,7 @@ export default function App() {
                     <button
                       key={tab}
                       onClick={() => setSidebarTab(tab)}
-                      className={`flex-1 h-8 text-xs font-medium transition-colors border-b-2 ${
+                      className={`flex-1 h-9 text-xs font-medium transition-colors border-b-2 flex items-center justify-center ${
                         active
                           ? "text-[#F8FAFC] bg-[#0B0E14] border-b-[#F59E0B] font-semibold"
                           : "text-[#64748B] hover:text-[#94A3B8] border-b-transparent"
@@ -183,7 +183,7 @@ export default function App() {
               </div>
 
               {/* Analytics body */}
-              <div className="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2 bg-[#000000]">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3 bg-[#000000] overscroll-contain">
                 {sidebarTab === "STRUCTURE" ? (
                   <>
                     <MarketRegimeCard regime={structure?.market_regime ?? null} />

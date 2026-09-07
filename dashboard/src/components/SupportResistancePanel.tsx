@@ -45,10 +45,10 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
 
       {/* Nearest Levels Grid */}
       <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-[10px] text-[var(--text-tertiary)] font-medium">Nearest Support</span>
           {sr.nearest_support ? (
-            <div className="flex items-baseline gap-1.5 font-mono">
+            <div className="flex items-baseline gap-1.5 font-mono flex-wrap">
               <span className="text-xs font-bold text-[var(--positive)] tabular-nums">
                 ₹{sr.nearest_support.price.toFixed(2)}
               </span>
@@ -61,10 +61,10 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
           )}
         </div>
 
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-[10px] text-[var(--text-tertiary)] font-medium">Nearest Resistance</span>
           {sr.nearest_resistance ? (
-            <div className="flex items-baseline gap-1.5 font-mono">
+            <div className="flex items-baseline gap-1.5 font-mono flex-wrap">
               <span className="text-xs font-bold text-[var(--negative)] tabular-nums">
                 ₹{sr.nearest_resistance.price.toFixed(2)}
               </span>
@@ -93,9 +93,9 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
           {sr.resistance_zones.slice(0, 3).map((z, idx) => (
             <div
               key={`res-${idx}`}
-              className="p-1.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex items-center justify-between text-xs"
+              className="px-2.5 py-1.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex items-center justify-between text-xs"
             >
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Badge variant="red" size="sm">RES</Badge>
                 <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
                   ₹{z.price.toFixed(2)}
@@ -104,7 +104,7 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
                   +{z.distance_pct}%
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <span className="text-xs font-mono tabular-nums text-[var(--text-secondary)]">
                   {z.touches}x
                 </span>
@@ -117,9 +117,9 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
           {sr.support_zones.slice(0, 3).map((z, idx) => (
             <div
               key={`sup-${idx}`}
-              className="p-1.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex items-center justify-between text-xs"
+              className="px-2.5 py-1.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex items-center justify-between text-xs"
             >
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Badge variant="green" size="sm">SUP</Badge>
                 <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
                   ₹{z.price.toFixed(2)}
@@ -128,7 +128,7 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
                   -{z.distance_pct}%
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <span className="text-xs font-mono tabular-nums text-[var(--text-secondary)]">
                   {z.touches}x
                 </span>
