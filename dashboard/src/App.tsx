@@ -102,9 +102,9 @@ export default function App() {
       />
 
       {/* Main Terminal Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {activeModule === "MARKET" && (
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 min-h-0 overflow-hidden">
             {/* Left: Watchlist */}
             <Sidebar
               stocks={stocks}
@@ -113,7 +113,7 @@ export default function App() {
             />
 
             {/* Center: Chart + OHLC Table */}
-            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
               {isReplayMode && (
                 <ReplayControlBar
                   symbol={activeSymbol}
@@ -161,7 +161,7 @@ export default function App() {
             </div>
 
             {/* Right: Analytics Sidebar */}
-            <aside className="w-[360px] xl:w-[380px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 overflow-hidden">
+            <aside className="w-[360px] xl:w-[380px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 h-full overflow-hidden">
               {/* Tab selector */}
               <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
                 {(["STRUCTURE", "ANATOMY"] as const).map((tab) => {

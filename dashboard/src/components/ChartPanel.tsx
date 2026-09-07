@@ -284,7 +284,7 @@ export default function ChartPanel({
   const negative = (quote?.change_pct ?? 0) < 0;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0" style={{ backgroundColor: "var(--canvas)" }}>
+    <div className="flex flex-col flex-1 min-w-0 min-h-0 h-full" style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
       <div
         className="px-5 py-2.5 flex items-center justify-between shrink-0 select-none flex-wrap gap-2 border-b border-[var(--border-default)]"

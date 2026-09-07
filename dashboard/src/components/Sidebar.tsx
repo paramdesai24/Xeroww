@@ -114,7 +114,7 @@ function QuoteRow({
 export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: SidebarProps) {
   return (
     <aside
-      className="w-56 shrink-0 flex flex-col overflow-hidden select-none border-r border-[var(--border-default)]"
+      className="w-56 shrink-0 flex flex-col min-h-0 h-full overflow-hidden select-none border-r border-[var(--border-default)]"
       style={{
         backgroundColor: "var(--canvas)",
         fontFamily: "var(--font-sans)",

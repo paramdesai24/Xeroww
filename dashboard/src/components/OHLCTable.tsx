@@ -37,7 +37,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
       </div>
 
       {/* Table Container */}
-      <div className="overflow-y-auto overflow-x-hidden">
+      <div className="overflow-y-auto overflow-x-hidden min-h-0 flex-1">
         <Table>
           <TableHeader>
             <tr>

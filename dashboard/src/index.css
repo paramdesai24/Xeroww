@@ -96,16 +96,20 @@
   }
 
   /* Minimal clean scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-default) transparent;
+  }
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: var(--border-default);
-    border-radius: 2px;
+    border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: var(--border-strong);
