@@ -28,6 +28,11 @@ export default function PatternCard({ pattern }: PatternCardProps) {
   const ctx = pattern.contextual_pattern;
   const isMarubozu = pattern.pattern !== "none";
   const hasPatterns = isMarubozu || detectedList.length > 0;
+  const stopLoss = typeof pattern.stop_loss === "number"
+    ? pattern.stop_loss
+    : typeof detectedList[detectedList.length - 1]?.context?.stop_loss === "number"
+    ? (detectedList[detectedList.length - 1].context.stop_loss as number)
+    : null;
 
   // Primary pattern name
   const primaryName = isMarubozu
@@ -121,7 +126,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
           )}
 
           {/* Stop Loss Level if available */}
-          {pattern.stop_loss !== null && (
+          {typeof stopLoss === "number" && !isNaN(stopLoss) && (
             <div className="flex items-center justify-between bg-[#111111] border border-[#262626] rounded px-3 py-2 text-xs">
               <div className="flex items-center gap-1.5 text-[#EF4444]">
                 <ShieldAlert size={13} />
@@ -130,7 +135,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
                 </span>
               </div>
               <span className="font-bold text-[#FAFAFA] tabular-nums">
-                ₹{pattern.stop_loss.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                ₹{stopLoss.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
               </span>
             </div>
           )}
