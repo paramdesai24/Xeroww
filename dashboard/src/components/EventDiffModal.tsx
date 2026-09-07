@@ -39,23 +39,23 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
   return (
     <div
       id="event-diff-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--surface-base)]/80 backdrop-blur-[2px] p-4 select-none font-mono"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
     >
-      <div className="bg-[var(--surface-raised)] border border-[var(--border-subtle)] w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+      <div className="bg-[#000000] border border-[#1E2538] w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="px-4 py-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] flex items-center justify-between">
+        <div className="px-4 py-3 bg-[#0B0E14] border-b border-[#1E2538] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <GitCompare size={16} className="text-[var(--accent)]" />
-            <span className="text-xs font-bold tracking-widest text-[var(--text-primary)] uppercase">
-              "WHAT CHANGED?" EVENT DIFF
+            <GitCompare size={16} className="text-[#3B82F6]" />
+            <span className="text-sm font-semibold text-[#F8FAFC]">
+              "What Changed?" Event Diff
             </span>
-            <span className="text-[var(--border-strong)]">·</span>
-            <span className="text-xs text-[var(--accent)] font-semibold">{symbol}</span>
+            <span className="text-[#334155]">·</span>
+            <span className="text-xs text-[#F59E0B] font-mono font-semibold">{symbol}</span>
           </div>
 
           <button
             onClick={onClose}
-            className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 border border-transparent hover:border-[var(--border-subtle)]"
+            className="text-[#64748B] hover:text-[#F8FAFC] p-1 border border-transparent hover:border-[#1E2538] transition-colors"
           >
             <X size={16} />
           </button>
@@ -64,28 +64,28 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
         {/* Content */}
         <div className="p-4 flex-1 overflow-y-auto space-y-4 text-xs">
           {loading ? (
-            <div className="py-12 text-center text-[var(--text-tertiary)]">
-              EVALUATING DETERMINISTIC INTERVAL DIFFS…
+            <div className="py-12 text-center text-[#64748B]">
+              Evaluating deterministic interval diffs…
             </div>
           ) : !data ? (
-            <div className="py-12 text-center text-[var(--negative)]">
-              FAILED TO RETRIEVE EVENT DIFF FOR {symbol}
+            <div className="py-12 text-center text-[#EF4444]">
+              Failed to retrieve event diff for {symbol}
             </div>
           ) : (
             <>
               {/* Diff Summary Bar */}
-              <div className="p-3 bg-[var(--surface-base)] border border-[var(--border-subtle)] flex items-center justify-between">
+              <div className="p-3 bg-[#0B0E14] border border-[#1E2538] flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-[var(--text-tertiary)]">INTERVAL</div>
-                  <div className="text-xs font-semibold text-[var(--text-primary)] mt-0.5">
+                  <div className="text-[11px] text-[#64748B]">Interval</div>
+                  <div className="text-xs font-mono font-semibold text-[#F8FAFC] mt-0.5">
                     {data.from_time} → {data.to_time}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-[var(--text-tertiary)]">PRICE MOVEMENT</div>
+                  <div className="text-[11px] text-[#64748B]">Price Movement</div>
                   <div
-                    className={`text-sm font-bold tabular-nums mt-0.5 ${
-                      data.price_delta >= 0 ? "text-[var(--positive)]" : "text-[var(--negative)]"
+                    className={`text-sm font-bold font-mono tabular-nums mt-0.5 ${
+                      data.price_delta >= 0 ? "text-[#22C55E]" : "text-[#EF4444]"
                     }`}
                   >
                     {data.price_delta > 0 ? "+" : ""}
@@ -94,8 +94,8 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-[var(--text-tertiary)]">OBSERVED EVENTS</div>
-                  <div className="text-sm font-bold text-[var(--accent)] tabular-nums mt-0.5">
+                  <div className="text-[11px] text-[#64748B]">Observed Events</div>
+                  <div className="text-sm font-bold font-mono text-[#F59E0B] tabular-nums mt-0.5">
                     {data.event_count}
                   </div>
                 </div>
@@ -103,19 +103,19 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
 
               {/* Factual Narrative Timeline */}
               <div className="space-y-2">
-                <div className="text-[10px] font-bold text-[var(--text-tertiary)] tracking-widest uppercase">
-                  COINCIDENT STRUCTURAL EVENTS (NON-CAUSAL)
+                <div className="text-xs font-semibold text-[#94A3B8]">
+                  Coincident Structural Events (Non-Causal)
                 </div>
                 <div className="space-y-1.5">
                   {data.events.map((ev, i) => (
                     <div
                       key={i}
-                      className="p-2 bg-[var(--surface-base)] border border-[var(--border-subtle)] flex items-start gap-2 text-[11px]"
+                      className="p-2.5 bg-[#0B0E14] border border-[#1E2538] flex items-start gap-2 text-[11px]"
                     >
-                      <Activity size={14} className="text-[var(--accent)] shrink-0 mt-0.5" />
+                      <Activity size={14} className="text-[#3B82F6] shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <span className="font-bold text-[var(--text-secondary)] mr-1.5">[{ev.category}]</span>
-                        <span className="text-[var(--text-primary)]">{ev.description}</span>
+                        <span className="font-semibold text-[#F59E0B] mr-1.5">[{ev.category}]</span>
+                        <span className="text-[#F8FAFC]">{ev.description}</span>
                       </div>
                     </div>
                   ))}
@@ -123,12 +123,12 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
               </div>
 
               {/* Factual Narrative Summary */}
-              <div className="p-3 bg-[var(--surface-inset)] border border-[var(--border-subtle)] space-y-1">
-                <div className="text-[10px] font-bold text-[var(--text-secondary)] tracking-widest uppercase">
-                  FACTUAL NARRATIVE
+              <div className="p-3 bg-[#05070B] border border-[#1E2538] space-y-1.5">
+                <div className="text-xs font-semibold text-[#94A3B8]">
+                  Factual Narrative
                 </div>
                 {data.factual_narrative.map((n, i) => (
-                  <p key={i} className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                  <p key={i} className="text-xs text-[#94A3B8] leading-relaxed">
                     {n}
                   </p>
                 ))}

@@ -1,9 +1,9 @@
 // src/components/ReplayControlBar.tsx
-// Historical Market Replay controls — graphite-and-paper design system.
+// Historical Market Replay controls — v2 quantitative research design system.
 // Zero ML, zero prediction — strictly chronological historical playback.
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Play, Pause, StepForward, StepBack, RotateCcw } from "lucide-react";
+import { Play, Pause, StepForward, StepBack, RotateCcw, History } from "lucide-react";
 import { api } from "../api/client";
 import type { ReplayTimelineResponse, ReplayStepResponse } from "../types/structure";
 
@@ -30,25 +30,7 @@ function IconBtn({
       id={id}
       onClick={onClick}
       title={title}
-      style={{
-        padding: "4px 6px",
-        backgroundColor: "var(--surface-raised)",
-        border: "1px solid var(--border-default)",
-        color: "var(--text-secondary)",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1), color 160ms cubic-bezier(0.16,1,0.3,1)",
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
-        (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
-        (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-      }}
+      className="h-7 w-7 bg-[#10141D] hover:bg-[#18202F] border border-[#1E2538] hover:border-[#3B82F6] text-[#94A3B8] hover:text-[#F8FAFC] flex items-center justify-center transition-colors"
     >
       {children}
     </button>
@@ -124,17 +106,9 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
 
   if (loading || !timeline) {
     return (
-      <div style={{
-        padding: "7px 16px",
-        backgroundColor: "var(--surface-raised)",
-        borderBottom: "1px solid var(--border-subtle)",
-        fontFamily: "var(--font-mono)",
-        fontSize: 9,
-        letterSpacing: "0.08em",
-        color: "var(--text-disabled)",
-        textTransform: "uppercase",
-      }}>
-        Initializing historical replay state for {symbol}…
+      <div className="px-4 py-2 bg-[#05070B] border-b border-[#1E2538] text-xs text-[#64748B] flex items-center gap-2">
+        <History size={13} className="text-[#F59E0B] animate-spin" />
+        <span>Initializing historical replay state for <span className="font-semibold text-[#F8FAFC]">{symbol}</span>…</span>
       </div>
     );
   }
@@ -144,53 +118,30 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
   return (
     <div
       id="replay-control-bar"
-      style={{
-        padding: "6px 16px",
-        backgroundColor: "var(--surface-raised)",
-        borderBottom: "2px solid var(--accent-border)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        fontFamily: "var(--font-mono)",
-        userSelect: "none",
-        flexWrap: "wrap",
-      }}
+      className="px-4 py-2 bg-[#05070B] border-b border-[#F59E0B]/50 flex items-center justify-between gap-3 select-none flex-wrap"
     >
       {/* Mode badge + status */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "3px 8px",
-          backgroundColor: "var(--accent-subtle)",
-          border: "1px solid var(--accent-border)",
-          color: "var(--accent)",
-          fontSize: 9,
-          fontWeight: 600,
-          letterSpacing: "0.10em",
-          textTransform: "uppercase",
-        }}>
-          <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "var(--accent)", flexShrink: 0, display: "block" }} />
-          Replay
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#F59E0B]/15 border border-[#F59E0B]/40 text-[#F59E0B] text-xs font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] flex-shrink-0 animate-pulse" />
+          <span>Replay Mode</span>
         </div>
-        <div style={{ fontSize: 10, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color: "var(--text-disabled)" }}>Bar</span>
-          <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums", color: "var(--text-primary)" }}>
+        <div className="text-xs text-[#94A3B8] flex items-center gap-2 font-mono">
+          <span className="text-[#64748B]">Bar</span>
+          <span className="font-semibold tabular-nums text-[#F8FAFC]">
             {currentStep + 1} / {timeline.total_bars}
           </span>
-          <span style={{ color: "var(--border-strong)" }}>·</span>
-          <span style={{ color: "var(--accent)", fontVariantNumeric: "tabular-nums" }}>{curItem.time}</span>
-          <span style={{ color: "var(--border-strong)" }}>·</span>
-          <span style={{ color: "var(--text-tertiary)", fontVariantNumeric: "tabular-nums" }}>
+          <span className="text-[#334155]">·</span>
+          <span className="text-[#F59E0B] tabular-nums font-semibold">{curItem.time}</span>
+          <span className="text-[#334155]">·</span>
+          <span className="text-[#F8FAFC] tabular-nums font-medium">
             ₹{curItem.close.toFixed(2)}
           </span>
         </div>
       </div>
 
       {/* Playback controls */}
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <div className="flex items-center gap-1.5">
         <IconBtn id="replay-step-back" onClick={handleStepBack} title="Step Backward (t−1)">
           <StepBack size={13} />
         </IconBtn>
@@ -198,24 +149,23 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
         <button
           id="replay-play-pause"
           onClick={() => setIsPlaying(!isPlaying)}
-          style={{
-            padding: "4px 10px",
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            cursor: "pointer",
-            border: "1px solid",
-            backgroundColor: isPlaying ? "var(--warning-subtle)" : "var(--accent-subtle)",
-            borderColor: isPlaying ? "var(--warning-border)" : "var(--accent-border)",
-            color: isPlaying ? "var(--warning)" : "var(--accent)",
-            transition: "all 160ms cubic-bezier(0.16,1,0.3,1)",
-          }}
+          className={`h-7 px-3 flex items-center gap-1.5 text-xs font-semibold transition-colors border ${
+            isPlaying
+              ? "bg-[#EF4444] border-[#EF4444] text-white hover:bg-[#DC2626]"
+              : "bg-[#F59E0B] border-[#F59E0B] text-black hover:bg-[#D97706]"
+          }`}
         >
-          {isPlaying ? <><Pause size={11} /><span>PAUSE</span></> : <><Play size={11} /><span>PLAY</span></>}
+          {isPlaying ? (
+            <>
+              <Pause size={12} className="fill-current" />
+              <span>Pause</span>
+            </>
+          ) : (
+            <>
+              <Play size={12} className="fill-current" />
+              <span>Play</span>
+            </>
+          )}
         </button>
 
         <IconBtn id="replay-step-forward" onClick={handleStepForward} title="Step Forward (t+1)">
@@ -227,23 +177,16 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
         </IconBtn>
 
         {/* Speed selector */}
-        <div style={{ display: "flex", alignItems: "center", gap: 2, paddingLeft: 8, marginLeft: 4, borderLeft: "1px solid var(--border-subtle)" }}>
+        <div className="flex items-center gap-1 pl-2 ml-1 border-l border-[#1E2538]">
           {[1, 2, 5].map((s) => (
             <button
               key={s}
               onClick={() => setSpeed(s)}
-              style={{
-                padding: "2px 6px",
-                fontFamily: "var(--font-mono)",
-                fontSize: 9,
-                fontWeight: 600,
-                cursor: "pointer",
-                border: "1px solid",
-                backgroundColor: speed === s ? "var(--surface-overlay)" : "transparent",
-                borderColor: speed === s ? "var(--border-strong)" : "transparent",
-                color: speed === s ? "var(--text-primary)" : "var(--text-disabled)",
-                transition: "all 160ms cubic-bezier(0.16,1,0.3,1)",
-              }}
+              className={`h-6 px-1.5 text-[11px] font-mono font-semibold transition-colors border ${
+                speed === s
+                  ? "bg-[#1E2538] border-[#3B82F6] text-[#60A5FA]"
+                  : "bg-transparent border-transparent text-[#64748B] hover:text-[#F8FAFC]"
+              }`}
             >
               {s}×
             </button>
@@ -252,35 +195,21 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
       </div>
 
       {/* Scrubber */}
-      <div style={{ flex: 1, minWidth: 160, display: "flex", alignItems: "center" }}>
+      <div className="flex-1 min-w-[180px] max-w-md flex items-center px-2">
         <input
           type="range"
           min={0}
           max={timeline.total_bars - 1}
           value={currentStep}
           onChange={(e) => handleSeek(Number(e.target.value))}
-          style={{ width: "100%", cursor: "pointer", accentColor: "var(--accent)" }}
+          className="w-full cursor-pointer h-1.5 bg-[#10141D] accent-[#F59E0B]"
         />
       </div>
 
       {/* Exit */}
       <button
         onClick={onExitReplay}
-        style={{
-          padding: "4px 10px",
-          fontFamily: "var(--font-mono)",
-          fontSize: 9,
-          fontWeight: 600,
-          letterSpacing: "0.10em",
-          textTransform: "uppercase",
-          cursor: "pointer",
-          border: "1px solid var(--negative-border)",
-          backgroundColor: "var(--negative-subtle)",
-          color: "var(--negative)",
-          transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1)",
-        }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--negative)"}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--negative-border)"}
+        className="h-7 px-3 text-xs font-medium text-[#EF4444] bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/30 hover:border-[#EF4444] transition-colors"
       >
         Exit Replay
       </button>
