@@ -1,8 +1,9 @@
 // src/components/SignalAlignmentCard.tsx
-// Deterministic signal confluence card — graphite-and-paper design system.
+// Deterministic signal confluence card — v2 composable primitives & natural typography.
 
 import { useState } from "react";
 import type { SignalAlignmentResponse } from "../types/structure";
+import { Panel, PanelHeader, Badge, Progress } from "./ui";
 
 interface Props {
   alignment: SignalAlignmentResponse | null;
@@ -14,18 +15,9 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
 
   if (loading && !alignment) {
     return (
-      <div style={{
-        padding: 12,
-        backgroundColor: "var(--surface-raised)",
-        border: "1px solid var(--border-subtle)",
-        fontFamily: "var(--font-mono)",
-        fontSize: 9,
-        letterSpacing: "0.08em",
-        color: "var(--text-disabled)",
-        textTransform: "uppercase",
-      }}>
-        Evaluating signal alignment…
-      </div>
+      <Panel className="p-3">
+        <span className="text-xs text-[var(--text-tertiary)]">Evaluating signal alignment…</span>
+      </Panel>
     );
   }
 
@@ -33,247 +25,103 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
 
   const isBullish = alignment.dominant_bias === "BULLISH_CONFLUENCE";
   const isBearish = alignment.dominant_bias === "BEARISH_CONFLUENCE";
-
-  const biasBadge = isBullish
-    ? { color: "var(--positive)", bg: "var(--positive-subtle)", border: "var(--positive-border)" }
-    : isBearish
-    ? { color: "var(--negative)", bg: "var(--negative-subtle)", border: "var(--negative-border)" }
-    : { color: "var(--text-tertiary)", bg: "var(--neutral-subtle)", border: "var(--border-default)" };
+  const badgeVariant = isBullish ? "green" : isBearish ? "red" : "amber";
+  const accentEdge = isBullish ? "positive" : isBearish ? "negative" : "none";
 
   return (
-    <div
-      id="signal-alignment-card"
-      style={{
-        padding: 12,
-        backgroundColor: "var(--surface-raised)",
-        border: "1px solid var(--border-subtle)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        userSelect: "none",
-      }}
-    >
-      {/* Header */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingBottom: 8,
-        borderBottom: "1px solid var(--border-subtle)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: "0.10em",
-            textTransform: "uppercase",
-            color: "var(--text-secondary)",
-          }}>
-            Signal Confluence
-          </span>
-          <span style={{ color: "var(--border-default)", fontSize: 10 }}>·</span>
-          <span style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            letterSpacing: "0.08em",
-            color: "var(--text-disabled)",
-            textTransform: "uppercase",
-          }}>
-            Rule Tally
-          </span>
-        </div>
-        <span
-          id="signal-bias-badge"
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            padding: "2px 7px",
-            border: `1px solid ${biasBadge.border}`,
-            backgroundColor: biasBadge.bg,
-            color: biasBadge.color,
-          }}
-        >
-          {alignment.dominant_bias.replace(/_/g, " ")}
-        </span>
-      </div>
+    <Panel id="signal-alignment-card" accentEdge={accentEdge} className="overflow-hidden">
+      <PanelHeader
+        title="Signal Confluence"
+        subtitle="Deterministic rule tally"
+        badge={
+          <Badge variant={badgeVariant} dot>
+            {alignment.dominant_bias.replace(/_/g, " ")}
+          </Badge>
+        }
+      />
 
-      {/* Tally */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 8,
-        padding: 10,
-        backgroundColor: "var(--surface-inset)",
-        border: "1px solid var(--border-subtle)",
-      }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <span style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--text-disabled)",
-          }}>
-            Bullish
-          </span>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-            <span style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 16,
-              fontWeight: 700,
-              color: "var(--positive)",
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              {alignment.bullish_alignment_count}
-            </span>
-            <span style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              color: "var(--text-disabled)",
-            }}>
-              / {alignment.alignment_total}
+      {/* Tally Grid */}
+      <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[var(--text-secondary)] font-medium">Bullish</span>
+            <span className="font-bold text-[var(--positive)] font-mono tabular-nums">
+              {alignment.bullish_alignment_count} / {alignment.alignment_total}
             </span>
           </div>
+          <Progress
+            value={alignment.bullish_alignment_count}
+            max={alignment.alignment_total}
+            color="green"
+            height={4}
+          />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <span style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--text-disabled)",
-          }}>
-            Bearish
-          </span>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-            <span style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 16,
-              fontWeight: 700,
-              color: "var(--negative)",
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              {alignment.bearish_alignment_count}
-            </span>
-            <span style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              color: "var(--text-disabled)",
-            }}>
-              / {alignment.alignment_total}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[var(--text-secondary)] font-medium">Bearish</span>
+            <span className="font-bold text-[var(--negative)] font-mono tabular-nums">
+              {alignment.bearish_alignment_count} / {alignment.alignment_total}
             </span>
           </div>
+          <Progress
+            value={alignment.bearish_alignment_count}
+            max={alignment.alignment_total}
+            color="red"
+            height={4}
+          />
         </div>
       </div>
 
-      {/* Summary */}
-      <p style={{
-        fontFamily: "var(--font-sans)",
-        fontSize: 10,
-        lineHeight: 1.6,
-        color: "var(--text-secondary)",
-        margin: 0,
-      }}>
-        {alignment.factual_summary}
-      </p>
+      {/* Factual Summary */}
+      <div className="p-3 flex flex-col gap-2">
+        <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
+          {alignment.factual_summary}
+        </p>
 
-      {/* Expand conditions */}
-      <div style={{ paddingTop: 6, borderTop: "1px solid var(--border-subtle)" }}>
-        <button
-          id="toggle-conditions-btn"
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--accent)",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            padding: 0,
-            transition: "color 160ms cubic-bezier(0.16,1,0.3,1)",
-          }}
-        >
-          <span>{expanded ? "▲ Hide conditions" : "▼ Inspect 12 conditions"}</span>
-          <span style={{ color: "var(--text-disabled)", fontSize: 8, letterSpacing: "0.06em" }}>
-            DETERMINISTIC RULES
-          </span>
-        </button>
+        <div className="pt-2 border-t border-[var(--border-subtle)]">
+          <button
+            id="toggle-conditions-btn"
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-between text-xs font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors duration-150 py-0.5"
+          >
+            <span>{expanded ? "▲ Hide conditions" : "▼ Inspect 12 conditions"}</span>
+            <span className="text-[10px] text-[var(--text-tertiary)] font-normal">Rules audit</span>
+          </button>
 
-        {expanded && (
-          <div style={{
-            marginTop: 8,
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            maxHeight: 200,
-            overflowY: "auto",
-          }}>
-            {alignment.conditions.map((c) => (
-              <div
-                key={c.condition_id}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 8,
-                  padding: "6px 8px",
-                  backgroundColor: "var(--surface-inset)",
-                  border: "1px solid var(--border-subtle)",
-                }}
-              >
-                <span style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 8,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  padding: "1px 4px",
-                  backgroundColor: c.satisfied
-                    ? c.bias === "bullish"
-                      ? "var(--positive-subtle)"
-                      : "var(--negative-subtle)"
-                    : "var(--neutral-subtle)",
-                  color: c.satisfied
-                    ? c.bias === "bullish"
-                      ? "var(--positive)"
-                      : "var(--negative)"
-                    : "var(--text-disabled)",
-                }}>
-                  {c.satisfied ? "YES" : "NO"}
-                </span>
-                <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
-                  <span style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 9,
-                    fontWeight: 600,
-                    color: c.satisfied ? "var(--text-primary)" : "var(--text-disabled)",
-                  }}>
-                    {c.label} <span style={{ fontWeight: 400, color: "var(--text-tertiary)" }}>({c.bias})</span>
+          {expanded && (
+            <div className="mt-2.5 flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1">
+              {alignment.conditions.map((c) => (
+                <div
+                  key={c.condition_id}
+                  className="p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex items-start gap-2.5 text-xs"
+                >
+                  <span
+                    className={`text-[9px] font-bold px-1.5 py-0.5 border shrink-0 ${
+                      c.satisfied
+                        ? c.bias === "bullish"
+                          ? "bg-[var(--positive-subtle)] text-[var(--positive)] border-[var(--positive-border)]"
+                          : "bg-[var(--negative-subtle)] text-[var(--negative)] border-[var(--negative-border)]"
+                        : "bg-[var(--surface-elevated)] text-[var(--text-tertiary)] border-[var(--border-default)]"
+                    }`}
+                  >
+                    {c.satisfied ? "MET" : "UNMET"}
                   </span>
-                  <span style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: 9,
-                    lineHeight: 1.5,
-                    color: "var(--text-tertiary)",
-                  }}>
-                    {c.description}
-                  </span>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-medium text-[var(--text-primary)]">
+                      {c.label} <span className="text-[var(--text-tertiary)] font-normal">({c.bias})</span>
+                    </span>
+                    <span className="text-[11px] text-[var(--text-secondary)] leading-normal">
+                      {c.description}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Panel>
   );
 }

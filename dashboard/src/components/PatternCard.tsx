@@ -1,8 +1,9 @@
 // src/components/PatternCard.tsx
-// Candlestick Pattern Analysis — graphite-and-paper design system.
+// Candlestick Pattern Analysis — v2 composable primitives & natural typography.
 
-import { ShieldCheck, ShieldAlert, CheckCircle2, TrendingUp, TrendingDown, Layers } from "lucide-react";
+import { CheckCircle2, TrendingUp, TrendingDown, Layers } from "lucide-react";
 import type { PatternData } from "../types/market";
+import { Panel, PanelHeader, Badge } from "./ui";
 
 interface PatternCardProps {
   pattern: PatternData | null;
@@ -11,43 +12,12 @@ interface PatternCardProps {
 export default function PatternCard({ pattern }: PatternCardProps) {
   if (!pattern) {
     return (
-      <div style={{
-        padding: 12,
-        backgroundColor: "var(--surface-raised)",
-        border: "1px solid var(--border-subtle)",
-      }}>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingBottom: 8,
-          borderBottom: "1px solid var(--border-subtle)",
-          marginBottom: 8,
-        }}>
-          <h3 style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: "0.10em",
-            textTransform: "uppercase",
-            color: "var(--text-secondary)",
-            margin: 0,
-          }}>
-            Pattern Analysis
-          </h3>
-        </div>
-        <div style={{
-          padding: "20px 0",
-          textAlign: "center",
-          fontFamily: "var(--font-mono)",
-          fontSize: 9,
-          letterSpacing: "0.08em",
-          color: "var(--text-disabled)",
-          textTransform: "uppercase",
-        }}>
+      <Panel className="p-3">
+        <PanelHeader title="Pattern Analysis" />
+        <div className="py-4 text-center text-xs text-[var(--text-tertiary)]">
           Scanning historical sessions…
         </div>
-      </div>
+      </Panel>
     );
   }
 
@@ -55,19 +25,14 @@ export default function PatternCard({ pattern }: PatternCardProps) {
   const ctx = pattern.contextual_pattern;
   const isMarubozu = pattern.pattern !== "none";
   const hasPatterns = isMarubozu || detectedList.length > 0;
-  const stopLoss = typeof pattern.stop_loss === "number"
-    ? pattern.stop_loss
-    : typeof detectedList[detectedList.length - 1]?.context?.stop_loss === "number"
-    ? (detectedList[detectedList.length - 1].context.stop_loss as number)
-    : null;
 
   const primaryName = isMarubozu
     ? pattern.pattern === "bullish_marubozu"
-      ? "BULLISH MARUBOZU"
-      : "BEARISH MARUBOZU"
+      ? "Bullish Marubozu"
+      : "Bearish Marubozu"
     : detectedList.length > 0
-    ? detectedList[detectedList.length - 1].pattern.toUpperCase()
-    : "NO CANDLE PATTERN";
+    ? detectedList[detectedList.length - 1].pattern.replace(/_/g, " ")
+    : "No Candle Pattern";
 
   const isBullish = isMarubozu
     ? pattern.pattern === "bullish_marubozu"
@@ -81,277 +46,100 @@ export default function PatternCard({ pattern }: PatternCardProps) {
     ? detectedList[detectedList.length - 1].direction === "bearish"
     : false;
 
-  const directionStyle = isBullish
-    ? { color: "var(--positive)", bg: "var(--positive-subtle)", border: "var(--positive-border)" }
-    : isBearish
-    ? { color: "var(--negative)", bg: "var(--negative-subtle)", border: "var(--negative-border)" }
-    : { color: "var(--text-secondary)", bg: "var(--neutral-subtle)", border: "var(--border-default)" };
+  const badgeVariant = isBullish ? "green" : isBearish ? "red" : "neutral";
+  const accentEdge = isBullish ? "positive" : isBearish ? "negative" : "none";
 
   return (
-    <div style={{
-      padding: 12,
-      backgroundColor: "var(--surface-raised)",
-      border: "1px solid var(--border-subtle)",
-      userSelect: "none",
-    }}>
-      {/* Header */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingBottom: 8,
-        borderBottom: "1px solid var(--border-subtle)",
-        marginBottom: 10,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <h3 style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: "0.10em",
-            textTransform: "uppercase",
-            color: "var(--text-secondary)",
-            margin: 0,
-          }}>
-            Pattern Analysis
-          </h3>
-          <span style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 8,
-            padding: "1px 4px",
-            backgroundColor: "var(--surface-inset)",
-            color: "var(--accent)",
-            border: "1px solid var(--border-subtle)",
-          }}>
+    <Panel id="pattern-card" accentEdge={accentEdge} className="overflow-hidden">
+      <PanelHeader
+        title="Pattern Analysis"
+        subtitle={pattern.signal_day ?? pattern.latest_candle?.date ?? "Latest session"}
+        badge={
+          <Badge variant="blue">
             V2
-          </span>
-        </div>
-        <span style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 9,
-          color: "var(--text-tertiary)",
-        }}>
-          {pattern.signal_day ?? pattern.latest_candle?.date ?? "Latest Session"}
-        </span>
-      </div>
+          </Badge>
+        }
+      />
 
-      {hasPatterns ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {/* Primary Pattern Badge */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "7px 10px",
-            border: `1px solid ${directionStyle.border}`,
-            backgroundColor: directionStyle.bg,
-          }}>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontFamily: "var(--font-mono)",
-              fontSize: 10,
-              fontWeight: 600,
-              color: directionStyle.color,
-            }}>
-              {isBullish ? <TrendingUp size={12} /> : isBearish ? <TrendingDown size={12} /> : <Layers size={12} />}
-              <span>{primaryName}</span>
-            </div>
-            <CheckCircle2 size={12} style={{ color: directionStyle.color }} />
-          </div>
-
-          {/* Interpretation */}
-          <div style={{
-            padding: "8px 10px",
-            backgroundColor: "var(--surface-inset)",
-            border: "1px solid var(--border-subtle)",
-          }}>
-            <span style={{
-              display: "block",
-              fontFamily: "var(--font-mono)",
-              fontSize: 9,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--text-disabled)",
-              marginBottom: 5,
-            }}>
-              Deterministic Interpretation
+      <div className="p-3 flex flex-col gap-2.5">
+        {/* Primary Pattern Badge Pill */}
+        <div
+          className={`p-2.5 flex items-center justify-between border ${
+            isBullish
+              ? "bg-[var(--positive-subtle)] border-[var(--positive-border)]"
+              : isBearish
+              ? "bg-[var(--negative-subtle)] border-[var(--negative-border)]"
+              : "bg-[var(--surface-inset)] border-[var(--border-default)]"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {isBullish ? (
+              <TrendingUp size={16} className="text-[var(--positive)]" />
+            ) : isBearish ? (
+              <TrendingDown size={16} className="text-[var(--negative)]" />
+            ) : (
+              <Layers size={16} className="text-[var(--text-secondary)]" />
+            )}
+            <span
+              className={`text-xs font-bold capitalize ${
+                isBullish ? "text-[var(--positive)]" : isBearish ? "text-[var(--negative)]" : "text-[var(--text-primary)]"
+              }`}
+            >
+              {primaryName}
             </span>
-            <p style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: 10,
-              lineHeight: 1.6,
-              color: "var(--text-secondary)",
-              margin: 0,
-            }}>
-              {detectedList.length > 0
-                ? detectedList[detectedList.length - 1].explanation
-                : pattern.rationale}
-            </p>
           </div>
-
-          {/* Contextual Market Structure */}
-          {ctx && (
-            <div style={{
-              padding: "8px 10px",
-              backgroundColor: "var(--surface-inset)",
-              border: "1px solid var(--border-subtle)",
-            }}>
-              <span style={{
-                display: "block",
-                fontFamily: "var(--font-mono)",
-                fontSize: 9,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "var(--accent)",
-                marginBottom: 6,
-              }}>
-                Structural Context
-              </span>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 8,
-                marginBottom: 6,
-              }}>
-                <div>
-                  <span style={{
-                    display: "block",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 8,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--text-disabled)",
-                    marginBottom: 2,
-                  }}>
-                    Nearest Support
-                  </span>
-                  <span style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--text-primary)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}>
-                    {ctx.nearest_support_price
-                      ? `₹${ctx.nearest_support_price.toFixed(2)} (-${ctx.support_distance_pct}%)`
-                      : "None nearby"}
-                  </span>
-                </div>
-                <div>
-                  <span style={{
-                    display: "block",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 8,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--text-disabled)",
-                    marginBottom: 2,
-                  }}>
-                    Volume Profile
-                  </span>
-                  <span style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--accent)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}>
-                    {ctx.rvol}x RVOL ({ctx.volume_state})
-                  </span>
-                </div>
-              </div>
-              <p style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: 9,
-                lineHeight: 1.6,
-                color: "var(--text-tertiary)",
-                margin: 0,
-                paddingTop: 6,
-                borderTop: "1px solid var(--border-subtle)",
-              }}>
-                {ctx.context_summary}
-              </p>
-            </div>
+          {hasPatterns && (
+            <CheckCircle2
+              size={14}
+              className={isBullish ? "text-[var(--positive)]" : isBearish ? "text-[var(--negative)]" : "text-[var(--text-secondary)]"}
+            />
           )}
+        </div>
 
-          {/* Stop Loss */}
-          {typeof stopLoss === "number" && !isNaN(stopLoss) && (
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 10px",
-              backgroundColor: "var(--surface-inset)",
-              border: "1px solid var(--border-subtle)",
-            }}>
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                color: "var(--negative)",
-              }}>
-                <ShieldAlert size={11} />
-                <span style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}>
-                  Protective Stop Reference
+        {/* Interpretation Box */}
+        <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-1">
+          <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">
+            Interpretation
+          </span>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
+            {detectedList.length > 0
+              ? detectedList[detectedList.length - 1].explanation
+              : pattern.rationale ?? "No specific candlestick formation observed in current session."}
+          </p>
+        </div>
+
+        {/* Structural Context (if available) */}
+        {ctx && (
+          <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-2">
+            <span className="text-[10px] font-semibold text-[var(--accent-primary)] uppercase tracking-wide">
+              Structural Context
+            </span>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] text-[var(--text-tertiary)]">Nearest Support</span>
+                <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
+                  {ctx.nearest_support_price
+                    ? `₹${ctx.nearest_support_price.toFixed(2)} (-${ctx.support_distance_pct}%)`
+                    : "None nearby"}
                 </span>
               </div>
-              <span style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                fontVariantNumeric: "tabular-nums",
-              }}>
-                ₹{stopLoss.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-              </span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] text-[var(--text-tertiary)]">Nearest Resistance</span>
+                <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
+                  {ctx.nearest_resistance_price
+                    ? `₹${ctx.nearest_resistance_price.toFixed(2)} (+${ctx.resistance_distance_pct}%)`
+                    : "None nearby"}
+                </span>
+              </div>
             </div>
-          )}
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <span style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: 11,
-            fontWeight: 500,
-            color: "var(--text-primary)",
-          }}>
-            No Recognized Pattern
-          </span>
-          <p style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: 10,
-            lineHeight: 1.6,
-            color: "var(--text-secondary)",
-            margin: 0,
-          }}>
-            No single or multi-candle pattern detected on the latest trading sessions.
-          </p>
-          <div style={{
-            paddingTop: 8,
-            borderTop: "1px solid var(--border-subtle)",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 6,
-          }}>
-            <ShieldCheck size={11} style={{ color: "var(--text-tertiary)", flexShrink: 0, marginTop: 1 }} />
-            <span style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: 9,
-              lineHeight: 1.6,
-              color: "var(--text-tertiary)",
-            }}>
-              Pattern Engine scans for Marubozu, Doji, Spinning Top, Hammer, Hanging Man, Engulfing, Harami, and Stars.
-            </span>
+            {ctx.context_summary && (
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0 border-t border-[var(--border-subtle)] pt-1.5">
+                {ctx.context_summary}
+              </p>
+            )}
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Panel>
   );
 }
