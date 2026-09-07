@@ -98,7 +98,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
 
         {/* Interpretation Box */}
         <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-1">
-          <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">
+          <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
             Interpretation
           </span>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
@@ -111,7 +111,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
         {/* Structural Context (if available) */}
         {ctx && (
           <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-2">
-            <span className="text-[10px] font-semibold text-[var(--accent-primary)] uppercase tracking-wide">
+            <span className="text-[11px] font-semibold text-[var(--accent-primary)]">
               Structural Context
             </span>
             <div className="grid grid-cols-2 gap-2 text-xs">

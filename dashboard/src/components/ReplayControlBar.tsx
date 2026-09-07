@@ -107,7 +107,7 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
   if (loading || !timeline) {
     return (
       <div className="px-4 py-2 bg-[#05070B] border-b border-[#1E2538] text-xs text-[#64748B] flex items-center gap-2">
-        <History size={13} className="text-[#F59E0B] animate-spin" />
+        <History size={13} className="text-[#1E90FF] animate-spin" />
         <span>Initializing historical replay state for <span className="font-semibold text-[#F8FAFC]">{symbol}</span>…</span>
       </div>
     );
@@ -118,12 +118,12 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
   return (
     <div
       id="replay-control-bar"
-      className="px-4 py-2 bg-[#05070B] border-b border-[#F59E0B]/50 flex items-center justify-between gap-3 select-none flex-wrap"
+      className="px-4 py-2 bg-[#05070B] border-b border-[#1E90FF]/50 flex items-center justify-between gap-3 select-none flex-wrap"
     >
       {/* Mode badge + status */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#F59E0B]/15 border border-[#F59E0B]/40 text-[#F59E0B] text-xs font-semibold">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] flex-shrink-0 animate-pulse" />
+        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#1E90FF]/15 border border-[#1E90FF]/40 text-[#1E90FF] text-xs font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#1E90FF] flex-shrink-0 animate-pulse" />
           <span>Replay Mode</span>
         </div>
         <div className="text-xs text-[#94A3B8] flex items-center gap-2 font-mono">
@@ -132,7 +132,7 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
             {currentStep + 1} / {timeline.total_bars}
           </span>
           <span className="text-[#334155]">·</span>
-          <span className="text-[#F59E0B] tabular-nums font-semibold">{curItem.time}</span>
+          <span className="text-[#1E90FF] tabular-nums font-semibold">{curItem.time}</span>
           <span className="text-[#334155]">·</span>
           <span className="text-[#F8FAFC] tabular-nums font-medium">
             ₹{curItem.close.toFixed(2)}
@@ -152,7 +152,7 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
           className={`h-7 px-3 flex items-center gap-1.5 text-xs font-semibold transition-colors border ${
             isPlaying
               ? "bg-[#EF4444] border-[#EF4444] text-white hover:bg-[#DC2626]"
-              : "bg-[#F59E0B] border-[#F59E0B] text-black hover:bg-[#D97706]"
+              : "bg-[#1E90FF] border-[#1E90FF] text-white hover:bg-[#1C86EE]"
           }`}
         >
           {isPlaying ? (
@@ -202,7 +202,7 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
           max={timeline.total_bars - 1}
           value={currentStep}
           onChange={(e) => handleSeek(Number(e.target.value))}
-          className="w-full cursor-pointer h-1.5 bg-[#10141D] accent-[#F59E0B]"
+          className="w-full cursor-pointer h-1.5 bg-[#10141D] accent-[#1E90FF]"
         />
       </div>
 

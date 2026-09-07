@@ -91,7 +91,7 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
           </button>
 
           {expanded && (
-            <div className="mt-2.5 flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1">
+            <div className="mt-2.5 flex flex-col gap-1.5">
               {alignment.conditions.map((c) => (
                 <div
                   key={c.condition_id}
