@@ -1,6 +1,5 @@
 // src/components/ModuleNav.tsx
-// Xeroww module navigator — graphite-and-paper design system.
-// Quiet header with a single accent to indicate active state.
+// Xeroww workspace navigation — v2 natural typography & vivid amber active indicator.
 
 import type { UserProfile } from "../types/auth";
 
@@ -15,78 +14,68 @@ interface Props {
   onOpenBreadth?: () => void;
 }
 
-const MODULES: Module[] = ["MARKET", "WATCHLISTS", "PORTFOLIO", "ALERTS", "JOURNAL", "SYSTEM"];
+const MODULE_CONFIG: { id: Module; label: string }[] = [
+  { id: "MARKET", label: "Market" },
+  { id: "WATCHLISTS", label: "Watchlists" },
+  { id: "PORTFOLIO", label: "Portfolio" },
+  { id: "ALERTS", label: "Alerts" },
+  { id: "JOURNAL", label: "Journal" },
+  { id: "SYSTEM", label: "System" },
+];
 
-export default function ModuleNav({ activeModule, onModuleChange, user, onLogout, onLogin, onOpenBreadth }: Props) {
+export default function ModuleNav({
+  activeModule,
+  onModuleChange,
+  user,
+  onLogout,
+  onLogin,
+  onOpenBreadth,
+}: Props) {
   return (
     <nav
       id="module-nav"
-      className="flex items-center shrink-0"
+      className="flex items-center shrink-0 border-b border-[var(--border-default)] select-none"
       style={{
-        minHeight: 38,
-        backgroundColor: "var(--surface-base)",
-        borderBottom: "1px solid var(--border-subtle)",
-        fontFamily: "var(--font-mono)",
+        height: 42,
+        backgroundColor: "var(--canvas)",
+        fontFamily: "var(--font-sans)",
       }}
     >
-      {/* Brand — wordmark only, no glow */}
+      {/* Brand & Version */}
       <div
-        className="px-5 flex items-center gap-2.5 shrink-0"
-        style={{ height: 38, borderRight: "1px solid var(--border-subtle)" }}
+        className="px-4 flex items-center gap-2.5 shrink-0 border-r border-[var(--border-default)]"
+        style={{ height: 42 }}
       >
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.18em",
-            color: "var(--text-primary)",
-          }}
-        >
-          XEROWW
+        <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
+          Xeroww
         </span>
-        <span
-          style={{
-            fontSize: 9,
-            letterSpacing: "0.06em",
-            color: "var(--text-disabled)",
-          }}
-        >
-          V0.6
+        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
+          v0.6
         </span>
       </div>
 
-      {/* Module tabs */}
-      <div className="flex items-center overflow-x-auto">
-        {MODULES.map((mod) => {
-          const active = activeModule === mod;
+      {/* Module tabs with natural title case */}
+      <div className="flex items-center h-full overflow-x-auto">
+        {MODULE_CONFIG.map(({ id, label }) => {
+          const active = activeModule === id;
           return (
             <button
-              key={mod}
-              id={`module-tab-${mod.toLowerCase()}`}
-              onClick={() => onModuleChange(mod)}
-              style={{
-                height: 38,
-                padding: "0 16px",
-                fontSize: 10,
-                letterSpacing: "0.14em",
-                fontWeight: 500,
-                fontFamily: "var(--font-mono)",
-                borderRight: "1px solid var(--border-subtle)",
-                borderBottom: active ? `2px solid var(--accent)` : "2px solid transparent",
-                backgroundColor: active ? "var(--surface-raised)" : "transparent",
-                color: active ? "var(--text-primary)" : "var(--text-tertiary)",
-                transition: "color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1)",
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-              onMouseEnter={e => {
-                if (!active) (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-              }}
-              onMouseLeave={e => {
-                if (!active) (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
-              }}
+              key={id}
+              id={`module-tab-${id.toLowerCase()}`}
+              onClick={() => onModuleChange(id)}
+              className={`h-full px-4 text-xs font-medium flex items-center border-r border-[var(--border-default)] transition-colors duration-150 relative ${
+                active
+                  ? "text-[var(--text-primary)] bg-[var(--surface)] font-semibold"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50"
+              }`}
             >
-              {mod}
+              {label}
+              {active && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-[2px]"
+                  style={{ backgroundColor: "var(--accent-primary)" }}
+                />
+              )}
             </button>
           );
         })}
@@ -97,123 +86,44 @@ export default function ModuleNav({ activeModule, onModuleChange, user, onLogout
         <button
           id="nav-breadth-btn"
           onClick={onOpenBreadth}
-          style={{
-            marginLeft: 12,
-            padding: "4px 10px",
-            fontSize: 9,
-            fontWeight: 500,
-            letterSpacing: "0.10em",
-            fontFamily: "var(--font-mono)",
-            border: "1px solid var(--border-default)",
-            borderRadius: 2,
-            backgroundColor: "transparent",
-            color: "var(--text-tertiary)",
-            cursor: "pointer",
-            transition: "color 160ms cubic-bezier(0.16,1,0.3,1), border-color 160ms cubic-bezier(0.16,1,0.3,1)",
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
-            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
-          }}
+          className="ml-3 px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors duration-150 rounded-sm bg-[var(--surface)]"
         >
-          MARKET BREADTH
+          Market Breadth
         </button>
       )}
 
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* User badge */}
+      {/* User Session status */}
       <div
-        className="flex items-center gap-3 px-4 shrink-0"
-        style={{ height: 38, borderLeft: "1px solid var(--border-subtle)" }}
+        className="flex items-center gap-3 px-4 shrink-0 border-l border-[var(--border-default)]"
+        style={{ height: 42 }}
       >
         {user ? (
           <>
             <div className="flex items-center gap-2">
-              {/* Presence indicator — muted green dot */}
-              <span
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  backgroundColor: "var(--positive)",
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.08em",
-                  color: "var(--text-secondary)",
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
-                {user.name.toUpperCase()}
+              <span className="w-2 h-2 rounded-full bg-[var(--positive)] shrink-0" />
+              <span className="text-xs font-medium text-[var(--text-primary)]">
+                {user.name}
               </span>
-              <span style={{ color: "var(--border-strong)", fontSize: 10 }}>·</span>
-              <span
-                style={{
-                  fontSize: 9,
-                  color: "var(--text-tertiary)",
-                  fontFamily: "var(--font-mono)",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                {user.role}
-              </span>
+              <span className="text-xs text-[var(--text-tertiary)]">({user.role})</span>
             </div>
             <button
               id="logout-btn"
               onClick={onLogout}
-              style={{
-                fontSize: 9,
-                letterSpacing: "0.1em",
-                color: "var(--text-tertiary)",
-                fontFamily: "var(--font-mono)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "2px 4px",
-                transition: "color 160ms cubic-bezier(0.16,1,0.3,1)",
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--negative)"}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)"}
+              className="text-xs text-[var(--text-tertiary)] hover:text-[var(--negative)] transition-colors duration-150"
             >
-              SIGN OUT
+              Sign out
             </button>
           </>
         ) : (
           <button
             id="login-btn"
             onClick={onLogin}
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.1em",
-              fontWeight: 600,
-              fontFamily: "var(--font-mono)",
-              color: "var(--accent)",
-              border: "1px solid var(--accent-border)",
-              borderRadius: 2,
-              background: "var(--accent-subtle)",
-              padding: "4px 10px",
-              cursor: "pointer",
-              transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1)",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
-              (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(91,127,166,0.20)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border)";
-              (e.currentTarget as HTMLElement).style.backgroundColor = "var(--accent-subtle)";
-            }}
+            className="px-3 py-1 text-xs font-semibold text-[var(--accent-primary)] bg-[var(--accent-subtle)] border border-[var(--accent-border)] hover:border-[var(--accent-primary)] transition-colors duration-150 rounded-sm"
           >
-            SIGN IN
+            Sign in
           </button>
         )}
       </div>
