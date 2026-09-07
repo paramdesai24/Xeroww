@@ -55,8 +55,8 @@ export default function PatternCard({ pattern }: PatternCardProps) {
         title="Pattern Analysis"
         subtitle={pattern.signal_day ?? pattern.latest_candle?.date ?? "Latest session"}
         badge={
-          <Badge variant="blue">
-            V2
+          <Badge variant={badgeVariant}>
+            {isBullish ? "Bullish" : isBearish ? "Bearish" : "Pattern"}
           </Badge>
         }
       />

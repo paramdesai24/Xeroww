@@ -36,59 +36,33 @@ export default function Footer() {
     };
   }, []);
 
-  const separator = (
-    <span style={{ color: "var(--border-strong)", margin: "0 8px" }}>·</span>
-  );
-
   return (
     <footer
-      style={{
-        height: 24,
-        backgroundColor: "var(--surface-base)",
-        borderTop: "1px solid var(--border-subtle)",
-        display: "flex",
-        alignItems: "center",
-        paddingLeft: 16,
-        paddingRight: 16,
-        justifyContent: "space-between",
-        flexShrink: 0,
-        userSelect: "none",
-        fontFamily: "var(--font-mono)",
-        fontSize: 9,
-        color: "var(--text-tertiary)",
-        letterSpacing: "0.06em",
-      }}
+      className="h-7 bg-[#000000] border-t border-[#1E2538] flex items-center px-4 justify-between shrink-0 select-none text-[11px] font-mono text-[#64748B]"
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <span>FEED: {health?.data_provider ?? "YAHOO"}</span>
-        {separator}
-        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+      <div className="flex items-center gap-3">
+        <span>Feed: <span className="text-[#94A3B8] font-medium">{health?.data_provider ?? "Yahoo Finance"}</span></span>
+        <span className="text-[#334155]">·</span>
+        <span className="flex items-center gap-1.5">
           <span
-            style={{
-              width: 4,
-              height: 4,
-              borderRadius: "50%",
-              backgroundColor: operational ? "var(--positive)" : "var(--negative)",
-              flexShrink: 0,
-            }}
+            className={`w-2 h-2 rounded-full shrink-0 ${
+              operational ? "bg-[#22C55E]" : "bg-[#EF4444]"
+            }`}
           />
-          <span style={{ color: operational ? "var(--positive)" : "var(--negative)" }}>
-            ANALYTICS: {operational ? "HEALTHY" : "DEGRADED"}
+          <span className={operational ? "text-[#22C55E] font-medium" : "text-[#EF4444] font-medium"}>
+            Engine: {operational ? "Operational" : "Degraded"}
           </span>
         </span>
-        {separator}
-        <span>DB: {operational ? "CONNECTED" : "UNREACHABLE"}</span>
-        {separator}
-        <span>V0.6</span>
+        <span className="text-[#334155]">·</span>
+        <span>DB: <span className={operational ? "text-[#94A3B8]" : "text-[#EF4444]"}>{operational ? "Connected" : "Unreachable"}</span></span>
+        <span className="text-[#334155]">·</span>
+        <span className="text-[#64748B]">v0.6</span>
       </div>
 
-      <div
-        className="hidden md:flex"
-        style={{ alignItems: "center", gap: 6, color: "var(--text-disabled)" }}
-      >
-        <span>XEROWW DETERMINISTIC ENGINE</span>
-        <span style={{ color: "var(--border-strong)" }}>·</span>
-        <span>NO ML / ZERO PREDICTION</span>
+      <div className="hidden md:flex items-center gap-2 text-[#475569]">
+        <span>Xeroww Quantitative Workstation</span>
+        <span className="text-[#334155]">·</span>
+        <span>Deterministic Empirical Analysis</span>
       </div>
     </footer>
   );

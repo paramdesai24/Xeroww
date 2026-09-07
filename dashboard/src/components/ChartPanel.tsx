@@ -15,7 +15,7 @@ import {
   type IPriceLine,
   type MouseEventParams,
 } from "lightweight-charts";
-import { TrendingUp, TrendingDown, BarChart2, Layers } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
 import type { QuoteData, OHLCData, OHLCBar } from "../types/market";
 import type { MarketStructureSummaryResponse, SRZone } from "../types/structure";
 

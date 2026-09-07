@@ -65,87 +65,23 @@ export default function App() {
     }
   };
 
-  // Auth gate — editorial, not alarming
+  // Auth gate — refined quant gate
   const renderAuthGate = (moduleName: string) => (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "var(--surface-base)",
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 360,
-          border: "1px solid var(--border-default)",
-          backgroundColor: "var(--surface-raised)",
-          padding: 28,
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 14,
-        }}
-      >
-        {/* Quiet presence indicator */}
-        <span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            backgroundColor: "var(--accent)",
-            display: "block",
-          }}
-        />
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--text-primary)",
-          }}
-        >
+    <div className="flex-1 flex flex-col items-center justify-center bg-[#000000] p-6">
+      <div className="w-full max-w-sm border border-[#1E2538] bg-[#0B0E14] p-8 text-center flex flex-col items-center gap-3.5 shadow-2xl">
+        <span className="w-2 h-2 rounded-full bg-[#F59E0B] block animate-pulse" />
+        <div className="text-sm font-semibold text-[#F8FAFC]">
           {moduleName} requires authentication
         </div>
-        <p
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: 11,
-            lineHeight: 1.7,
-            color: "var(--text-secondary)",
-            margin: 0,
-          }}
-        >
+        <p className="text-xs text-[#94A3B8] leading-relaxed m-0">
           Access to multi-tenant persistence — custom watchlists, simulated
           portfolios, alert engines, and decision audits — requires a
-          cryptographically verified session.
+          verified session.
         </p>
         <button
           id="gate-auth-btn"
           onClick={() => setShowAuthModal(true)}
-          style={{
-            marginTop: 6,
-            padding: "8px 20px",
-            fontFamily: "var(--font-mono)",
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--text-primary)",
-            backgroundColor: "var(--surface-overlay)",
-            border: "1px solid var(--border-default)",
-            cursor: "pointer",
-            transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1)",
-          }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)"}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)"}
+          className="mt-2 px-5 py-2 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black transition-colors"
         >
           Sign In / Register
         </button>
@@ -154,15 +90,7 @@ export default function App() {
   );
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      backgroundColor: "var(--surface-base)",
-      color: "var(--text-primary)",
-      overflow: "hidden",
-      userSelect: "none",
-    }}>
+    <div className="flex flex-col h-screen bg-[#000000] text-[#F8FAFC] overflow-hidden select-none">
       {/* Top Module Navigator */}
       <ModuleNav
         activeModule={activeModule}
@@ -174,9 +102,9 @@ export default function App() {
       />
 
       {/* Main Terminal Body */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="flex flex-1 overflow-hidden">
         {activeModule === "MARKET" && (
-          <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+          <div className="flex flex-1 overflow-hidden">
             {/* Left: Watchlist */}
             <Sidebar
               stocks={stocks}
@@ -185,7 +113,7 @@ export default function App() {
             />
 
             {/* Center: Chart + OHLC Table */}
-            <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, overflow: "hidden" }}>
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
               {isReplayMode && (
                 <ReplayControlBar
                   symbol={activeSymbol}
@@ -233,44 +161,20 @@ export default function App() {
             </div>
 
             {/* Right: Analytics Sidebar */}
-            <aside style={{
-              width: 296,
-              flexShrink: 0,
-              backgroundColor: "var(--surface-base)",
-              borderLeft: "1px solid var(--border-subtle)",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-            }}>
+            <aside className="w-[304px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col overflow-hidden">
               {/* Tab selector */}
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                borderBottom: "1px solid var(--border-subtle)",
-                backgroundColor: "var(--surface-base)",
-                flexShrink: 0,
-              }}>
+              <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
                 {(["STRUCTURE", "ANATOMY"] as const).map((tab) => {
                   const active = sidebarTab === tab;
                   return (
                     <button
                       key={tab}
                       onClick={() => setSidebarTab(tab)}
-                      style={{
-                        flex: 1,
-                        height: 32,
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 9,
-                        fontWeight: 500,
-                        letterSpacing: "0.10em",
-                        textTransform: "uppercase",
-                        color: active ? "var(--text-primary)" : "var(--text-disabled)",
-                        backgroundColor: active ? "var(--surface-raised)" : "transparent",
-                        border: "none",
-                        borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
-                        cursor: "pointer",
-                        transition: "color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1)",
-                      }}
+                      className={`flex-1 h-8 text-xs font-medium transition-colors border-b-2 ${
+                        active
+                          ? "text-[#F8FAFC] bg-[#0B0E14] border-b-[#F59E0B] font-semibold"
+                          : "text-[#64748B] hover:text-[#94A3B8] border-b-transparent"
+                      }`}
                     >
                       {tab === "STRUCTURE" ? "Structure Engine" : "OHLC & Anatomy"}
                     </button>
@@ -279,7 +183,7 @@ export default function App() {
               </div>
 
               {/* Analytics body */}
-              <div style={{ flex: 1, overflowY: "auto", padding: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div className="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2 bg-[#000000]">
                 {sidebarTab === "STRUCTURE" ? (
                   <>
                     <MarketRegimeCard regime={structure?.market_regime ?? null} />

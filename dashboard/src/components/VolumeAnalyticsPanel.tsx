@@ -21,8 +21,8 @@ export default function VolumeAnalyticsPanel({ volume, loading }: Props) {
   if (!volume) return null;
 
   const isElevated = volume.volume_state === "ELEVATED";
-  const isAccumulation = volume.price_volume_relation === "ACCUMULATION";
-  const isDistribution = volume.price_volume_relation === "DISTRIBUTION";
+  const isAccumulation = volume.price_volume_relationship === "ACCUMULATION";
+  const isDistribution = volume.price_volume_relationship === "DISTRIBUTION";
 
   return (
     <Panel id="volume-analytics-panel" className="overflow-hidden">
@@ -46,8 +46,8 @@ export default function VolumeAnalyticsPanel({ volume, loading }: Props) {
       {/* Primary Volume Metrics */}
       <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-3">
         <Metric label="RVOL" value={`${volume.rvol}x`} size="sm" />
-        <Metric label="Trend" value={volume.volume_trend} size="sm" />
-        <Metric label="20d Avg" value={`${(volume.avg_volume_20 / 1e5).toFixed(1)}L`} size="sm" />
+        <Metric label="State" value={volume.volume_state} size="sm" />
+        <Metric label="Baseline" value={`${(volume.baseline_avg_volume / 1e5).toFixed(1)}L`} size="sm" />
       </div>
 
       {/* Derived Insight */}
@@ -63,13 +63,13 @@ export default function VolumeAnalyticsPanel({ volume, loading }: Props) {
                 : "text-[var(--text-secondary)]"
             }`}
           >
-            {volume.price_volume_relation.replace(/_/g, " ")}
+            {volume.price_volume_relationship.replace(/_/g, " ")}
           </span>
         </div>
 
-        {volume.divergence_note && (
+        {volume.divergence_flag && (
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0 p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)]">
-            {volume.divergence_note}
+            {volume.divergence_flag}
           </p>
         )}
       </div>
