@@ -1,5 +1,5 @@
 // src/components/VolumeAnalyticsPanel.tsx
-// Institutional Volume Profile & RVOL Analytics Card.
+// Institutional Volume Profile & RVOL Analytics — graphite-and-paper design system.
 
 import type { VolumeAnalyticsResponse } from "../types/structure";
 
@@ -8,104 +8,218 @@ interface Props {
   loading?: boolean;
 }
 
+type BadgeVariant = "accent" | "positive" | "negative" | "warning" | "neutral";
+
+function getVolBadge(state: string): BadgeVariant {
+  switch (state) {
+    case "ELEVATED": return "accent";
+    case "UNUSUALLY_LOW": return "neutral";
+    default: return "neutral";
+  }
+}
+
+function getPvRelStyle(rel: string): string {
+  switch (rel) {
+    case "ACCUMULATION": return "var(--positive)";
+    case "DISTRIBUTION": return "var(--negative)";
+    case "LOW_VOLUME_PULLBACK": return "var(--warning)";
+    default: return "var(--text-tertiary)";
+  }
+}
+
 export default function VolumeAnalyticsPanel({ volume, loading }: Props) {
   if (loading && !volume) {
     return (
-      <div className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] text-[10px] text-[#444] tracking-widest font-mono">
-        CALCULATING VOLUME RVOL...
+      <div style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        letterSpacing: "0.08em",
+        color: "var(--text-disabled)",
+        textTransform: "uppercase",
+      }}>
+        Calculating volume RVOL…
       </div>
     );
   }
 
   if (!volume) return null;
 
-  const getVolStateBadge = (state: string) => {
-    switch (state) {
-      case "ELEVATED":
-        return "border-[#00E5FF]/40 text-[#00E5FF] bg-[#00E5FF]/10";
-      case "UNUSUALLY_LOW":
-        return "border-[#71717A]/40 text-[#A1A1AA] bg-[#71717A]/10";
-      default:
-        return "border-[#27272A] text-[#A1A1AA] bg-[#18181B]/40";
-    }
+  const badgeVariant = getVolBadge(volume.volume_state);
+  const badgeStyles: Record<BadgeVariant, { color: string; bg: string; border: string }> = {
+    accent:   { color: "var(--accent)", bg: "var(--accent-subtle)", border: "var(--accent-border)" },
+    positive: { color: "var(--positive)", bg: "var(--positive-subtle)", border: "var(--positive-border)" },
+    negative: { color: "var(--negative)", bg: "var(--negative-subtle)", border: "var(--negative-border)" },
+    warning:  { color: "var(--warning)", bg: "var(--warning-subtle)", border: "var(--warning-border)" },
+    neutral:  { color: "var(--text-tertiary)", bg: "var(--neutral-subtle)", border: "var(--border-default)" },
   };
-
-  const getPvRelStyle = (rel: string) => {
-    switch (rel) {
-      case "ACCUMULATION":
-        return "text-[#22C55E]";
-      case "DISTRIBUTION":
-        return "text-[#EF4444]";
-      case "LOW_VOLUME_PULLBACK":
-        return "text-[#F59E0B]";
-      default:
-        return "text-[#999]";
-    }
-  };
+  const bs = badgeStyles[badgeVariant];
 
   return (
     <div
       id="volume-analytics-panel"
-      className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] flex flex-col gap-2.5 font-mono select-none"
+      style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        userSelect: "none",
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-1.5 border-b border-[#1A1A1A]">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#888] tracking-widest uppercase">
-            VOLUME ENGINE
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: 8,
+        borderBottom: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+          }}>
+            Volume Engine
           </span>
-          <span className="text-[#333] text-[10px]">·</span>
-          <span className="text-[9px] text-[#555] tracking-wider uppercase">RVOL</span>
+          <span style={{ color: "var(--border-default)", fontSize: 10 }}>·</span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            color: "var(--text-disabled)",
+            textTransform: "uppercase",
+          }}>
+            RVOL
+          </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {volume.is_volume_spike && (
-            <span className="text-[8px] font-bold px-1.5 py-0.5 border border-[#F59E0B]/50 text-[#F59E0B] bg-[#F59E0B]/10 animate-pulse">
-              SPIKE ≥2.0x
+            <span style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 8,
+              fontWeight: 600,
+              padding: "2px 6px",
+              border: "1px solid var(--warning-border)",
+              backgroundColor: "var(--warning-subtle)",
+              color: "var(--warning)",
+              letterSpacing: "0.08em",
+            }}>
+              SPIKE ≥2×
             </span>
           )}
-          <span
-            className={`text-[9px] font-bold px-2 py-0.5 border tracking-wider uppercase ${getVolStateBadge(
-              volume.volume_state,
-            )}`}
-          >
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            padding: "2px 7px",
+            border: `1px solid ${bs.border}`,
+            backgroundColor: bs.bg,
+            color: bs.color,
+          }}>
             {volume.volume_state}
           </span>
         </div>
       </div>
 
-      {/* Primary Metrics */}
-      <div className="grid grid-cols-3 gap-2 bg-[#050505] p-2 border border-[#151515] text-[10px]">
-        <div>
-          <span className="text-[#555] block text-[8.5px]">RVOL RATIO</span>
-          <span className="text-[14px] font-bold text-[#00E5FF]">{volume.rvol}x</span>
+      {/* Metrics */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr",
+        gap: 8,
+        padding: 10,
+        backgroundColor: "var(--surface-inset)",
+        border: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+            RVOL Ratio
+          </span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 14,
+            fontWeight: 700,
+            color: "var(--accent)",
+            fontVariantNumeric: "tabular-nums",
+          }}>
+            {volume.rvol}×
+          </span>
         </div>
-        <div>
-          <span className="text-[#555] block text-[8.5px]">20D AVERAGE</span>
-          <span className="text-[#DDD] font-semibold">{volume.baseline_avg_volume.toLocaleString()}</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+            20D Avg
+          </span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            fontWeight: 600,
+            color: "var(--text-primary)",
+            fontVariantNumeric: "tabular-nums",
+          }}>
+            {volume.baseline_avg_volume.toLocaleString()}
+          </span>
         </div>
-        <div>
-          <span className="text-[#555] block text-[8.5px]">P/V DYNAMIC</span>
-          <span className={`text-[9px] font-bold block mt-0.5 ${getPvRelStyle(volume.price_volume_relationship)}`}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+            P/V Dynamic
+          </span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            color: getPvRelStyle(volume.price_volume_relationship),
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}>
             {volume.price_volume_relationship.replace(/_/g, " ")}
           </span>
         </div>
       </div>
 
-      {/* Breakout & Divergence Flags */}
-      <div className="flex flex-col gap-1 text-[9.5px]">
+      {/* Flags */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {volume.breakout_confirmed && (
-          <div className="flex items-center gap-1.5 text-[#22C55E]">
-            <span>✓</span>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontFamily: "var(--font-sans)",
+            fontSize: 10,
+            color: "var(--positive)",
+          }}>
+            <span style={{ fontSize: 10 }}>✓</span>
             <span>Volume confirms 10-session price breakout</span>
           </div>
         )}
         {volume.divergence_flag && (
-          <div className="flex items-center gap-1.5 text-[#F59E0B]">
-            <span>⚠</span>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontFamily: "var(--font-sans)",
+            fontSize: 10,
+            color: "var(--warning)",
+          }}>
+            <span style={{ fontSize: 10 }}>⚠</span>
             <span>{volume.divergence_flag}</span>
           </div>
         )}
-        <p className="text-[#777] text-[9px] leading-relaxed mt-0.5">
+        <p style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: 10,
+          lineHeight: 1.6,
+          color: "var(--text-tertiary)",
+          margin: 0,
+        }}>
           {volume.explanation}
         </p>
       </div>

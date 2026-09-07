@@ -1,5 +1,5 @@
 // src/components/SupportResistancePanel.tsx
-// Institutional Support & Resistance Levels and Cluster Strength Panel.
+// Institutional Support & Resistance Zones — graphite-and-paper design system.
 
 import type { SupportResistanceResponse } from "../types/structure";
 
@@ -8,11 +8,39 @@ interface Props {
   loading?: boolean;
 }
 
+function StrengthBar({ value }: { value: number }) {
+  return (
+    <div style={{
+      width: 36,
+      height: 3,
+      backgroundColor: "var(--border-subtle)",
+      borderRadius: 1,
+      overflow: "hidden",
+    }}>
+      <div style={{
+        height: "100%",
+        width: `${(value / 10) * 100}%`,
+        backgroundColor: "var(--border-strong)",
+        borderRadius: 1,
+      }} />
+    </div>
+  );
+}
+
 export default function SupportResistancePanel({ sr, loading }: Props) {
   if (loading && !sr) {
     return (
-      <div className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] text-[10px] text-[#444] tracking-widest font-mono">
-        COMPUTING SUPPORT & RESISTANCE ZONES...
+      <div style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        letterSpacing: "0.08em",
+        color: "var(--text-disabled)",
+        textTransform: "uppercase",
+      }}>
+        Computing support &amp; resistance zones…
       </div>
     );
   }
@@ -22,122 +50,237 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
   return (
     <div
       id="support-resistance-panel"
-      className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] flex flex-col gap-2.5 font-mono select-none"
+      style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        userSelect: "none",
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-1.5 border-b border-[#1A1A1A]">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#888] tracking-widest uppercase">
-            S/R ZONES
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: 8,
+        borderBottom: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+          }}>
+            S/R Zones
           </span>
-          <span className="text-[#333] text-[10px]">·</span>
-          <span className="text-[9px] text-[#555] tracking-wider uppercase">
-            SWING CLUSTERS
+          <span style={{ color: "var(--border-default)", fontSize: 10 }}>·</span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            color: "var(--text-disabled)",
+            textTransform: "uppercase",
+          }}>
+            Swing Clusters
           </span>
         </div>
-        <span className="text-[9px] text-[#666] tracking-wider">
-          {sr.total_swings_detected} PIVOTS
+        <span style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 9,
+          color: "var(--text-disabled)",
+        }}>
+          {sr.total_swings_detected} pivots
         </span>
       </div>
 
-      {/* Nearest Levels Banner */}
-      <div className="grid grid-cols-2 gap-2 bg-[#050505] p-2 border border-[#151515] text-[10px]">
-        {/* Nearest Support */}
-        <div className="flex flex-col">
-          <span className="text-[8.5px] text-[#555] tracking-wider uppercase">
-            NEAREST SUPPORT
+      {/* Nearest Levels */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 8,
+        padding: 10,
+        backgroundColor: "var(--surface-inset)",
+        border: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-disabled)",
+          }}>
+            Nearest Support
           </span>
           {sr.nearest_support ? (
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-[12px] font-bold text-[#22C55E]">
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+              <span style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                color: "var(--positive)",
+                fontVariantNumeric: "tabular-nums",
+              }}>
                 ₹{sr.nearest_support.price.toFixed(2)}
               </span>
-              <span className="text-[9px] text-[#555]">
-                (-{sr.nearest_support.distance_pct}%)
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
+                -{sr.nearest_support.distance_pct}%
               </span>
             </div>
           ) : (
-            <span className="text-[10px] text-[#555]">—</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-disabled)" }}>—</span>
           )}
         </div>
 
-        {/* Nearest Resistance */}
-        <div className="flex flex-col">
-          <span className="text-[8.5px] text-[#555] tracking-wider uppercase">
-            NEAREST RESISTANCE
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-disabled)",
+          }}>
+            Nearest Resistance
           </span>
           {sr.nearest_resistance ? (
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-[12px] font-bold text-[#EF4444]">
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+              <span style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                color: "var(--negative)",
+                fontVariantNumeric: "tabular-nums",
+              }}>
                 ₹{sr.nearest_resistance.price.toFixed(2)}
               </span>
-              <span className="text-[9px] text-[#555]">
-                (+{sr.nearest_resistance.distance_pct}%)
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
+                +{sr.nearest_resistance.distance_pct}%
               </span>
             </div>
           ) : (
-            <span className="text-[10px] text-[#555]">—</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-disabled)" }}>—</span>
           )}
         </div>
       </div>
 
-      {/* Level List */}
-      <div className="flex flex-col gap-1 text-[9.5px]">
-        <div className="flex items-center justify-between text-[#555] text-[8.5px] uppercase border-b border-[#151515] pb-1">
-          <span>LEVEL</span>
-          <div className="flex items-center gap-3">
-            <span>TOUCHES</span>
-            <span>STRENGTH</span>
+      {/* Level Table */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {/* Column headers */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: 5,
+          borderBottom: "1px solid var(--border-subtle)",
+        }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+            Level
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+              Touches
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+              Strength
+            </span>
           </div>
         </div>
 
-        <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
-          {/* Resistances (Ascending) */}
+        <div style={{ maxHeight: 140, overflowY: "auto", display: "flex", flexDirection: "column", gap: 3 }}>
+          {/* Resistance levels */}
           {sr.resistance_zones.slice(0, 3).map((z, idx) => (
             <div
               key={`res-${idx}`}
-              className="flex items-center justify-between text-[#DDD] p-1 bg-[#050505] border border-[#18181B]"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "5px 8px",
+                backgroundColor: "var(--surface-inset)",
+                border: "1px solid var(--border-subtle)",
+              }}
             >
-              <div className="flex items-center gap-1.5">
-                <span className="text-[8px] px-1 bg-[#EF4444]/20 text-[#EF4444] font-bold">
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  padding: "1px 4px",
+                  backgroundColor: "var(--negative-subtle)",
+                  color: "var(--negative)",
+                }}>
                   RES
                 </span>
-                <span className="font-semibold text-[10px]">₹{z.price.toFixed(2)}</span>
-                <span className="text-[#666] text-[8.5px]">+{z.distance_pct}%</span>
+                <span style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
+                  fontVariantNumeric: "tabular-nums",
+                }}>
+                  ₹{z.price.toFixed(2)}
+                </span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
+                  +{z.distance_pct}%
+                </span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[#888]">{z.touches}x</span>
-                <div className="w-10 h-1.5 bg-[#1F1F23] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#EF4444]"
-                    style={{ width: `${(z.strength / 10) * 100}%` }}
-                  />
-                </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-secondary)" }}>
+                  {z.touches}x
+                </span>
+                <StrengthBar value={z.strength} />
               </div>
             </div>
           ))}
 
-          {/* Supports (Descending) */}
+          {/* Support levels */}
           {sr.support_zones.slice(0, 3).map((z, idx) => (
             <div
               key={`sup-${idx}`}
-              className="flex items-center justify-between text-[#DDD] p-1 bg-[#050505] border border-[#18181B]"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "5px 8px",
+                backgroundColor: "var(--surface-inset)",
+                border: "1px solid var(--border-subtle)",
+              }}
             >
-              <div className="flex items-center gap-1.5">
-                <span className="text-[8px] px-1 bg-[#22C55E]/20 text-[#22C55E] font-bold">
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  padding: "1px 4px",
+                  backgroundColor: "var(--positive-subtle)",
+                  color: "var(--positive)",
+                }}>
                   SUP
                 </span>
-                <span className="font-semibold text-[10px]">₹{z.price.toFixed(2)}</span>
-                <span className="text-[#666] text-[8.5px]">-{z.distance_pct}%</span>
+                <span style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
+                  fontVariantNumeric: "tabular-nums",
+                }}>
+                  ₹{z.price.toFixed(2)}
+                </span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
+                  -{z.distance_pct}%
+                </span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[#888]">{z.touches}x</span>
-                <div className="w-10 h-1.5 bg-[#1F1F23] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#22C55E]"
-                    style={{ width: `${(z.strength / 10) * 100}%` }}
-                  />
-                </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-secondary)" }}>
+                  {z.touches}x
+                </span>
+                <StrengthBar value={z.strength} />
               </div>
             </div>
           ))}
