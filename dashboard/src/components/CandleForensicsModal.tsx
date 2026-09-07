@@ -50,9 +50,9 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
             <span className="text-xs font-bold tracking-widest text-[var(--text-primary)] uppercase">
               CANDLE FORENSIC INSPECTION
             </span>
-            <span className="text-[#404040]">·</span>
+            <span className="text-[var(--border-strong)]">·</span>
             <span className="text-xs text-[var(--accent)] font-semibold">{symbol}</span>
-            <span className="text-[#404040]">·</span>
+            <span className="text-[var(--border-strong)]">·</span>
             <span className="text-xs text-[var(--text-secondary)]">{timestamp}</span>
           </div>
 

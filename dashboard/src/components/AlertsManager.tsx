@@ -1,5 +1,6 @@
 // src/components/AlertsManager.tsx
 // Multi-tenant alert management: create alerts, on-demand evaluation engine.
+// Graphite-and-paper design system.
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../api/client";
@@ -89,26 +90,31 @@ export default function AlertsManager() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+    <div className="flex h-full overflow-hidden font-mono bg-[var(--surface-base)]">
       {/* Create panel */}
-      <div className="w-72 shrink-0 border-r border-[var(--border-subtle)] flex flex-col">
+      <div className="w-72 shrink-0 border-r border-[var(--border-subtle)] flex flex-col bg-[var(--surface-raised)]">
         <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
-          <span className="text-[10px] tracking-widest text-[#525252] font-bold">CREATE ALERT</span>
+          <span className="text-[10px] tracking-widest text-[var(--text-tertiary)] font-bold">CREATE ALERT</span>
         </div>
 
         <div className="p-3 space-y-3 overflow-y-auto flex-1">
           <div>
-            <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">SYMBOL</label>
-            <input value={symbol} onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+            <label className="block text-[10px] tracking-widest text-[var(--text-tertiary)] mb-1.5">SYMBOL</label>
+            <input
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value.toUpperCase())}
               placeholder="RELIANCE.NS"
-              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)] placeholder-[#333]"
+              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--border-strong)] placeholder-[var(--text-tertiary)]"
             />
           </div>
 
           <div>
-            <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">ALERT TYPE</label>
-            <select value={alertType} onChange={(e) => handleAlertTypeChange(e.target.value)}
-              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)]">
+            <label className="block text-[10px] tracking-widest text-[var(--text-tertiary)] mb-1.5">ALERT TYPE</label>
+            <select
+              value={alertType}
+              onChange={(e) => handleAlertTypeChange(e.target.value)}
+              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--border-strong)]"
+            >
               {ALERT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
@@ -116,73 +122,87 @@ export default function AlertsManager() {
           </div>
 
           <div>
-            <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">
+            <label className="block text-[10px] tracking-widest text-[var(--text-tertiary)] mb-1.5">
               CONDITION (JSON)
             </label>
-            <textarea value={payloadJson}
+            <textarea
+              value={payloadJson}
               onChange={(e) => { setPayloadJson(e.target.value); setPayloadError(null); }}
               rows={4}
-              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)] font-mono resize-none"
+              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--border-strong)] font-mono resize-none"
             />
-            {payloadError && <div className="text-[10px] text-[#ff4d4d] mt-1">{payloadError}</div>}
+            {payloadError && <div className="text-[10px] text-[var(--negative)] mt-1">{payloadError}</div>}
           </div>
 
-          {error && <div className="text-[10px] text-[#ff4d4d]">{error}</div>}
+          {error && <div className="text-[10px] text-[var(--negative)]">{error}</div>}
 
-          <button onClick={createAlert}
-            className="w-full py-2 text-[10px] font-bold tracking-widest bg-[var(--accent)] text-black hover:bg-[#00cfea] transition-colors">
+          <button
+            onClick={createAlert}
+            className="w-full py-2 text-[10px] font-bold tracking-widest bg-[var(--surface-overlay)] border border-[var(--border-strong)] hover:border-[var(--accent)] text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
+          >
             CREATE ALERT
           </button>
         </div>
       </div>
 
       {/* Alert list */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="px-4 py-2 border-b border-[var(--border-subtle)] flex items-center justify-between">
-          <span className="text-[10px] tracking-widest text-[#525252]">
+      <div className="flex-1 flex flex-col min-w-0 bg-[var(--surface-base)]">
+        <div className="px-4 py-2 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--surface-raised)]">
+          <span className="text-[10px] tracking-widest text-[var(--text-tertiary)]">
             {alerts.length} ALERT{alerts.length !== 1 ? "S" : ""} · ON-DEMAND EVALUATION
           </span>
-          <button onClick={evaluateAll} disabled={evaluating || alerts.length === 0}
-            className="text-[10px] tracking-widest font-bold px-3 py-1 border border-[var(--accent)] text-[var(--accent)] hover:bg-[#0a1015] disabled:opacity-30 transition-colors">
-            {evaluating ? "EVALUATING..." : "EVALUATE ALL"}
+          <button
+            onClick={evaluateAll}
+            disabled={evaluating || alerts.length === 0}
+            className="text-[10px] tracking-widest font-bold px-3 py-1 border border-[var(--accent)]/40 text-[var(--accent)] hover:bg-[var(--surface-overlay)] disabled:opacity-30 transition-colors"
+          >
+            {evaluating ? "EVALUATING…" : "EVALUATE ALL"}
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {alerts.length === 0 ? (
-            <div className="p-4 text-[11px] text-[#333] tracking-wider">NO ALERTS · CREATE ONE ON THE LEFT</div>
+            <div className="p-4 text-[11px] text-[var(--text-tertiary)] tracking-wider">NO ALERTS · CREATE ONE ON THE LEFT</div>
           ) : (
             alerts.map((alert) => {
               const result = results[alert.id];
               return (
-                <div key={alert.id}
-                  className="px-4 py-3 border-b border-[#111] hover:bg-[#0d0d0d]">
+                <div
+                  key={alert.id}
+                  className="px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--surface-raised)] transition-colors"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs text-[var(--text-primary)] font-bold">{alert.symbol}</span>
-                        <span className="text-[10px] text-[#525252] tracking-wider">{alert.alert_type}</span>
+                        <span className="text-[10px] text-[var(--text-tertiary)] tracking-wider">{alert.alert_type}</span>
                         {alert.triggered_at && (
-                          <span className="text-[10px] text-[#ff9900] tracking-wider">TRIGGERED</span>
+                          <span className="text-[9px] px-1 py-0.5 rounded bg-[var(--warning-subtle)] text-[var(--warning)] border border-[var(--warning)]/30 tracking-wider">
+                            TRIGGERED
+                          </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-[#333] font-mono truncate">
+                      <div className="text-[10px] text-[var(--text-tertiary)] font-mono truncate">
                         {JSON.stringify(alert.condition_payload)}
                       </div>
                       {result && (
-                        <div className={`mt-1 text-[10px] ${result.triggered ? "text-[#ff9900]" : "text-[#525252]"}`}>
+                        <div className={`mt-1 text-[10px] ${result.triggered ? "text-[var(--warning)]" : "text-[var(--text-secondary)]"}`}>
                           {result.triggered ? "⚡ " : "· "}{result.message}
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <button onClick={() => evaluateOne(alert.id)}
-                        className="text-[10px] tracking-wider text-[var(--accent)] hover:text-[#00cfea] border border-[#1a2a2a] px-2 py-1 transition-colors">
+                      <button
+                        onClick={() => evaluateOne(alert.id)}
+                        className="text-[10px] tracking-wider text-[var(--text-primary)] hover:text-[var(--accent)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] px-2 py-1 transition-colors"
+                      >
                         EVAL
                       </button>
-                      <button onClick={() => deleteAlert(alert.id)}
-                        className="text-[10px] tracking-wider text-[#333] hover:text-[#ff4d4d] transition-colors">
+                      <button
+                        onClick={() => deleteAlert(alert.id)}
+                        className="text-[10px] tracking-wider text-[var(--text-tertiary)] hover:text-[var(--negative)] transition-colors"
+                      >
                         DEL
                       </button>
                     </div>

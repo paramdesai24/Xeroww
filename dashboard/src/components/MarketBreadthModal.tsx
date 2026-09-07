@@ -104,25 +104,25 @@ export default function MarketBreadthModal({ onClose }: Props) {
                   PERCENTAGE MOVE DISTRIBUTION
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center">
-                  <div className="p-2 bg-[var(--surface-inset)] border border-[#18181B]">
+                  <div className="p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)]">
                     <div className="text-[9px] text-[var(--positive)]">&gt; +2%</div>
                     <div className="text-sm font-bold text-[var(--text-primary)] mt-0.5">
                       {breadth.distribution_buckets.gain_gt_2pct}
                     </div>
                   </div>
-                  <div className="p-2 bg-[var(--surface-inset)] border border-[#18181B]">
+                  <div className="p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)]">
                     <div className="text-[9px] text-[var(--positive)]/70">0% to +2%</div>
                     <div className="text-sm font-bold text-[var(--text-primary)] mt-0.5">
                       {breadth.distribution_buckets.gain_0_to_2pct}
                     </div>
                   </div>
-                  <div className="p-2 bg-[var(--surface-inset)] border border-[#18181B]">
+                  <div className="p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)]">
                     <div className="text-[9px] text-[var(--negative)]/70">-2% to 0%</div>
                     <div className="text-sm font-bold text-[var(--text-primary)] mt-0.5">
                       {breadth.distribution_buckets.loss_0_to_2pct}
                     </div>
                   </div>
-                  <div className="p-2 bg-[var(--surface-inset)] border border-[#18181B]">
+                  <div className="p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)]">
                     <div className="text-[9px] text-[var(--negative)]">&lt; -2%</div>
                     <div className="text-sm font-bold text-[var(--text-primary)] mt-0.5">
                       {breadth.distribution_buckets.loss_gt_2pct}
@@ -157,7 +157,7 @@ export default function MarketBreadthModal({ onClose }: Props) {
                       </thead>
                       <tbody>
                         {matrix.symbols.map((s1) => (
-                          <tr key={s1} className="border-b border-[#151515]">
+                          <tr key={s1} className="border-b border-[var(--border-subtle)]">
                             <td className="p-1 font-bold text-[var(--text-secondary)]">{s1.replace(".NS", "")}</td>
                             {matrix.symbols.map((s2) => {
                               const val = matrix.matrix[s1]?.[s2] ?? 0;

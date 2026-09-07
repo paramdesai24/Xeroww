@@ -1,6 +1,6 @@
 // src/components/JournalView.tsx
 // Decision Journal: Institutional trade thesis logger and audit trail.
-// Strict terminal aesthetic: dense tabular telemetry, pitch-black styling.
+// Graphite-and-paper design system.
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../api/client";
@@ -20,7 +20,6 @@ export default function JournalView() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [activeReviewId, setActiveReviewId] = useState<number | null>(null);
   const [reviewData, setReviewData] = useState<any>(null);
-
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -89,28 +88,27 @@ export default function JournalView() {
   return (
     <div
       id="journal-module"
-      className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-base)] text-[#e0e0e0]"
-      style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+      className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-base)] text-[var(--text-primary)] font-mono"
     >
       {/* Top Telemetry Bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border-subtle)] bg-[var(--surface-inset)] text-[11px] shrink-0">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[11px] shrink-0">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="text-[var(--text-tertiary)] tracking-widest">MODULE:</span>
             <span className="text-[var(--accent)] font-bold">DECISION_JOURNAL</span>
           </div>
-          <span className="text-[#222]">|</span>
+          <span className="text-[var(--border-default)]">|</span>
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-tertiary)]">TOTAL_ENTRIES:</span>
-            <span className="text-[#FFF] font-bold">{entries.length}</span>
+            <span className="text-[var(--text-primary)] font-bold tabular-nums">{entries.length}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-tertiary)]">OPEN_THESES:</span>
-            <span className="text-[var(--accent)] font-bold">{openCount}</span>
+            <span className="text-[var(--accent)] font-bold tabular-nums">{openCount}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-tertiary)]">CONCLUDED:</span>
-            <span className="text-[var(--text-secondary)] font-bold">{closedCount}</span>
+            <span className="text-[var(--text-secondary)] font-bold tabular-nums">{closedCount}</span>
           </div>
         </div>
 
@@ -122,7 +120,7 @@ export default function JournalView() {
               onClick={() => setStatusFilter(s)}
               className={`px-2 py-0.5 text-[10px] tracking-wider uppercase border transition-colors ${
                 statusFilter === s
-                  ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10 font-bold"
+                  ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent-subtle)] font-bold"
                   : "border-[var(--border-default)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] bg-transparent"
               }`}
             >
@@ -132,7 +130,7 @@ export default function JournalView() {
           <button
             id="refresh-journal-btn"
             onClick={fetchEntries}
-            className="px-2.5 py-0.5 text-[10px] tracking-wider text-[var(--text-secondary)] hover:text-[#FFF] border border-[var(--border-default)] hover:border-[#444] transition-colors"
+            className="px-2.5 py-0.5 text-[10px] tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors"
           >
             REFRESH
           </button>
@@ -142,7 +140,7 @@ export default function JournalView() {
       {/* Main Grid: Entry Form (Left / Top) & Ledger (Right / Fill) */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Column: Log New Thesis Form */}
-        <div className="w-full md:w-[340px] border-b md:border-b-0 md:border-r border-[var(--border-subtle)] bg-[#020202] p-4 flex flex-col shrink-0 overflow-y-auto">
+        <div className="w-full md:w-[340px] border-b md:border-b-0 md:border-r border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4 flex flex-col shrink-0 overflow-y-auto">
           <div className="flex items-center gap-2 pb-2 mb-3 border-b border-[var(--border-subtle)]">
             <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
             <span className="text-[10px] tracking-[0.2em] font-bold text-[var(--text-secondary)] uppercase">
@@ -152,7 +150,7 @@ export default function JournalView() {
 
           <form onSubmit={handleCreate} className="flex flex-col gap-3">
             {createError && (
-              <div className="px-2.5 py-1.5 bg-[#FF0000]/10 border border-[#FF0000]/30 text-[#FF4D4D] text-[10px]">
+              <div className="px-2.5 py-1.5 bg-[var(--negative-subtle)] border border-[var(--negative)]/20 text-[var(--negative)] text-[10px]">
                 {createError}
               </div>
             )}
@@ -167,7 +165,7 @@ export default function JournalView() {
                 placeholder="RELIANCE.NS"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value)}
-                className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] focus:border-[var(--accent)] text-[11px] text-[#FFF] px-2.5 py-1.5 outline-none tracking-wider uppercase font-mono"
+                className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] focus:border-[var(--border-strong)] text-[11px] text-[var(--text-primary)] px-2.5 py-1.5 outline-none tracking-wider uppercase font-mono placeholder-[var(--text-tertiary)]"
               />
             </div>
 
@@ -185,11 +183,11 @@ export default function JournalView() {
                     className={`py-1 text-[10px] tracking-wider font-bold border transition-colors ${
                       action === act
                         ? act === "BUY"
-                          ? "bg-[#22c55e]/15 border-[#22c55e] text-[var(--positive)]"
+                          ? "bg-[var(--positive-subtle)] border-[var(--positive)]/40 text-[var(--positive)]"
                           : act === "SELL"
-                          ? "bg-[#ff4d4d]/15 border-[#ff4d4d] text-[#ff4d4d]"
-                          : "bg-[#eab308]/15 border-[#eab308] text-[var(--warning)]"
-                        : "border-[var(--border-subtle)] text-[#444] hover:text-[#777]"
+                          ? "bg-[var(--negative-subtle)] border-[var(--negative)]/40 text-[var(--negative)]"
+                          : "bg-[var(--warning-subtle)] border-[var(--warning)]/40 text-[var(--warning)]"
+                        : "border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
                     }`}
                   >
                     {act}
@@ -205,10 +203,10 @@ export default function JournalView() {
               <textarea
                 id="journal-thesis-input"
                 rows={4}
-                placeholder="Breakout above 20-day EMA with expanding volume profile..."
+                placeholder="Breakout above 20-day EMA with expanding volume profile…"
                 value={thesis}
                 onChange={(e) => setThesis(e.target.value)}
-                className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] focus:border-[var(--accent)] text-[11px] text-[#DDD] p-2 outline-none font-mono resize-none leading-relaxed"
+                className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] focus:border-[var(--border-strong)] text-[11px] text-[var(--text-primary)] p-2 outline-none font-mono resize-none leading-relaxed placeholder-[var(--text-tertiary)]"
               />
             </div>
 
@@ -216,14 +214,14 @@ export default function JournalView() {
               id="submit-journal-entry-btn"
               type="submit"
               disabled={creating}
-              className="w-full mt-1 py-2 bg-[var(--accent)] hover:bg-[#33EAFF] disabled:opacity-50 text-[#000] font-bold text-[10px] tracking-[0.2em] uppercase transition-colors"
+              className="w-full mt-1 py-2 bg-[var(--surface-overlay)] border border-[var(--border-strong)] hover:border-[var(--accent)] text-[var(--text-primary)] hover:text-[var(--accent)] disabled:opacity-50 font-bold text-[10px] tracking-[0.2em] uppercase transition-colors"
             >
-              {creating ? "COMMITTING..." : "COMMIT TO AUDIT TRAIL"}
+              {creating ? "COMMITTING…" : "COMMIT TO AUDIT TRAIL"}
             </button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-[#151515] text-[9px] text-[#444] space-y-1">
-            <div className="text-[var(--text-tertiary)] font-bold tracking-wider">TENANT ASSURANCE:</div>
+          <div className="mt-6 pt-4 border-t border-[var(--border-subtle)] text-[9px] text-[var(--text-tertiary)] space-y-1">
+            <div className="text-[var(--text-secondary)] font-bold tracking-wider">TENANT ASSURANCE:</div>
             <p>Every logged thesis is cryptographically mapped to your user workspace and immutable across sessions.</p>
           </div>
         </div>
@@ -231,24 +229,24 @@ export default function JournalView() {
         {/* Right Column: Ledger / List */}
         <div className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-base)]">
           {error && (
-            <div className="p-3 bg-[#FF0000]/10 border-b border-[#FF0000]/30 text-[#FF4D4D] text-[11px]">
+            <div className="p-3 bg-[var(--negative-subtle)] border-b border-[var(--negative)]/20 text-[var(--negative)] text-[11px]">
               {error}
             </div>
           )}
 
           {loading && entries.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-[#444] text-[11px] tracking-widest">
-              QUERYING DECISION AUDIT TRAIL...
+            <div className="flex-1 flex items-center justify-center text-[var(--text-tertiary)] text-[11px] tracking-widest">
+              QUERYING DECISION AUDIT TRAIL…
             </div>
           ) : filteredEntries.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-[#333] text-[11px] tracking-wider gap-2">
+            <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-tertiary)] text-[11px] tracking-wider gap-2">
               <span>NO DECISION RECORDS FOUND</span>
-              <span className="text-[9px] text-[#222]">
+              <span className="text-[9px] text-[var(--text-tertiary)]">
                 Log a trade thesis on the left to initialize your audit record.
               </span>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto divide-y divide-[#111]">
+            <div className="flex-1 overflow-y-auto divide-y divide-[var(--border-subtle)]">
               {filteredEntries.map((entry) => {
                 const isBuy = entry.action === "BUY";
                 const isSell = entry.action === "SELL";
@@ -258,20 +256,20 @@ export default function JournalView() {
                   <div
                     key={entry.id}
                     id={`journal-row-${entry.id}`}
-                    className="p-4 hover:bg-[var(--surface-inset)] transition-colors flex flex-col gap-2"
+                    className="p-4 hover:bg-[var(--surface-raised)] transition-colors flex flex-col gap-2"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-[12px] font-bold text-[#FFF] tracking-wider font-mono">
+                        <span className="text-[12px] font-bold text-[var(--text-primary)] tracking-wider font-mono">
                           {entry.symbol}
                         </span>
                         <span
                           className={`text-[9px] font-bold px-1.5 py-0.5 border ${
                             isBuy
-                              ? "border-[#22c55e]/40 text-[var(--positive)] bg-[#22c55e]/10"
+                              ? "border-[var(--positive)]/40 text-[var(--positive)] bg-[var(--positive-subtle)]"
                               : isSell
-                              ? "border-[#ff4d4d]/40 text-[#ff4d4d] bg-[#ff4d4d]/10"
-                              : "border-[#eab308]/40 text-[var(--warning)] bg-[#eab308]/10"
+                              ? "border-[var(--negative)]/40 text-[var(--negative)] bg-[var(--negative-subtle)]"
+                              : "border-[var(--warning)]/40 text-[var(--warning)] bg-[var(--warning-subtle)]"
                           }`}
                         >
                           {entry.action}
@@ -282,7 +280,7 @@ export default function JournalView() {
                               ? "text-[var(--accent)]"
                               : entry.status === "CLOSED"
                               ? "text-[var(--text-tertiary)]"
-                              : "text-[#444] line-through"
+                              : "text-[var(--text-tertiary)] line-through"
                           }`}
                         >
                           [{entry.status}]
@@ -290,7 +288,7 @@ export default function JournalView() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] text-[#444]">
+                        <span className="text-[10px] text-[var(--text-tertiary)] tabular-nums">
                           {new Date(entry.timestamp).toLocaleString()}
                         </span>
                         <button
@@ -309,7 +307,7 @@ export default function JournalView() {
                               }
                             }
                           }}
-                          className="text-[9px] px-2 py-0.5 border border-[var(--accent)]/30 hover:border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/5 transition-colors"
+                          className="text-[9px] px-2 py-0.5 border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-raised)] transition-colors"
                         >
                           {activeReviewId === entry.id ? "HIDE AUDIT" : "THESIS REVIEW"}
                         </button>
@@ -318,14 +316,14 @@ export default function JournalView() {
                             <button
                               id={`close-entry-${entry.id}`}
                               onClick={() => handleUpdateStatus(entry.id, "CLOSED")}
-                              className="text-[9px] px-2 py-0.5 border border-[var(--border-default)] hover:border-[#22c55e] text-[#666] hover:text-[var(--positive)] transition-colors"
+                              className="text-[9px] px-2 py-0.5 border border-[var(--border-default)] hover:border-[var(--positive)] text-[var(--text-tertiary)] hover:text-[var(--positive)] transition-colors"
                             >
                               CLOSE
                             </button>
                             <button
                               id={`cancel-entry-${entry.id}`}
                               onClick={() => handleUpdateStatus(entry.id, "CANCELLED")}
-                              className="text-[9px] px-2 py-0.5 border border-[var(--border-default)] hover:border-[#ff4d4d] text-[#666] hover:text-[#ff4d4d] transition-colors"
+                              className="text-[9px] px-2 py-0.5 border border-[var(--border-default)] hover:border-[var(--negative)] text-[var(--text-tertiary)] hover:text-[var(--negative)] transition-colors"
                             >
                               CANCEL
                             </button>
@@ -334,33 +332,33 @@ export default function JournalView() {
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-[#BBB] leading-relaxed pl-1 border-l-2 border-[var(--border-default)]">
+                    <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed pl-2 border-l-2 border-[var(--border-subtle)]">
                       {entry.thesis}
                     </p>
 
                     {/* Thesis Review Audit Box */}
                     {activeReviewId === entry.id && reviewData && (
-                      <div className="mt-2 p-3 bg-[#020202] border border-[var(--accent)]/20 space-y-2 text-[10px]">
+                      <div className="mt-2 p-3 bg-[var(--surface-overlay)] border border-[var(--border-subtle)] space-y-2 text-[10px]">
                         <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-1">
                           <span className="text-[var(--accent)] font-bold uppercase tracking-widest">
                             DETERMINISTIC THESIS OUTCOME AUDIT
                           </span>
-                          <span className="text-[var(--text-secondary)]">
+                          <span className="text-[var(--text-secondary)] tabular-nums">
                             Price Move: {reviewData.price_delta > 0 ? "+" : ""}{reviewData.price_delta} ({reviewData.price_delta_pct > 0 ? "+" : ""}{reviewData.price_delta_pct}%)
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <span className="text-[#777] font-bold block mb-1">INITIAL CONTEXT:</span>
-                            <ul className="list-disc list-inside text-[#AAA] space-y-0.5">
+                            <span className="text-[var(--text-tertiary)] font-bold block mb-1">INITIAL CONTEXT:</span>
+                            <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-0.5">
                               {reviewData.initial_context?.map((c: string, idx: number) => (
                                 <li key={idx}>{c}</li>
                               ))}
                             </ul>
                           </div>
                           <div>
-                            <span className="text-[#777] font-bold block mb-1">SUBSEQUENT OBSERVATION:</span>
-                            <ul className="list-disc list-inside text-[#AAA] space-y-0.5">
+                            <span className="text-[var(--text-tertiary)] font-bold block mb-1">SUBSEQUENT OBSERVATION:</span>
+                            <ul className="list-disc list-inside text-[var(--text-secondary)] space-y-0.5">
                               {reviewData.later_observation?.map((o: string, idx: number) => (
                                 <li key={idx}>{o}</li>
                               ))}
@@ -370,9 +368,8 @@ export default function JournalView() {
                       </div>
                     )}
 
-
                     {entry.context_snapshot && Object.keys(entry.context_snapshot).length > 0 && (
-                      <div className="text-[9px] text-[#333] font-mono mt-1">
+                      <div className="text-[9px] text-[var(--text-tertiary)] font-mono mt-1">
                         SNAPSHOT: {JSON.stringify(entry.context_snapshot)}
                       </div>
                     )}
