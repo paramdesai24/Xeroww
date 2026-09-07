@@ -7,8 +7,8 @@ import { api } from "../api/client";
 import type { Portfolio, PortfolioSummary, Transaction } from "../types/platform";
 
 function pnlColor(v: number | null): string {
-  if (v === null) return "text-[var(--text-tertiary)]";
-  return v >= 0 ? "text-[var(--positive)]" : "text-[var(--negative)]";
+  if (v === null) return "text-[#64748B]";
+  return v >= 0 ? "text-[#22C55E]" : "text-[#EF4444]";
 }
 
 function fmt(v: number | null, prefix = "₹"): string {
@@ -95,17 +95,18 @@ export default function PortfolioView() {
   };
 
   if (loading) return (
-    <div className="flex-1 flex items-center justify-center bg-[var(--surface-base)]">
-      <span className="text-[11px] text-[var(--text-tertiary)] tracking-widest font-mono animate-pulse">LOADING PORTFOLIOS…</span>
+    <div className="flex-1 flex items-center justify-center bg-[#000000]">
+      <span className="text-xs text-[#64748B] font-mono animate-pulse">Loading portfolios…</span>
     </div>
   );
 
   return (
-    <div className="flex h-full overflow-hidden font-mono bg-[var(--surface-base)]">
+    <div className="flex h-full overflow-hidden bg-[#000000] text-[#F8FAFC]">
       {/* Portfolio sidebar */}
-      <div className="w-52 shrink-0 border-r border-[var(--border-subtle)] flex flex-col bg-[var(--surface-raised)]">
-        <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
-          <span className="text-[10px] tracking-widest text-[var(--text-tertiary)] font-bold">PORTFOLIOS</span>
+      <div className="w-56 shrink-0 border-r border-[#1E2538] flex flex-col bg-[#05070B]">
+        <div className="px-4 py-3 border-b border-[#1E2538] flex items-center justify-between">
+          <span className="text-xs font-semibold text-[#94A3B8]">Portfolios</span>
+          <span className="text-[11px] font-mono text-[#64748B]">{portfolios.length}</span>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -113,30 +114,34 @@ export default function PortfolioView() {
             <div
               key={p.id}
               onClick={() => selectPortfolio(p.id)}
-              className={`px-3 py-2.5 border-b border-[var(--border-subtle)] cursor-pointer transition-colors ${
-                active?.id === p.id ? "bg-[var(--surface-overlay)] border-l-2 border-l-[var(--accent)]" : "hover:bg-[var(--surface-base)]"
+              className={`px-4 py-3 border-b border-[#1E2538]/60 cursor-pointer transition-colors ${
+                active?.id === p.id
+                  ? "bg-[#10141D] border-l-2 border-l-[#F59E0B]"
+                  : "hover:bg-[#0B0E14] border-l-2 border-l-transparent"
               }`}
             >
-              <div className={`text-xs ${active?.id === p.id ? "text-[var(--text-primary)] font-semibold" : "text-[var(--text-secondary)]"}`}>{p.name}</div>
-              <div className="text-[10px] text-[var(--text-tertiary)] tabular-nums">
-                {fmt(p.cash_balance)} CASH
+              <div className={`text-xs ${active?.id === p.id ? "text-[#F8FAFC] font-semibold" : "text-[#94A3B8]"}`}>
+                {p.name}
+              </div>
+              <div className="text-[11px] text-[#64748B] font-mono mt-0.5 tabular-nums">
+                {fmt(p.cash_balance)} cash
               </div>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-[var(--border-subtle)] p-3 bg-[var(--surface-raised)]">
-          <div className="flex gap-1">
+        <div className="border-t border-[#1E2538] p-3 bg-[#0B0E14]">
+          <div className="flex gap-1.5">
             <input
               value={newPortName}
               onChange={(e) => setNewPortName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createPortfolio()}
-              placeholder="New portfolio"
-              className="flex-1 bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--border-strong)] placeholder-[var(--text-tertiary)]"
+              placeholder="New portfolio name"
+              className="flex-1 bg-[#10141D] border border-[#1E2538] focus:border-[#3B82F6] text-[#F8FAFC] text-xs px-2.5 py-1.5 outline-none placeholder-[#64748B] transition-colors"
             />
             <button
               onClick={createPortfolio}
-              className="text-[10px] px-2.5 bg-[var(--surface-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--text-primary)] font-bold transition-colors"
+              className="px-3 bg-[#1E2538] hover:bg-[#2A344D] text-[#F8FAFC] text-xs font-semibold transition-colors"
             >
               +
             </button>
@@ -146,39 +151,44 @@ export default function PortfolioView() {
 
       {/* Main panel */}
       {active ? (
-        <div className="flex-1 flex flex-col min-w-0 bg-[var(--surface-base)]">
+        <div className="flex-1 flex flex-col min-w-0 bg-[#000000]">
           {/* Summary bar */}
-          <div className="px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)] grid grid-cols-4 gap-4">
+          <div className="px-4 py-3 border-b border-[#1E2538] bg-[#05070B] grid grid-cols-4 gap-4">
             {[
-              { label: "TOTAL VALUE", value: fmt(active.total_value), color: "text-[var(--text-primary)]" },
-              { label: "CASH", value: fmt(active.cash_balance), color: "text-[var(--text-secondary)]" },
-              { label: "HOLDINGS", value: fmt(active.holdings_value), color: "text-[var(--text-primary)]" },
+              { label: "Total Value", value: fmt(active.total_value), color: "text-[#F8FAFC]" },
+              { label: "Cash Balance", value: fmt(active.cash_balance), color: "text-[#94A3B8]" },
+              { label: "Holdings Value", value: fmt(active.holdings_value), color: "text-[#F8FAFC]" },
               {
-                label: "UNREALIZED P&L",
+                label: "Unrealized P&L",
                 value: `${fmt(active.total_unrealized_pnl)} (${active.total_unrealized_pnl_pct?.toFixed(2)}%)`,
                 color: pnlColor(active.total_unrealized_pnl),
               },
             ].map(({ label, value, color }) => (
-              <div key={label}>
-                <div className="text-[10px] text-[var(--text-tertiary)] tracking-widest">{label}</div>
-                <div className={`text-xs font-bold tabular-nums mt-0.5 ${color}`}>{value}</div>
+              <div key={label} className="p-2.5 bg-[#0B0E14] border border-[#1E2538]">
+                <div className="text-[11px] text-[#64748B]">{label}</div>
+                <div className={`text-sm font-bold font-mono tabular-nums mt-0.5 ${color}`}>{value}</div>
               </div>
             ))}
           </div>
 
           {/* Tab strip */}
-          <div className="flex border-b border-[var(--border-subtle)] bg-[var(--surface-base)]">
-            {(["holdings", "contributions", "transactions", "trade"] as const).map((t) => (
+          <div className="flex border-b border-[#1E2538] bg-[#05070B]">
+            {[
+              { id: "holdings", label: "Holdings" },
+              { id: "contributions", label: "Today's Contribution" },
+              { id: "transactions", label: "Transactions" },
+              { id: "trade", label: "Trade" },
+            ].map((t) => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-4 py-2 text-[10px] tracking-widest font-bold border-r border-[var(--border-subtle)] transition-colors ${
-                  tab === t
-                    ? "text-[var(--text-primary)] bg-[var(--surface-raised)] border-b-2 border-b-[var(--accent)]"
-                    : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-overlay)]"
+                key={t.id}
+                onClick={() => setTab(t.id as any)}
+                className={`px-4 py-2.5 text-xs font-medium border-r border-[#1E2538] transition-colors ${
+                  tab === t.id
+                    ? "text-[#F8FAFC] bg-[#0B0E14] border-b-2 border-b-[#F59E0B] font-semibold"
+                    : "text-[#64748B] hover:text-[#94A3B8] hover:bg-[#0B0E14]/50"
                 }`}
               >
-                {t === "contributions" ? "TODAY'S CONTRIBUTION" : t.toUpperCase()}
+                {t.label}
               </button>
             ))}
           </div>
@@ -187,28 +197,28 @@ export default function PortfolioView() {
           {tab === "holdings" && (
             <div className="flex-1 overflow-y-auto">
               {active.holdings.length === 0 ? (
-                <div className="p-4 text-[11px] text-[var(--text-tertiary)] tracking-wider">NO HOLDINGS · EXECUTE A BUY TRADE</div>
+                <div className="p-6 text-xs text-[#64748B]">No holdings in this portfolio. Execute a Buy trade to start.</div>
               ) : (
-                <table className="w-full text-[10px]">
+                <table className="w-full text-xs font-mono">
                   <thead>
-                    <tr className="border-b border-[var(--border-subtle)] bg-[var(--surface-inset)] text-[var(--text-tertiary)] tracking-widest">
-                      {["SYMBOL", "QTY", "AVG PRICE", "CURR PRICE", "VALUE", "P&L", "ALLOC"].map((h) => (
-                        <th key={h} className="px-4 py-2 text-left font-bold">{h}</th>
+                    <tr className="border-b border-[#1E2538] bg-[#05070B] text-[#64748B] font-sans">
+                      {["Symbol", "Qty", "Avg Price", "Current Price", "Value", "P&L", "Allocation"].map((h) => (
+                        <th key={h} className="px-4 py-2.5 text-left font-medium">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {active.holdings.map((h) => (
-                      <tr key={h.symbol} className="border-b border-[var(--border-subtle)] hover:bg-[var(--surface-raised)] transition-colors">
-                        <td className="px-4 py-2 text-[var(--text-primary)] font-bold">{h.symbol}</td>
-                        <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{h.quantity}</td>
-                        <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{fmt(h.average_price)}</td>
-                        <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{fmt(h.current_price)}</td>
-                        <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{fmt(h.current_value)}</td>
-                        <td className={`px-4 py-2 tabular-nums ${pnlColor(h.unrealized_pnl)}`}>
+                      <tr key={h.symbol} className="border-b border-[#1E2538]/60 hover:bg-[#0B0E14] transition-colors">
+                        <td className="px-4 py-2.5 text-[#F8FAFC] font-semibold">{h.symbol}</td>
+                        <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{h.quantity}</td>
+                        <td className="px-4 py-2.5 text-[#94A3B8] tabular-nums">{fmt(h.average_price)}</td>
+                        <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{fmt(h.current_price)}</td>
+                        <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{fmt(h.current_value)}</td>
+                        <td className={`px-4 py-2.5 tabular-nums font-semibold ${pnlColor(h.unrealized_pnl)}`}>
                           {fmt(h.unrealized_pnl)} ({h.unrealized_pnl_pct?.toFixed(1)}%)
                         </td>
-                        <td className="px-4 py-2 text-[var(--text-tertiary)] tabular-nums">{h.allocation_pct?.toFixed(1)}%</td>
+                        <td className="px-4 py-2.5 text-[#64748B] tabular-nums">{h.allocation_pct?.toFixed(1)}%</td>
                       </tr>
                     ))}
                   </tbody>
@@ -222,34 +232,34 @@ export default function PortfolioView() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Highlight cards */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 bg-[var(--surface-raised)] border border-[var(--border-subtle)]">
-                  <div className="text-[9px] text-[var(--text-tertiary)] uppercase tracking-widest">LARGEST CONTRIBUTOR</div>
+                <div className="p-3 bg-[#0B0E14] border border-[#1E2538]">
+                  <div className="text-[11px] text-[#64748B]">Largest Contributor</div>
                   {contrib?.largest_contributor ? (
-                    <div className="mt-1">
-                      <span className="text-xs font-bold text-[var(--positive)] mr-2">{contrib.largest_contributor.symbol}</span>
-                      <span className="text-[11px] text-[var(--positive)] tabular-nums">+{fmt(contrib.largest_contributor.pnl_contribution_inr)} ({contrib.largest_contributor.pnl_contribution_pct}%)</span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#22C55E] font-mono">{contrib.largest_contributor.symbol}</span>
+                      <span className="text-xs text-[#22C55E] font-mono tabular-nums">+{fmt(contrib.largest_contributor.pnl_contribution_inr)} ({contrib.largest_contributor.pnl_contribution_pct}%)</span>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-[var(--text-tertiary)] mt-1">— None today</div>
+                    <div className="text-xs text-[#64748B] mt-1">— None today</div>
                   )}
                 </div>
 
-                <div className="p-3 bg-[var(--surface-raised)] border border-[var(--border-subtle)]">
-                  <div className="text-[9px] text-[var(--text-tertiary)] uppercase tracking-widest">LARGEST DETRACTOR</div>
+                <div className="p-3 bg-[#0B0E14] border border-[#1E2538]">
+                  <div className="text-[11px] text-[#64748B]">Largest Detractor</div>
                   {contrib?.largest_detractor ? (
-                    <div className="mt-1">
-                      <span className="text-xs font-bold text-[var(--negative)] mr-2">{contrib.largest_detractor.symbol}</span>
-                      <span className="text-[11px] text-[var(--negative)] tabular-nums">{fmt(contrib.largest_detractor.pnl_contribution_inr)} ({contrib.largest_detractor.pnl_contribution_pct}%)</span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#EF4444] font-mono">{contrib.largest_detractor.symbol}</span>
+                      <span className="text-xs text-[#EF4444] font-mono tabular-nums">{fmt(contrib.largest_detractor.pnl_contribution_inr)} ({contrib.largest_detractor.pnl_contribution_pct}%)</span>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-[var(--text-tertiary)] mt-1">— None today</div>
+                    <div className="text-xs text-[#64748B] mt-1">— None today</div>
                   )}
                 </div>
 
-                <div className="p-3 bg-[var(--surface-raised)] border border-[var(--border-subtle)]">
-                  <div className="text-[9px] text-[var(--text-tertiary)] uppercase tracking-widest">DAY P&amp;L CONTRIBUTION</div>
+                <div className="p-3 bg-[#0B0E14] border border-[#1E2538]">
+                  <div className="text-[11px] text-[#64748B]">Day P&amp;L Contribution</div>
                   <div className="mt-1">
-                    <span className={`text-xs font-bold tabular-nums ${pnlColor(contrib?.day_pnl_inr ?? 0)}`}>
+                    <span className={`text-xs font-bold font-mono tabular-nums ${pnlColor(contrib?.day_pnl_inr ?? 0)}`}>
                       {fmt(contrib?.day_pnl_inr ?? 0)} ({contrib?.day_pnl_pct}%)
                     </span>
                   </div>
@@ -257,28 +267,28 @@ export default function PortfolioView() {
               </div>
 
               {/* Table */}
-              <table className="w-full text-[10px]">
+              <table className="w-full text-xs font-mono">
                 <thead>
-                  <tr className="border-b border-[var(--border-subtle)] bg-[var(--surface-inset)] text-[var(--text-tertiary)] tracking-widest">
-                    {["SYMBOL", "QTY", "PRICE", "MOVE", "VALUE", "P&L CONTRIBUTION", "PORTFOLIO ALLOC"].map((h) => (
-                      <th key={h} className="px-4 py-2 text-left font-bold">{h}</th>
+                  <tr className="border-b border-[#1E2538] bg-[#05070B] text-[#64748B] font-sans">
+                    {["Symbol", "Qty", "Price", "Move", "Value", "P&L Contribution", "Portfolio Alloc"].map((h) => (
+                      <th key={h} className="px-4 py-2.5 text-left font-medium">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {contrib?.holdings.map((h) => (
-                    <tr key={h.symbol} className="border-b border-[var(--border-subtle)] hover:bg-[var(--surface-raised)] transition-colors">
-                      <td className="px-4 py-2 text-[var(--text-primary)] font-bold">{h.symbol}</td>
-                      <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{h.quantity}</td>
-                      <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{fmt(h.current_price)}</td>
-                      <td className={`px-4 py-2 tabular-nums ${pnlColor(h.price_change)}`}>
+                    <tr key={h.symbol} className="border-b border-[#1E2538]/60 hover:bg-[#0B0E14] transition-colors">
+                      <td className="px-4 py-2.5 text-[#F8FAFC] font-semibold">{h.symbol}</td>
+                      <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{h.quantity}</td>
+                      <td className="px-4 py-2.5 text-[#94A3B8] tabular-nums">{fmt(h.current_price)}</td>
+                      <td className={`px-4 py-2.5 tabular-nums font-semibold ${pnlColor(h.price_change)}`}>
                         {h.price_change > 0 ? "+" : ""}{h.price_change.toFixed(2)} ({h.price_change_pct > 0 ? "+" : ""}{h.price_change_pct}%)
                       </td>
-                      <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{fmt(h.current_value)}</td>
-                      <td className={`px-4 py-2 font-bold tabular-nums ${pnlColor(h.pnl_contribution_inr)}`}>
+                      <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{fmt(h.current_value)}</td>
+                      <td className={`px-4 py-2.5 font-bold tabular-nums ${pnlColor(h.pnl_contribution_inr)}`}>
                         {h.pnl_contribution_inr > 0 ? "+" : ""}{fmt(h.pnl_contribution_inr)} ({h.pnl_contribution_pct}%)
                       </td>
-                      <td className="px-4 py-2 text-[var(--text-tertiary)] tabular-nums">{h.allocation_pct}%</td>
+                      <td className="px-4 py-2.5 text-[#64748B] tabular-nums">{h.allocation_pct}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -290,25 +300,25 @@ export default function PortfolioView() {
           {tab === "transactions" && (
             <div className="flex-1 overflow-y-auto">
               {txns.length === 0 ? (
-                <div className="p-4 text-[11px] text-[var(--text-tertiary)] tracking-wider">NO TRANSACTIONS YET</div>
+                <div className="p-6 text-xs text-[#64748B]">No transactions recorded yet.</div>
               ) : (
-                <table className="w-full text-[10px]">
+                <table className="w-full text-xs font-mono">
                   <thead>
-                    <tr className="border-b border-[var(--border-subtle)] bg-[var(--surface-inset)] text-[var(--text-tertiary)] tracking-widest">
-                      {["TIMESTAMP", "SYMBOL", "SIDE", "QTY", "PRICE", "REALIZED P&L"].map((h) => (
-                        <th key={h} className="px-4 py-2 text-left font-bold">{h}</th>
+                    <tr className="border-b border-[#1E2538] bg-[#05070B] text-[#64748B] font-sans">
+                      {["Timestamp", "Symbol", "Side", "Qty", "Price", "Realized P&L"].map((h) => (
+                        <th key={h} className="px-4 py-2.5 text-left font-medium">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {txns.map((t) => (
-                      <tr key={t.id} className="border-b border-[var(--border-subtle)] hover:bg-[var(--surface-raised)] transition-colors">
-                        <td className="px-4 py-2 text-[var(--text-tertiary)] tabular-nums">{new Date(t.timestamp).toLocaleString("en-IN")}</td>
-                        <td className="px-4 py-2 text-[var(--text-primary)] font-bold">{t.symbol}</td>
-                        <td className={`px-4 py-2 font-bold ${t.side === "BUY" ? "text-[var(--positive)]" : "text-[var(--negative)]"}`}>{t.side}</td>
-                        <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{t.quantity}</td>
-                        <td className="px-4 py-2 text-[var(--text-primary)] tabular-nums">{fmt(t.execution_price)}</td>
-                        <td className={`px-4 py-2 tabular-nums ${pnlColor(t.realized_pnl)}`}>{fmt(t.realized_pnl)}</td>
+                      <tr key={t.id} className="border-b border-[#1E2538]/60 hover:bg-[#0B0E14] transition-colors">
+                        <td className="px-4 py-2.5 text-[#64748B] tabular-nums">{new Date(t.timestamp).toLocaleString("en-IN")}</td>
+                        <td className="px-4 py-2.5 text-[#F8FAFC] font-semibold">{t.symbol}</td>
+                        <td className={`px-4 py-2.5 font-bold ${t.side === "BUY" ? "text-[#22C55E]" : "text-[#EF4444]"}`}>{t.side}</td>
+                        <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{t.quantity}</td>
+                        <td className="px-4 py-2.5 text-[#F8FAFC] tabular-nums">{fmt(t.execution_price)}</td>
+                        <td className={`px-4 py-2.5 tabular-nums font-semibold ${pnlColor(t.realized_pnl)}`}>{fmt(t.realized_pnl)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -320,33 +330,33 @@ export default function PortfolioView() {
           {/* Trade form */}
           {tab === "trade" && (
             <div className="p-6 max-w-sm space-y-4">
-              <div className="text-[10px] tracking-widest text-[var(--text-tertiary)] mb-2">
-                PAPER TRADE — NO REAL MONEY
+              <div className="text-xs text-[#64748B] mb-2">
+                Simulated paper execution — no real capital risked.
               </div>
 
               {tradeError && (
-                <div className="text-[10px] text-[var(--negative)] border border-[var(--negative)]/20 bg-[var(--negative-subtle)] px-3 py-2">
+                <div className="text-xs text-[#EF4444] border border-[#EF4444]/20 bg-[#EF4444]/10 px-3 py-2">
                   {tradeError}
                 </div>
               )}
               {tradeSuccess && (
-                <div className="text-[10px] text-[var(--positive)] border border-[var(--positive)]/20 bg-[var(--positive-subtle)] px-3 py-2">
+                <div className="text-xs text-[#22C55E] border border-[#22C55E]/20 bg-[#22C55E]/10 px-3 py-2">
                   {tradeSuccess}
                 </div>
               )}
 
               {[
-                { label: "SYMBOL", value: tradeSymbol, onChange: (v: string) => setTradeSymbol(v.toUpperCase()), placeholder: "RELIANCE.NS" },
-                { label: "QUANTITY", value: tradeQty, onChange: setTradeQty, placeholder: "10" },
-                { label: "LIMIT PRICE (optional)", value: tradePrice, onChange: setTradePrice, placeholder: "Live market price" },
+                { label: "Symbol", value: tradeSymbol, onChange: (v: string) => setTradeSymbol(v.toUpperCase()), placeholder: "e.g. RELIANCE.NS" },
+                { label: "Quantity", value: tradeQty, onChange: setTradeQty, placeholder: "10" },
+                { label: "Limit Price (Optional)", value: tradePrice, onChange: setTradePrice, placeholder: "Live market price" },
               ].map(({ label, value, onChange, placeholder }) => (
                 <div key={label}>
-                  <label className="block text-[10px] tracking-widest text-[var(--text-tertiary)] mb-1.5">{label}</label>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">{label}</label>
                   <input
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
-                    className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-xs px-3 py-2 outline-none focus:border-[var(--border-strong)] placeholder-[var(--text-tertiary)]"
+                    className="w-full bg-[#10141D] border border-[#1E2538] focus:border-[#3B82F6] text-[#F8FAFC] font-mono text-xs px-3 py-2 outline-none placeholder-[#64748B] transition-colors"
                   />
                 </div>
               ))}
@@ -356,12 +366,12 @@ export default function PortfolioView() {
                   <button
                     key={side}
                     onClick={() => setTradeSide(side)}
-                    className={`flex-1 py-2 text-[10px] font-bold tracking-widest transition-colors ${
+                    className={`flex-1 py-2 text-xs font-semibold transition-colors border ${
                       tradeSide === side
                         ? side === "BUY"
-                          ? "bg-[var(--positive-subtle)] border border-[var(--positive)]/40 text-[var(--positive)]"
-                          : "bg-[var(--negative-subtle)] border border-[var(--negative)]/40 text-[var(--negative)]"
-                        : "bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                          ? "bg-[#22C55E] border-[#22C55E] text-black"
+                          : "bg-[#EF4444] border-[#EF4444] text-white"
+                        : "bg-[#10141D] border-[#1E2538] text-[#64748B] hover:text-[#F8FAFC]"
                     }`}
                   >
                     {side}
@@ -371,16 +381,16 @@ export default function PortfolioView() {
 
               <button
                 onClick={executeTrade}
-                className="w-full py-2.5 text-[10px] font-bold tracking-widest bg-[var(--surface-raised)] border border-[var(--border-strong)] hover:border-[var(--accent)] text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
+                className="w-full py-2.5 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black transition-colors"
               >
-                EXECUTE {tradeSide} ORDER
+                Execute {tradeSide} Order
               </button>
             </div>
           )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[11px] text-[var(--text-tertiary)] tracking-widest">CREATE OR SELECT A PORTFOLIO</span>
+          <span className="text-xs text-[#64748B]">Create or select a portfolio on the left.</span>
         </div>
       )}
     </div>
