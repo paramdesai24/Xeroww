@@ -1,5 +1,5 @@
 // src/components/CandleAnatomy.tsx
-// Right panel — Interactive Candle Anatomy breakdown with Body & Wick ratios.
+// Candle anatomy breakdown — graphite-and-paper design system.
 
 import type { OHLCBar } from "../types/market";
 
@@ -11,136 +11,196 @@ interface CandleAnatomyProps {
 export default function CandleAnatomy({ candle, isLatest = false }: CandleAnatomyProps) {
   if (!candle) {
     return (
-      <div className="bg-[#171717] border border-[#262626] rounded p-3.5 font-mono">
-        <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA]">
+      <div style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: 8,
+          borderBottom: "1px solid var(--border-subtle)",
+          marginBottom: 8,
+        }}>
+          <h3 style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+            margin: 0,
+          }}>
             Candle Anatomy
           </h3>
         </div>
-        <div className="py-6 text-center text-[#737373] text-xs">
-          SELECT A CANDLE ON CHART…
+        <div style={{
+          padding: "20px 0",
+          textAlign: "center",
+          fontFamily: "var(--font-mono)",
+          fontSize: 9,
+          letterSpacing: "0.08em",
+          color: "var(--text-disabled)",
+          textTransform: "uppercase",
+        }}>
+          Select a candle on chart…
         </div>
       </div>
     );
   }
 
-  // Exact calculations requested
   const bodySize = Math.abs(candle.close - candle.open);
   const upperShadow = Math.max(candle.high - Math.max(candle.open, candle.close), 0);
   const lowerShadow = Math.max(Math.min(candle.open, candle.close) - candle.low, 0);
   const totalRange = candle.high - candle.low;
-
   const bodyRatio = totalRange > 0 ? (bodySize / totalRange) * 100 : 0;
   const wickRatio = totalRange > 0 ? ((upperShadow + lowerShadow) / totalRange) * 100 : 0;
-
   const isBullish = candle.close >= candle.open;
 
   return (
-    <div className="bg-[#171717] border border-[#262626] rounded p-3.5 font-mono select-none">
+    <div style={{
+      padding: 12,
+      backgroundColor: "var(--surface-raised)",
+      border: "1px solid var(--border-subtle)",
+      userSelect: "none",
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-[#262626] mb-2.5">
-        <div className="flex items-baseline gap-1.5">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#FAFAFA]">
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: 8,
+        borderBottom: "1px solid var(--border-subtle)",
+        marginBottom: 10,
+      }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+          <h3 style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+            margin: 0,
+          }}>
             Candle Anatomy
           </h3>
           {isLatest && (
-            <span className="text-[9px] text-[#A1A1AA] uppercase tracking-wider">
-              (Latest)
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 8, color: "var(--text-disabled)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Latest
             </span>
           )}
         </div>
-        <span className="text-[10px] text-[#737373] tabular-nums">
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-tertiary)", fontVariantNumeric: "tabular-nums" }}>
           {candle.time}
         </span>
       </div>
 
-      {/* Primary OHLC values */}
-      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-[#A1A1AA] mb-3">
-        <div className="flex justify-between border-b border-[#262626]/40 pb-0.5">
-          <span className="text-[#737373]">OPEN</span>
-          <span className="text-[#FAFAFA] tabular-nums font-medium">
-            ₹{candle.open.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex justify-between border-b border-[#262626]/40 pb-0.5">
-          <span className="text-[#737373]">HIGH</span>
-          <span className="text-[#FAFAFA] tabular-nums font-medium">
-            ₹{candle.high.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex justify-between border-b border-[#262626]/40 pb-0.5">
-          <span className="text-[#737373]">LOW</span>
-          <span className="text-[#FAFAFA] tabular-nums font-medium">
-            ₹{candle.low.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex justify-between border-b border-[#262626]/40 pb-0.5">
-          <span className="text-[#737373]">CLOSE</span>
-          <span
-            className={`tabular-nums font-medium ${
-              isBullish ? "text-[#22C55E]" : "text-[#EF4444]"
-            }`}
-          >
-            ₹{candle.close.toFixed(2)}
-          </span>
-        </div>
+      {/* OHLC values */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px", marginBottom: 10 }}>
+        {[
+          { label: "OPEN", value: candle.open.toFixed(2), color: "var(--text-primary)" },
+          { label: "HIGH", value: candle.high.toFixed(2), color: "var(--text-primary)" },
+          { label: "LOW",  value: candle.low.toFixed(2),  color: "var(--text-primary)" },
+          { label: "CLOSE", value: candle.close.toFixed(2), color: isBullish ? "var(--positive)" : "var(--negative)" },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingBottom: 3,
+            borderBottom: "1px solid var(--border-subtle)",
+          }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-disabled)" }}>
+              {label}
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 500, color, fontVariantNumeric: "tabular-nums" }}>
+              ₹{value}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Structural Metrics: Body Size, Upper Shadow, Lower Shadow */}
-      <div className="bg-[#0A0A0A] border border-[#262626] rounded p-2 mb-3 space-y-1 text-xs">
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-[#A1A1AA]">Body Size</span>
-          <span className="text-[#FAFAFA] font-medium tabular-nums">
-            ₹{bodySize.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-[#A1A1AA]">Upper Shadow</span>
-          <span className="text-[#FAFAFA] font-medium tabular-nums">
-            ₹{upperShadow.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-[#A1A1AA]">Lower Shadow</span>
-          <span className="text-[#FAFAFA] font-medium tabular-nums">
-            ₹{lowerShadow.toFixed(2)}
-          </span>
-        </div>
+      {/* Structural Metrics */}
+      <div style={{
+        padding: 8,
+        backgroundColor: "var(--surface-inset)",
+        border: "1px solid var(--border-subtle)",
+        marginBottom: 10,
+      }}>
+        {[
+          { label: "Body Size", value: `₹${bodySize.toFixed(2)}` },
+          { label: "Upper Shadow", value: `₹${upperShadow.toFixed(2)}` },
+          { label: "Lower Shadow", value: `₹${lowerShadow.toFixed(2)}` },
+        ].map(({ label, value }) => (
+          <div key={label} style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "3px 0",
+          }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-tertiary)" }}>{label}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 500, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{value}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Dynamic Ratio Progress Bars */}
-      <div className="space-y-2 text-[10px]">
+      {/* Ratio Bars */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {/* Body Ratio */}
         <div>
-          <div className="flex items-center justify-between text-[#A1A1AA] mb-1">
-            <span>BODY RATIO</span>
-            <span className="text-[#FAFAFA] font-bold tabular-nums">
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 3,
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-tertiary)",
+          }}>
+            <span>Body Ratio</span>
+            <span style={{ fontWeight: 600, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
               {bodyRatio.toFixed(1)}%
             </span>
           </div>
-          <div className="h-1 bg-[#262626] rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-200 ${
-                isBullish ? "bg-[#22C55E]" : "bg-[#EF4444]"
-              }`}
-              style={{ width: `${Math.min(bodyRatio, 100)}%` }}
-            />
+          <div style={{ height: 3, backgroundColor: "var(--border-subtle)", borderRadius: 1, overflow: "hidden" }}>
+            <div style={{
+              height: "100%",
+              width: `${Math.min(bodyRatio, 100)}%`,
+              backgroundColor: isBullish ? "var(--positive)" : "var(--negative)",
+              borderRadius: 1,
+              transition: "width 180ms cubic-bezier(0.16,1,0.3,1)",
+            }} />
           </div>
         </div>
 
         {/* Wick Ratio */}
         <div>
-          <div className="flex items-center justify-between text-[#A1A1AA] mb-1">
-            <span>WICK RATIO</span>
-            <span className="text-[#FAFAFA] font-bold tabular-nums">
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 3,
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-tertiary)",
+          }}>
+            <span>Wick Ratio</span>
+            <span style={{ fontWeight: 600, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
               {wickRatio.toFixed(1)}%
             </span>
           </div>
-          <div className="h-1 bg-[#262626] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#6366F1] rounded-full transition-all duration-200"
-              style={{ width: `${Math.min(wickRatio, 100)}%` }}
-            />
+          <div style={{ height: 3, backgroundColor: "var(--border-subtle)", borderRadius: 1, overflow: "hidden" }}>
+            <div style={{
+              height: "100%",
+              width: `${Math.min(wickRatio, 100)}%`,
+              backgroundColor: "var(--accent)",
+              borderRadius: 1,
+              transition: "width 180ms cubic-bezier(0.16,1,0.3,1)",
+            }} />
           </div>
         </div>
       </div>

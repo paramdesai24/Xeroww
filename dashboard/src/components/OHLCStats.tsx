@@ -1,5 +1,5 @@
 // src/components/OHLCStats.tsx
-// Right panel — Institutional Session Stats with Body Size and Daily Return.
+// Session Analytics panel — graphite-and-paper design system.
 
 import { ArrowUp, ArrowDown } from "lucide-react";
 import type { OHLCData, QuoteData } from "../types/market";
@@ -9,26 +9,31 @@ interface OHLCStatsProps {
   ohlc: OHLCData | null;
 }
 
-function StatRow({
-  label,
-  value,
-  highlight,
-}: {
+function StatRow({ label, value, highlight }: {
   label: string;
   value: string;
   highlight?: "bull" | "bear" | null;
 }) {
-  const valueColor =
-    highlight === "bull"
-      ? "text-[#22C55E]"
-      : highlight === "bear"
-      ? "text-[#EF4444]"
-      : "text-[#FAFAFA]";
+  const valueColor = highlight === "bull"
+    ? "var(--positive)"
+    : highlight === "bear"
+    ? "var(--negative)"
+    : "var(--text-primary)";
 
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-[#262626]/50 last:border-0 text-xs font-mono">
-      <span className="text-[#A1A1AA] text-[11px] uppercase tracking-wider">{label}</span>
-      <span className={`font-medium tabular-nums ${valueColor}`}>{value}</span>
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "5px 0",
+      borderBottom: "1px solid var(--border-subtle)",
+    }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-tertiary)" }}>
+        {label}
+      </span>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, color: valueColor, fontVariantNumeric: "tabular-nums" }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -38,22 +43,39 @@ function RangeBar({ low, high, current }: { low: number; high: number; current: 
   const pct = range > 0 ? Math.min(Math.max(((current - low) / range) * 100, 0), 100) : 50;
 
   return (
-    <div className="mt-2.5">
-      <div className="flex items-center justify-between text-[10px] font-mono text-[#A1A1AA] mb-1 tabular-nums">
+    <div style={{ marginTop: 8 }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        color: "var(--text-tertiary)",
+        marginBottom: 5,
+        fontVariantNumeric: "tabular-nums",
+      }}>
         <span>₹{low.toFixed(1)}</span>
-        <span className="text-[#737373] uppercase tracking-widest text-[9px]">Session Range</span>
+        <span style={{ letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 8 }}>Session Range</span>
         <span>₹{high.toFixed(1)}</span>
       </div>
-      <div className="relative h-1.5 bg-[#262626] rounded-full overflow-visible">
-        {/* Red low boundary indicator */}
-        <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#EF4444] rounded-l-full" />
-        {/* Green high boundary indicator */}
-        <div className="absolute right-0 top-0 bottom-0 w-2 bg-[#22C55E] rounded-r-full" />
-        {/* Current price marker pin */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#FAFAFA] shadow border border-[#000000] transition-all duration-300"
-          style={{ left: `calc(${pct}% - 5px)` }}
-        />
+      <div style={{ position: "relative", height: 4, backgroundColor: "var(--border-subtle)", borderRadius: 2 }}>
+        {/* Low end marker */}
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 6, backgroundColor: "var(--negative)", borderRadius: "2px 0 0 2px" }} />
+        {/* High end marker */}
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 6, backgroundColor: "var(--positive)", borderRadius: "0 2px 2px 0" }} />
+        {/* Current price pin */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          backgroundColor: "var(--text-primary)",
+          border: "1.5px solid var(--surface-base)",
+          left: `calc(${pct}% - 4px)`,
+          transition: "left 300ms cubic-bezier(0.16,1,0.3,1)",
+        }} />
       </div>
     </div>
   );
@@ -61,53 +83,50 @@ function RangeBar({ low, high, current }: { low: number; high: number; current: 
 
 export default function OHLCStats({ quote, ohlc }: OHLCStatsProps) {
   const latest = ohlc?.candles.at(-1) ?? null;
-
-  // New calculations requested for V0.5 terminal
   const bodySize = latest ? Math.abs(latest.close - latest.open) : null;
   const dailyReturn = latest && latest.open > 0 ? ((latest.close - latest.open) / latest.open) * 100 : null;
 
   return (
-    <div className="bg-[#171717] border border-[#262626] rounded p-3.5">
+    <div style={{
+      padding: 12,
+      backgroundColor: "var(--surface-raised)",
+      border: "1px solid var(--border-subtle)",
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#262626]">
-        <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#FAFAFA]">
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: 8,
+        borderBottom: "1px solid var(--border-subtle)",
+        marginBottom: 10,
+      }}>
+        <h3 style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 9,
+          fontWeight: 600,
+          letterSpacing: "0.10em",
+          textTransform: "uppercase",
+          color: "var(--text-secondary)",
+          margin: 0,
+        }}>
           Session Analytics
         </h3>
-        <span className="text-[9px] font-mono text-[#737373]">
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
           {latest ? latest.time : "DAILY"}
         </span>
       </div>
 
       {quote && latest ? (
         <>
-          {/* Day Range Bar */}
           <RangeBar low={quote.day_low} high={quote.day_high} current={quote.price} />
-
-          {/* Stats Rows */}
-          <div className="mt-3 divide-y divide-[#262626]/40">
-            <StatRow
-              label="Open"
-              value={`₹${latest.open.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
-            />
-            <StatRow
-              label="High"
-              value={`₹${quote.day_high.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
-            />
-            <StatRow
-              label="Low"
-              value={`₹${quote.day_low.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
-            />
-            <StatRow
-              label="Close (Last)"
-              value={`₹${latest.close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
-            />
-
-            {/* Calculated Terminal Metrics */}
+          <div style={{ marginTop: 10, display: "flex", flexDirection: "column" }}>
+            <StatRow label="Open" value={`₹${latest.open.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`} />
+            <StatRow label="High" value={`₹${quote.day_high.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`} />
+            <StatRow label="Low" value={`₹${quote.day_low.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`} />
+            <StatRow label="Close" value={`₹${latest.close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`} />
             {bodySize !== null && (
-              <StatRow
-                label="Body Size"
-                value={`₹${bodySize.toFixed(2)}`}
-              />
+              <StatRow label="Body Size" value={`₹${bodySize.toFixed(2)}`} />
             )}
             {dailyReturn !== null && (
               <StatRow
@@ -116,39 +135,42 @@ export default function OHLCStats({ quote, ohlc }: OHLCStatsProps) {
                 highlight={dailyReturn > 0 ? "bull" : dailyReturn < 0 ? "bear" : null}
               />
             )}
-
-            <StatRow
-              label="Volume"
-              value={quote.volume.toLocaleString("en-IN")}
-            />
+            <StatRow label="Volume" value={quote.volume.toLocaleString("en-IN")} />
             {quote.market_cap && (
-              <StatRow
-                label="Market Cap"
-                value={`₹${(quote.market_cap / 1e12).toFixed(2)}T`}
-              />
+              <StatRow label="Market Cap" value={`₹${(quote.market_cap / 1e12).toFixed(2)}T`} />
             )}
           </div>
 
-          {/* 1-Month Range stats */}
+          {/* 1-Month Range */}
           {ohlc && ohlc.candles.length > 0 && (() => {
             const highs = ohlc.candles.map((c) => c.high);
             const lows = ohlc.candles.map((c) => c.low);
             const monthHigh = Math.max(...highs);
             const monthLow = Math.min(...lows);
             return (
-              <div className="mt-3 pt-2.5 border-t border-[#262626]">
-                <div className="flex items-center justify-between text-[10px] font-mono text-[#737373] uppercase tracking-widest mb-1.5">
+              <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid var(--border-subtle)" }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 8,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--text-disabled)",
+                  marginBottom: 6,
+                }}>
                   <span>1M Range</span>
                   <span>Low / High</span>
                 </div>
-                <div className="flex items-center justify-between font-mono text-xs">
-                  <div className="flex items-center gap-1 text-[#EF4444]">
-                    <ArrowDown size={11} className="stroke-[2.5]" />
-                    <span className="tabular-nums">₹{monthLow.toFixed(1)}</span>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--negative)" }}>
+                    <ArrowDown size={10} strokeWidth={2.5} />
+                    <span style={{ fontVariantNumeric: "tabular-nums" }}>₹{monthLow.toFixed(1)}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[#22C55E]">
-                    <ArrowUp size={11} className="stroke-[2.5]" />
-                    <span className="tabular-nums">₹{monthHigh.toFixed(1)}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--positive)" }}>
+                    <ArrowUp size={10} strokeWidth={2.5} />
+                    <span style={{ fontVariantNumeric: "tabular-nums" }}>₹{monthHigh.toFixed(1)}</span>
                   </div>
                 </div>
               </div>
@@ -156,8 +178,16 @@ export default function OHLCStats({ quote, ohlc }: OHLCStatsProps) {
           })()}
         </>
       ) : (
-        <div className="py-6 text-center text-[#737373] text-xs font-mono">
-          AWAITING QUOTE…
+        <div style={{
+          padding: "20px 0",
+          textAlign: "center",
+          fontFamily: "var(--font-mono)",
+          fontSize: 9,
+          letterSpacing: "0.08em",
+          color: "var(--text-disabled)",
+          textTransform: "uppercase",
+        }}>
+          Awaiting quote…
         </div>
       )}
     </div>
