@@ -91,8 +91,8 @@ export default function AlertsManager() {
   return (
     <div className="flex h-full overflow-hidden" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Create panel */}
-      <div className="w-72 shrink-0 border-r border-[#1E1E1E] flex flex-col">
-        <div className="px-3 py-2 border-b border-[#1E1E1E]">
+      <div className="w-72 shrink-0 border-r border-[var(--border-subtle)] flex flex-col">
+        <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
           <span className="text-[10px] tracking-widest text-[#525252] font-bold">CREATE ALERT</span>
         </div>
 
@@ -101,14 +101,14 @@ export default function AlertsManager() {
             <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">SYMBOL</label>
             <input value={symbol} onChange={(e) => setSymbol(e.target.value.toUpperCase())}
               placeholder="RELIANCE.NS"
-              className="w-full bg-[#111] border border-[#222] text-[#FAFAFA] text-[10px] px-2 py-1.5 outline-none focus:border-[#00E5FF] placeholder-[#333]"
+              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)] placeholder-[#333]"
             />
           </div>
 
           <div>
             <label className="block text-[10px] tracking-widest text-[#525252] mb-1.5">ALERT TYPE</label>
             <select value={alertType} onChange={(e) => handleAlertTypeChange(e.target.value)}
-              className="w-full bg-[#111] border border-[#222] text-[#FAFAFA] text-[10px] px-2 py-1.5 outline-none focus:border-[#00E5FF]">
+              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)]">
               {ALERT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
@@ -122,7 +122,7 @@ export default function AlertsManager() {
             <textarea value={payloadJson}
               onChange={(e) => { setPayloadJson(e.target.value); setPayloadError(null); }}
               rows={4}
-              className="w-full bg-[#111] border border-[#222] text-[#FAFAFA] text-[10px] px-2 py-1.5 outline-none focus:border-[#00E5FF] font-mono resize-none"
+              className="w-full bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)] font-mono resize-none"
             />
             {payloadError && <div className="text-[10px] text-[#ff4d4d] mt-1">{payloadError}</div>}
           </div>
@@ -130,7 +130,7 @@ export default function AlertsManager() {
           {error && <div className="text-[10px] text-[#ff4d4d]">{error}</div>}
 
           <button onClick={createAlert}
-            className="w-full py-2 text-[10px] font-bold tracking-widest bg-[#00E5FF] text-black hover:bg-[#00cfea] transition-colors">
+            className="w-full py-2 text-[10px] font-bold tracking-widest bg-[var(--accent)] text-black hover:bg-[#00cfea] transition-colors">
             CREATE ALERT
           </button>
         </div>
@@ -138,12 +138,12 @@ export default function AlertsManager() {
 
       {/* Alert list */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="px-4 py-2 border-b border-[#1E1E1E] flex items-center justify-between">
+        <div className="px-4 py-2 border-b border-[var(--border-subtle)] flex items-center justify-between">
           <span className="text-[10px] tracking-widest text-[#525252]">
             {alerts.length} ALERT{alerts.length !== 1 ? "S" : ""} · ON-DEMAND EVALUATION
           </span>
           <button onClick={evaluateAll} disabled={evaluating || alerts.length === 0}
-            className="text-[10px] tracking-widest font-bold px-3 py-1 border border-[#00E5FF] text-[#00E5FF] hover:bg-[#0a1015] disabled:opacity-30 transition-colors">
+            className="text-[10px] tracking-widest font-bold px-3 py-1 border border-[var(--accent)] text-[var(--accent)] hover:bg-[#0a1015] disabled:opacity-30 transition-colors">
             {evaluating ? "EVALUATING..." : "EVALUATE ALL"}
           </button>
         </div>
@@ -160,7 +160,7 @@ export default function AlertsManager() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-[#FAFAFA] font-bold">{alert.symbol}</span>
+                        <span className="text-xs text-[var(--text-primary)] font-bold">{alert.symbol}</span>
                         <span className="text-[10px] text-[#525252] tracking-wider">{alert.alert_type}</span>
                         {alert.triggered_at && (
                           <span className="text-[10px] text-[#ff9900] tracking-wider">TRIGGERED</span>
@@ -178,7 +178,7 @@ export default function AlertsManager() {
 
                     <div className="flex items-center gap-2 shrink-0">
                       <button onClick={() => evaluateOne(alert.id)}
-                        className="text-[10px] tracking-wider text-[#00E5FF] hover:text-[#00cfea] border border-[#1a2a2a] px-2 py-1 transition-colors">
+                        className="text-[10px] tracking-wider text-[var(--accent)] hover:text-[#00cfea] border border-[#1a2a2a] px-2 py-1 transition-colors">
                         EVAL
                       </button>
                       <button onClick={() => deleteAlert(alert.id)}

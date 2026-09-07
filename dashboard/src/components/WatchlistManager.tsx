@@ -96,8 +96,8 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
   return (
     <div className="flex h-full overflow-hidden" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Watchlist sidebar */}
-      <div className="w-56 shrink-0 border-r border-[#1E1E1E] flex flex-col">
-        <div className="px-3 py-2 border-b border-[#1E1E1E]">
+      <div className="w-56 shrink-0 border-r border-[var(--border-subtle)] flex flex-col">
+        <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
           <span className="text-[10px] tracking-widest text-[#525252] font-bold">WATCHLISTS</span>
         </div>
 
@@ -109,12 +109,12 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
               <div
                 key={wl.id}
                 className={`group flex items-center justify-between px-3 py-2 cursor-pointer border-b border-[#111] ${
-                  activeWl?.id === wl.id ? "bg-[#0a1015] border-l-2 border-l-[#00E5FF]" : "hover:bg-[#0d0d0d]"
+                  activeWl?.id === wl.id ? "bg-[#0a1015] border-l-2 border-l-[var(--accent)]" : "hover:bg-[#0d0d0d]"
                 }`}
                 onClick={() => selectWatchlist(wl.id)}
               >
               <div>
-                <div className={`text-xs ${activeWl?.id === wl.id ? "text-[#FAFAFA]" : "text-[#666]"}`}>
+                <div className={`text-xs ${activeWl?.id === wl.id ? "text-[var(--text-primary)]" : "text-[#666]"}`}>
                   {wl.name}
                 </div>
                 <div className="text-[10px] text-[#333]">{wl.item_count ?? 0} symbols</div>
@@ -132,7 +132,7 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
         </div>
 
         {/* Create new */}
-        <div className="border-t border-[#1E1E1E] p-3">
+        <div className="border-t border-[var(--border-subtle)] p-3">
           <div className="flex gap-1">
             <input
               id="new-watchlist-name"
@@ -141,13 +141,13 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
               onChange={(e) => setNewListName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createWatchlist()}
               placeholder="New watchlist"
-              className="flex-1 bg-[#111] border border-[#222] text-[#FAFAFA] text-[10px] px-2 py-1.5 outline-none focus:border-[#00E5FF] placeholder-[#333]"
+              className="flex-1 bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-2 py-1.5 outline-none focus:border-[var(--accent)] placeholder-[#333]"
             />
             <button
               id="create-watchlist-btn"
               onClick={createWatchlist}
               disabled={creating}
-              className="text-[10px] px-2 bg-[#00E5FF] text-black font-bold disabled:opacity-40"
+              className="text-[10px] px-2 bg-[var(--accent)] text-black font-bold disabled:opacity-40"
             >
               +
             </button>
@@ -166,15 +166,15 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
 
         {activeWl ? (
           <>
-            <div className="px-4 py-2 border-b border-[#1E1E1E] flex items-center justify-between">
-              <span className="text-xs text-[#FAFAFA] tracking-wider font-bold">{activeWl.name}</span>
+            <div className="px-4 py-2 border-b border-[var(--border-subtle)] flex items-center justify-between">
+              <span className="text-xs text-[var(--text-primary)] tracking-wider font-bold">{activeWl.name}</span>
               {activeWl.is_default && (
-                <span className="text-[10px] text-[#00E5FF] tracking-widest">DEFAULT</span>
+                <span className="text-[10px] text-[var(--accent)] tracking-widest">DEFAULT</span>
               )}
             </div>
 
             {/* Add symbol */}
-            <div className="px-4 py-2 border-b border-[#1E1E1E] flex gap-2">
+            <div className="px-4 py-2 border-b border-[var(--border-subtle)] flex gap-2">
               <input
                 id="new-symbol-input"
                 type="text"
@@ -182,12 +182,12 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
                 onChange={(e) => setNewSymbol(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === "Enter" && addSymbol()}
                 placeholder="SYMBOL.NS"
-                className="flex-1 bg-[#111] border border-[#222] text-[#FAFAFA] text-[10px] px-3 py-1.5 outline-none focus:border-[#00E5FF] placeholder-[#333]"
+                className="flex-1 bg-[var(--surface-overlay)] border border-[var(--border-default)] text-[var(--text-primary)] text-[10px] px-3 py-1.5 outline-none focus:border-[var(--accent)] placeholder-[#333]"
               />
               <button
                 id="add-symbol-btn"
                 onClick={addSymbol}
-                className="text-[10px] px-3 py-1.5 bg-[#00E5FF] text-black font-bold hover:bg-[#00cfea] transition-colors"
+                className="text-[10px] px-3 py-1.5 bg-[var(--accent)] text-black font-bold hover:bg-[#00cfea] transition-colors"
               >
                 ADD
               </button>
@@ -202,7 +202,7 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
                     className="group flex items-center justify-between px-4 py-2.5 border-b border-[#111] hover:bg-[#0d0d0d] cursor-pointer"
                     onClick={() => onSelectSymbol?.(item.symbol)}
                   >
-                    <span className="text-xs text-[#FAFAFA] font-bold tracking-wider">{item.symbol}</span>
+                    <span className="text-xs text-[var(--text-primary)] font-bold tracking-wider">{item.symbol}</span>
                     <button
                       onClick={(e) => { e.stopPropagation(); removeSymbol(item.symbol); }}
                       className="opacity-0 group-hover:opacity-100 text-[10px] text-[#333] hover:text-[#ff4d4d] transition-all"
