@@ -1,6 +1,6 @@
 // src/components/ModuleNav.tsx
-// Institutional terminal module navigator — switches between platform modules.
-// Zero generic SaaS styling. Dense, high-contrast, terminal-identity.
+// Xeroww module navigator — graphite-and-paper design system.
+// Quiet header with a single accent to indicate active state.
 
 import type { UserProfile } from "../types/auth";
 
@@ -21,13 +21,38 @@ export default function ModuleNav({ activeModule, onModuleChange, user, onLogout
   return (
     <nav
       id="module-nav"
-      className="flex items-center border-b border-[#1E1E1E] bg-[#000] shrink-0"
-      style={{ minHeight: 38, fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+      className="flex items-center shrink-0"
+      style={{
+        minHeight: 38,
+        backgroundColor: "var(--surface-base)",
+        borderBottom: "1px solid var(--border-subtle)",
+        fontFamily: "var(--font-mono)",
+      }}
     >
-      {/* Brand */}
-      <div className="px-4 border-r border-[#1E1E1E] flex items-center gap-2 shrink-0" style={{ height: 38 }}>
-        <span className="text-[#00E5FF] text-[10px] font-bold tracking-[0.25em]">XEROWW</span>
-        <span className="text-[#252525] text-[10px]">V0.6</span>
+      {/* Brand — wordmark only, no glow */}
+      <div
+        className="px-5 flex items-center gap-2.5 shrink-0"
+        style={{ height: 38, borderRight: "1px solid var(--border-subtle)" }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.18em",
+            color: "var(--text-primary)",
+          }}
+        >
+          XEROWW
+        </span>
+        <span
+          style={{
+            fontSize: 9,
+            letterSpacing: "0.06em",
+            color: "var(--text-disabled)",
+          }}
+        >
+          V0.6
+        </span>
       </div>
 
       {/* Module tabs */}
@@ -39,12 +64,27 @@ export default function ModuleNav({ activeModule, onModuleChange, user, onLogout
               key={mod}
               id={`module-tab-${mod.toLowerCase()}`}
               onClick={() => onModuleChange(mod)}
-              className={`px-4 text-[10px] tracking-[0.2em] font-bold transition-colors border-r border-[#1A1A1A] shrink-0 ${
-                active
-                  ? "text-[#00E5FF] bg-[#0a1015]"
-                  : "text-[#3a3a3a] hover:text-[#666] bg-[#000]"
-              }`}
-              style={{ height: 38 }}
+              style={{
+                height: 38,
+                padding: "0 16px",
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                fontWeight: 500,
+                fontFamily: "var(--font-mono)",
+                borderRight: "1px solid var(--border-subtle)",
+                borderBottom: active ? `2px solid var(--accent)` : "2px solid transparent",
+                backgroundColor: active ? "var(--surface-raised)" : "transparent",
+                color: active ? "var(--text-primary)" : "var(--text-tertiary)",
+                transition: "color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1)",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              onMouseEnter={e => {
+                if (!active) (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+              }}
+              onMouseLeave={e => {
+                if (!active) (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+              }}
             >
               {mod}
             </button>
@@ -52,12 +92,33 @@ export default function ModuleNav({ activeModule, onModuleChange, user, onLogout
         })}
       </div>
 
-      {/* Market Breadth & Correlation quick trigger */}
+      {/* Market Breadth trigger */}
       {onOpenBreadth && (
         <button
           id="nav-breadth-btn"
           onClick={onOpenBreadth}
-          className="ml-3 px-2 py-1 text-[10px] font-bold tracking-wider border border-[#222] hover:border-[#00E5FF] text-[#888] hover:text-[#00E5FF] bg-[#050505] transition-colors"
+          style={{
+            marginLeft: 12,
+            padding: "4px 10px",
+            fontSize: 9,
+            fontWeight: 500,
+            letterSpacing: "0.10em",
+            fontFamily: "var(--font-mono)",
+            border: "1px solid var(--border-default)",
+            borderRadius: 2,
+            backgroundColor: "transparent",
+            color: "var(--text-tertiary)",
+            cursor: "pointer",
+            transition: "color 160ms cubic-bezier(0.16,1,0.3,1), border-color 160ms cubic-bezier(0.16,1,0.3,1)",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
+          }}
         >
           MARKET BREADTH
         </button>
@@ -66,34 +127,93 @@ export default function ModuleNav({ activeModule, onModuleChange, user, onLogout
       {/* Spacer */}
       <div className="flex-1" />
 
-
       {/* User badge */}
-      <div className="flex items-center gap-3 px-4 border-l border-[#1E1E1E] shrink-0" style={{ height: 38 }}>
+      <div
+        className="flex items-center gap-3 px-4 shrink-0"
+        style={{ height: 38, borderLeft: "1px solid var(--border-subtle)" }}
+      >
         {user ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
-              <span className="text-[#525252] text-[10px] tracking-wider">
+              {/* Presence indicator — muted green dot */}
+              <span
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  backgroundColor: "var(--positive)",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.08em",
+                  color: "var(--text-secondary)",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
                 {user.name.toUpperCase()}
               </span>
-              <span className="text-[#2a2a2a] text-[10px]">·</span>
-              <span className="text-[#333] text-[10px] tracking-widest">{user.role}</span>
+              <span style={{ color: "var(--border-strong)", fontSize: 10 }}>·</span>
+              <span
+                style={{
+                  fontSize: 9,
+                  color: "var(--text-tertiary)",
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.1em",
+                }}
+              >
+                {user.role}
+              </span>
             </div>
             <button
               id="logout-btn"
               onClick={onLogout}
-              className="text-[10px] tracking-wider text-[#333] hover:text-[#ff4d4d] transition-colors px-2"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.1em",
+                color: "var(--text-tertiary)",
+                fontFamily: "var(--font-mono)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "2px 4px",
+                transition: "color 160ms cubic-bezier(0.16,1,0.3,1)",
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--negative)"}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)"}
             >
-              LOGOUT
+              SIGN OUT
             </button>
           </>
         ) : (
           <button
             id="login-btn"
             onClick={onLogin}
-            className="text-[#00E5FF] hover:text-[#33EAFF] text-[10px] tracking-widest font-bold px-2 py-1 border border-[#00E5FF]/40 hover:border-[#00E5FF] bg-[#00E5FF]/5 transition-colors"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.1em",
+              fontWeight: 600,
+              fontFamily: "var(--font-mono)",
+              color: "var(--accent)",
+              border: "1px solid var(--accent-border)",
+              borderRadius: 2,
+              background: "var(--accent-subtle)",
+              padding: "4px 10px",
+              cursor: "pointer",
+              transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1)",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
+              (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(91,127,166,0.20)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border)";
+              (e.currentTarget as HTMLElement).style.backgroundColor = "var(--accent-subtle)";
+            }}
           >
-            SIGN IN / REGISTER
+            SIGN IN
           </button>
         )}
       </div>

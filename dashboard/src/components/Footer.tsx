@@ -1,6 +1,6 @@
 // src/components/Footer.tsx
-// Signature Xeroww Pipeline Status Footer — minimal institutional metadata rail.
-// Reflects genuine application health without fabricated claims.
+// Xeroww pipeline status rail — minimal, factual, never decorative.
+// Real application health. Not marketing copy.
 
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
@@ -36,33 +36,60 @@ export default function Footer() {
     };
   }, []);
 
+  const separator = (
+    <span style={{ color: "var(--border-strong)", margin: "0 8px" }}>·</span>
+  );
+
   return (
-    <footer className="h-6 bg-[#0A0A0A] border-t border-[#262626] flex items-center px-4 justify-between shrink-0 select-none font-mono text-[11px] text-[#737373]">
-      <div className="flex items-center gap-2">
-        <span className="text-[#A1A1AA]">FEED: {health?.data_provider ?? "YAHOO PROVIDER"}</span>
-        <span className="text-[#333333]">|</span>
-        <span className="flex items-center gap-1">
+    <footer
+      style={{
+        height: 24,
+        backgroundColor: "var(--surface-base)",
+        borderTop: "1px solid var(--border-subtle)",
+        display: "flex",
+        alignItems: "center",
+        paddingLeft: 16,
+        paddingRight: 16,
+        justifyContent: "space-between",
+        flexShrink: 0,
+        userSelect: "none",
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        color: "var(--text-tertiary)",
+        letterSpacing: "0.06em",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <span>FEED: {health?.data_provider ?? "YAHOO"}</span>
+        {separator}
+        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              operational ? "bg-[#22C55E]" : "bg-[#EF4444]"
-            }`}
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              backgroundColor: operational ? "var(--positive)" : "var(--negative)",
+              flexShrink: 0,
+            }}
           />
-          <span className={operational ? "text-[#22C55E]" : "text-[#EF4444]"}>
-            ANALYTICS: {operational ? "HEALTHY" : "DEGRADED (OFFLINE)"}
+          <span style={{ color: operational ? "var(--positive)" : "var(--negative)" }}>
+            ANALYTICS: {operational ? "HEALTHY" : "DEGRADED"}
           </span>
         </span>
-        <span className="text-[#333333]">|</span>
-        <span>DATABASE: {operational ? "CONNECTED" : "UNREACHABLE"}</span>
-        <span className="text-[#333333]">|</span>
-        <span>VERSION: V0.6</span>
+        {separator}
+        <span>DB: {operational ? "CONNECTED" : "UNREACHABLE"}</span>
+        {separator}
+        <span>V0.6</span>
       </div>
 
-      <div className="hidden md:flex items-center gap-2 text-[10px] text-[#555555]">
+      <div
+        className="hidden md:flex"
+        style={{ alignItems: "center", gap: 6, color: "var(--text-disabled)" }}
+      >
         <span>XEROWW DETERMINISTIC ENGINE</span>
-        <span className="text-[#333333]">·</span>
+        <span style={{ color: "var(--border-strong)" }}>·</span>
         <span>NO ML / ZERO PREDICTION</span>
       </div>
     </footer>
   );
 }
-

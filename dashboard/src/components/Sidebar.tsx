@@ -1,5 +1,6 @@
 // src/components/Sidebar.tsx
-// Watchlist panel — institutional terminal style with 68px rows and subtle 1px border.
+// Watchlist panel — graphite-and-paper design system.
+// Stock rows are the unit of work here; everything else recedes.
 
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -12,7 +13,7 @@ interface SidebarProps {
   onSelectSymbol: (symbol: string) => void;
 }
 
-// Strip the .NS suffix for clean terminal ticker display
+// Strip the .NS suffix for clean ticker display
 function ticker(symbol: string): string {
   return symbol.replace(".NS", "");
 }
@@ -44,53 +45,94 @@ function QuoteRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left px-4 h-[68px] flex items-center justify-between transition-all duration-[180ms] ease-out group ${
-        isActive
-          ? "bg-[#111111] border-l border-[#6366F1]"
-          : "border-l border-transparent hover:bg-[#111111]/70"
-      }`}
+      style={{
+        width: "100%",
+        textAlign: "left",
+        padding: "0 16px",
+        height: 64,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        background: isActive ? "var(--surface-overlay)" : "transparent",
+        borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
+        borderBottom: "1px solid var(--border-subtle)",
+        cursor: "pointer",
+        transition: "background-color 160ms cubic-bezier(0.16,1,0.3,1)",
+        outline: "none",
+      }}
+      onMouseEnter={e => {
+        if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface-raised)";
+      }}
+      onMouseLeave={e => {
+        if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
+      }}
     >
-      {/* Left: Larger stock symbol with muted company name below */}
-      <div className="flex flex-col justify-center min-w-0 pr-2">
+      {/* Left: ticker + company name */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0, flex: 1, paddingRight: 8 }}>
         <span
-          className={`text-base font-semibold tracking-wider transition-colors duration-[180ms] ${
-            isActive ? "text-[#FAFAFA]" : "text-[#FAFAFA] group-hover:text-white"
-          }`}
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: 13,
+            fontWeight: 600,
+            letterSpacing: "0.02em",
+            color: isActive ? "var(--text-primary)" : "var(--text-primary)",
+            whiteSpace: "nowrap",
+          }}
         >
           {ticker(stock.symbol)}
         </span>
-        <span className="text-[11px] text-[#A1A1AA] mt-0.5 truncate max-w-[125px]">
+        <span
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: 10,
+            color: "var(--text-tertiary)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            maxWidth: 120,
+          }}
+        >
           {stock.display_name}
         </span>
       </div>
 
-      {/* Right: Price aligned right, percentage change below price */}
-      <div className="text-right shrink-0 flex flex-col justify-center items-end">
+      {/* Right: price + change */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
         {loading ? (
-          <div className="space-y-1.5 w-16 flex flex-col items-end">
-            <div className="h-3.5 w-14 bg-[#171717] rounded animate-pulse" />
-            <div className="h-3 w-10 bg-[#171717] rounded animate-pulse" />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+            <div style={{ height: 12, width: 52, backgroundColor: "var(--surface-overlay)", borderRadius: 2 }} />
+            <div style={{ height: 10, width: 36, backgroundColor: "var(--surface-overlay)", borderRadius: 2 }} />
           </div>
         ) : quote ? (
           <>
-            <span className="text-sm font-mono font-medium text-[#FAFAFA] tabular-nums">
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--text-primary)",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
               ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </span>
             <div
-              className={`flex items-center gap-0.5 text-[11px] font-mono font-medium mt-0.5 tabular-nums ${
-                positive
-                  ? "text-[#22C55E]"
-                  : negative
-                  ? "text-[#EF4444]"
-                  : "text-[#A1A1AA]"
-              }`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                fontFamily: "var(--font-mono)",
+                fontSize: 10,
+                fontVariantNumeric: "tabular-nums",
+                color: positive ? "var(--positive)" : negative ? "var(--negative)" : "var(--text-tertiary)",
+              }}
             >
               {positive ? (
-                <TrendingUp size={10} className="stroke-[2.5]" />
+                <TrendingUp size={9} strokeWidth={2.5} />
               ) : negative ? (
-                <TrendingDown size={10} className="stroke-[2.5]" />
+                <TrendingDown size={9} strokeWidth={2.5} />
               ) : (
-                <Minus size={10} />
+                <Minus size={9} />
               )}
               <span>
                 {quote.change_pct > 0 ? "+" : ""}
@@ -99,7 +141,7 @@ function QuoteRow({
             </div>
           </>
         ) : (
-          <span className="text-xs font-mono text-[#A1A1AA]">—</span>
+          <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--text-disabled)" }}>—</span>
         )}
       </div>
     </button>
@@ -108,19 +150,54 @@ function QuoteRow({
 
 export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: SidebarProps) {
   return (
-    <aside className="w-60 shrink-0 bg-[#0A0A0A] border-r border-[#262626] flex flex-col overflow-hidden select-none">
+    <aside
+      style={{
+        width: 220,
+        flexShrink: 0,
+        backgroundColor: "var(--surface-base)",
+        borderRight: "1px solid var(--border-subtle)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        userSelect: "none",
+      }}
+    >
       {/* Watchlist Header */}
-      <div className="px-4 py-2.5 border-b border-[#262626] flex items-center justify-between bg-[#0A0A0A]">
-        <h2 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#A1A1AA]">
+      <div
+        style={{
+          padding: "8px 16px",
+          borderBottom: "1px solid var(--border-subtle)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 500,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-tertiary)",
+            margin: 0,
+          }}
+        >
           Watchlist
         </h2>
-        <span className="text-[10px] font-mono text-[#737373]">
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            color: "var(--text-disabled)",
+          }}
+        >
           NSE · {stocks.length}
         </span>
       </div>
 
-      {/* Stock list: ~68px rows */}
-      <div className="flex-1 overflow-y-auto divide-y divide-[#171717]">
+      {/* Stock list */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
         {stocks.map((stock) => (
           <QuoteRow
             key={stock.symbol}
@@ -131,12 +208,22 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
         ))}
       </div>
 
-      {/* Terminal metadata footer */}
-      <div className="px-4 py-2 border-t border-[#262626] bg-[#0A0A0A]">
-        <div className="flex items-center justify-between text-[10px] font-mono text-[#737373]">
-          <span>FEED: YAHOO</span>
-          <span>DELAY ~15M</span>
-        </div>
+      {/* Footer metadata */}
+      <div
+        style={{
+          padding: "6px 16px",
+          borderTop: "1px solid var(--border-subtle)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
+          FEED: YAHOO
+        </span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--text-disabled)" }}>
+          DELAY ~15M
+        </span>
       </div>
     </aside>
   );
