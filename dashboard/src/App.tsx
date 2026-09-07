@@ -69,7 +69,7 @@ export default function App() {
   const renderAuthGate = (moduleName: string) => (
     <div className="flex-1 flex flex-col items-center justify-center bg-[#000000] p-6">
       <div className="w-full max-w-sm border border-[#1E2538] bg-[#0B0E14] p-8 text-center flex flex-col items-center gap-3.5 shadow-2xl">
-        <span className="w-2 h-2 rounded-full bg-[#F59E0B] block animate-pulse" />
+        <span className="w-2 h-2 rounded-full bg-[#1E90FF] block animate-pulse" />
         <div className="text-sm font-semibold text-[#F8FAFC]">
           {moduleName} requires authentication
         </div>
@@ -81,7 +81,7 @@ export default function App() {
         <button
           id="gate-auth-btn"
           onClick={() => setShowAuthModal(true)}
-          className="mt-2 px-5 py-2 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black transition-colors"
+          className="mt-2 px-5 py-2 text-xs font-semibold bg-[#1E90FF] hover:bg-[#1C86EE] text-white transition-colors"
         >
           Sign In / Register
         </button>
@@ -172,11 +172,11 @@ export default function App() {
                       onClick={() => setSidebarTab(tab)}
                       className={`flex-1 h-9 text-xs font-medium transition-colors border-b-2 flex items-center justify-center ${
                         active
-                          ? "text-[#F8FAFC] bg-[#0B0E14] border-b-[#F59E0B] font-semibold"
+                          ? "text-[#F8FAFC] bg-[#0B0E14] border-b-[#1E90FF] font-semibold"
                           : "text-[#64748B] hover:text-[#94A3B8] border-b-transparent"
                       }`}
                     >
-                      {tab === "STRUCTURE" ? "Structure Engine" : "OHLC & Anatomy"}
+                      {tab === "STRUCTURE" ? "Market Structure" : "OHLC & Anatomy"}
                     </button>
                   );
                 })}
@@ -190,11 +190,18 @@ export default function App() {
                     <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />
                     <PatternCard pattern={structure?.detected_patterns?.[0] ? {
                       symbol: structure.symbol,
-                      pattern: structure.detected_patterns[0].pattern,
-                      direction: structure.detected_patterns[0].direction,
-                      category: structure.detected_patterns[0].category,
-                      contextual_summary: structure.contextual_pattern?.context_summary,
-                    } as any : pattern} />
+                      display_name: structure.symbol.replace(".NS", ""),
+                      pattern: (structure.detected_patterns[0].pattern.toLowerCase().includes("marubozu")
+                        ? structure.detected_patterns[0].pattern.toLowerCase().replace(/ /g, "_")
+                        : "none") as any,
+                      signal_day: structure.detected_patterns[0].timestamp,
+                      textbook_action: "watch_next_session_for_confirmation",
+                      rationale: structure.detected_patterns[0].explanation,
+                      stop_loss: (structure.detected_patterns[0].context?.stop_loss as number) ?? null,
+                      detected_patterns: structure.detected_patterns,
+                      contextual_pattern: structure.contextual_pattern,
+                      data_note: "Deterministic pattern detection",
+                    } : pattern} />
                     <SupportResistancePanel sr={structure?.support_resistance ?? null} />
                     <VolumeAnalyticsPanel volume={structure?.volume ?? null} />
                   </>
@@ -207,11 +214,18 @@ export default function App() {
                     />
                     <PatternCard pattern={structure?.detected_patterns?.[0] ? {
                       symbol: structure.symbol,
-                      pattern: structure.detected_patterns[0].pattern,
-                      direction: structure.detected_patterns[0].direction,
-                      category: structure.detected_patterns[0].category,
-                      contextual_summary: structure.contextual_pattern?.context_summary,
-                    } as any : pattern} />
+                      display_name: structure.symbol.replace(".NS", ""),
+                      pattern: (structure.detected_patterns[0].pattern.toLowerCase().includes("marubozu")
+                        ? structure.detected_patterns[0].pattern.toLowerCase().replace(/ /g, "_")
+                        : "none") as any,
+                      signal_day: structure.detected_patterns[0].timestamp,
+                      textbook_action: "watch_next_session_for_confirmation",
+                      rationale: structure.detected_patterns[0].explanation,
+                      stop_loss: (structure.detected_patterns[0].context?.stop_loss as number) ?? null,
+                      detected_patterns: structure.detected_patterns,
+                      contextual_pattern: structure.contextual_pattern,
+                      data_note: "Deterministic pattern detection",
+                    } : pattern} />
                   </>
                 )}
               </div>

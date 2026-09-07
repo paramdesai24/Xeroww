@@ -1,6 +1,4 @@
-// src/components/OHLCTable.tsx
-// Recent session history table — v2 publication-quality table.
-
+import { useState } from "react";
 import type { OHLCBar } from "../types/market";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui";
 
@@ -11,13 +9,16 @@ interface OHLCTableProps {
 }
 
 export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHLCTableProps) {
+  const [expanded, setExpanded] = useState(false);
   if (!candles || candles.length === 0) return null;
 
   const recent10 = candles.slice(-10).reverse();
 
   return (
     <div
-      className="flex flex-col shrink-0 max-h-44 border-t border-[var(--border-default)] select-none"
+      className={`flex flex-col shrink-0 ${
+        expanded ? "max-h-84 md:max-h-96" : "max-h-48"
+      } border-t border-[var(--border-default)] select-none transition-all duration-200`}
       style={{ backgroundColor: "var(--canvas)", fontFamily: "var(--font-sans)" }}
     >
       {/* Header strip */}
@@ -33,7 +34,17 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
             (Last 10 sessions · Click row for candle forensics)
           </span>
         </div>
-        <span className="text-[10px] text-[var(--text-tertiary)]">NSE Daily Feed</span>
+        <div className="flex items-center gap-2.5">
+          <button
+            id="toggle-recent-sessions-btn"
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="text-[10px] font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors px-2 py-0.5 border border-[var(--border-default)] hover:border-[var(--border-strong)] bg-[var(--surface-inset)]"
+          >
+            {expanded ? "▲ Compact (4 sessions)" : "▼ Show all 10"}
+          </button>
+          <span className="text-[10px] text-[var(--text-tertiary)] hidden sm:inline">NSE Daily Feed</span>
+        </div>
       </div>
 
       {/* Table Container */}

@@ -229,9 +229,9 @@ export default function ChartPanel({
       ema9Series.setData(ema9Data);
       maSeriesRef.current.push(ema9Series);
 
-      // Compute EMA 20 (vivid amber primary)
+      // Compute EMA 20 (Dodger Blue primary)
       const ema20Series = chart.addSeries(LineSeries, {
-        color: "#F59E0B",
+        color: "#1E90FF",
         lineWidth: 1,
         title: "EMA 20",
       });
@@ -284,7 +284,7 @@ export default function ChartPanel({
   const negative = (quote?.change_pct ?? 0) < 0;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 min-h-0 h-full" style={{ backgroundColor: "var(--canvas)" }}>
+    <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden" style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
       <div
         className="px-5 py-2.5 flex items-center justify-between shrink-0 select-none flex-wrap gap-2 border-b border-[var(--border-default)]"
@@ -440,7 +440,7 @@ export default function ChartPanel({
       </div>
 
       {/* Candlestick Chart Canvas — True pitch black #000000 */}
-      <div className="flex-1 relative bg-[var(--canvas)]">
+      <div className="flex-1 min-h-0 relative bg-[var(--canvas)] overflow-hidden">
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 transition-opacity duration-150">
             <div className="flex items-center gap-2.5 px-4 py-2 rounded-sm bg-[var(--surface-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] text-xs font-medium">
