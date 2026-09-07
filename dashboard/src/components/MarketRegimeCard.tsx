@@ -1,5 +1,5 @@
 // src/components/MarketRegimeCard.tsx
-// Deterministic market regime classifier panel — pitch-black terminal styling.
+// Deterministic market regime classifier — graphite-and-paper design system.
 
 import type { MarketRegimeResponse } from "../types/structure";
 
@@ -8,90 +8,185 @@ interface Props {
   loading?: boolean;
 }
 
+type BadgeVariant = "accent" | "positive" | "negative" | "warning" | "neutral";
+
+function getBadgeVariant(r: string): BadgeVariant {
+  switch (r) {
+    case "TRENDING_UP":    return "positive";
+    case "TRENDING_DOWN":  return "negative";
+    case "RANGE_BOUND":    return "warning";
+    case "HIGH_VOLATILITY": return "accent";
+    case "LOW_ACTIVITY":   return "neutral";
+    default:               return "neutral";
+  }
+}
+
+function Badge({ label, variant }: { label: string; variant: BadgeVariant }) {
+  const styles: Record<BadgeVariant, { color: string; bg: string; border: string }> = {
+    positive: { color: "var(--positive)", bg: "var(--positive-subtle)", border: "var(--positive-border)" },
+    negative: { color: "var(--negative)", bg: "var(--negative-subtle)", border: "var(--negative-border)" },
+    warning:  { color: "var(--warning)",  bg: "var(--warning-subtle)",  border: "var(--warning-border)"  },
+    accent:   { color: "var(--accent)",   bg: "var(--accent-subtle)",   border: "var(--accent-border)"   },
+    neutral:  { color: "var(--text-tertiary)", bg: "var(--neutral-subtle)", border: "var(--border-default)" },
+  };
+  const s = styles[variant];
+  return (
+    <span
+      id="market-regime-badge"
+      style={{
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        fontWeight: 600,
+        letterSpacing: "0.10em",
+        textTransform: "uppercase",
+        padding: "2px 7px",
+        border: `1px solid ${s.border}`,
+        backgroundColor: s.bg,
+        color: s.color,
+      }}
+    >
+      {label.replace(/_/g, " ")}
+    </span>
+  );
+}
+
+function MetricCell({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <span style={{
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: "var(--text-disabled)",
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontFamily: "var(--font-mono)",
+        fontSize: 12,
+        fontWeight: 600,
+        color: color ?? "var(--text-primary)",
+        fontVariantNumeric: "tabular-nums",
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
 export default function MarketRegimeCard({ regime, loading }: Props) {
   if (loading && !regime) {
     return (
-      <div className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] text-[10px] text-[#444] tracking-widest font-mono">
-        CLASSIFYING MARKET REGIME...
+      <div style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        letterSpacing: "0.08em",
+        color: "var(--text-disabled)",
+        textTransform: "uppercase",
+      }}>
+        Classifying market regime…
       </div>
     );
   }
 
   if (!regime) return null;
 
-  const getBadgeStyle = (r: string) => {
-    switch (r) {
-      case "TRENDING_UP":
-        return "border-[#00E5FF]/40 text-[#00E5FF] bg-[#00E5FF]/10";
-      case "TRENDING_DOWN":
-        return "border-[#EF4444]/40 text-[#EF4444] bg-[#EF4444]/10";
-      case "RANGE_BOUND":
-        return "border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/10";
-      case "HIGH_VOLATILITY":
-        return "border-[#A855F7]/40 text-[#A855F7] bg-[#A855F7]/10";
-      case "LOW_ACTIVITY":
-        return "border-[#71717A]/40 text-[#A1A1AA] bg-[#71717A]/10";
-      default:
-        return "border-[#3F3F46] text-[#D4D4D8] bg-[#27272A]/20";
-    }
-  };
+  const variant = getBadgeVariant(regime.regime);
 
   return (
     <div
       id="market-regime-card"
-      className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] flex flex-col gap-2.5 font-mono select-none"
+      style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        userSelect: "none",
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-1.5 border-b border-[#1A1A1A]">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#888] tracking-widest uppercase">
-            MARKET REGIME
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: 8,
+        borderBottom: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+          }}>
+            Market Regime
           </span>
-          <span className="text-[#333] text-[10px]">·</span>
-          <span className="text-[9px] text-[#555] tracking-wider uppercase">
-            DETERMINISTIC
+          <span style={{ color: "var(--border-default)", fontSize: 10 }}>·</span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            color: "var(--text-disabled)",
+            textTransform: "uppercase",
+          }}>
+            Deterministic
           </span>
         </div>
-        <span
-          id="market-regime-badge"
-          className={`text-[10px] font-bold px-2 py-0.5 border tracking-wider uppercase ${getBadgeStyle(
-            regime.regime,
-          )}`}
-        >
-          {regime.regime.replace("_", " ")}
-        </span>
+        <Badge label={regime.regime} variant={variant} />
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-3 gap-2 text-[10px] bg-[#050505] p-2 border border-[#151515]">
-        <div>
-          <span className="text-[#555] block text-[9px]">ATR VOLATILITY</span>
-          <span className="text-[#DDD] font-semibold">{regime.atr_pct}%</span>
-        </div>
-        <div>
-          <span className="text-[#555] block text-[9px]">RVOL ACTIVITY</span>
-          <span className="text-[#00E5FF] font-semibold">{regime.rvol}x</span>
-        </div>
-        <div>
-          <span className="text-[#555] block text-[9px]">EMA TREND</span>
-          <span className="text-[#AAA] font-semibold text-[9px]">
-            {regime.ema_trend.replace("_", " ")}
-          </span>
-        </div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr",
+        gap: 8,
+        padding: 10,
+        backgroundColor: "var(--surface-inset)",
+        border: "1px solid var(--border-subtle)",
+      }}>
+        <MetricCell label="ATR VOL" value={`${regime.atr_pct}%`} />
+        <MetricCell label="RVOL" value={`${regime.rvol}x`} color="var(--accent)" />
+        <MetricCell
+          label="EMA TREND"
+          value={regime.ema_trend.replace(/_/g, " ")}
+          color="var(--text-secondary)"
+        />
       </div>
 
-      {/* Explanatory Reasons Checklist */}
-      <div className="flex flex-col gap-1 text-[10px]">
-        <span className="text-[9px] text-[#555] tracking-wider uppercase font-semibold">
-          EVIDENCE AUDIT:
+      {/* Evidence Audit */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 9,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "var(--text-disabled)",
+        }}>
+          Evidence Audit
         </span>
-        <ul className="space-y-1">
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
           {regime.reasons.map((reason, idx) => (
             <li
               key={idx}
-              className="text-[#999] leading-relaxed flex items-start gap-1.5 text-[10px]"
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 10,
+                lineHeight: 1.6,
+                color: "var(--text-secondary)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 6,
+              }}
             >
-              <span className="text-[#00E5FF] mt-0.5">›</span>
+              <span style={{ color: "var(--accent)", flexShrink: 0, marginTop: 2, fontSize: 8 }}>›</span>
               <span>{reason}</span>
             </li>
           ))}

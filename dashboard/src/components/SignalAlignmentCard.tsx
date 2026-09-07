@@ -1,5 +1,5 @@
 // src/components/SignalAlignmentCard.tsx
-// Deterministic Signal Alignment confluence card — pitch-black terminal styling.
+// Deterministic signal confluence card — graphite-and-paper design system.
 
 import { useState } from "react";
 import type { SignalAlignmentResponse } from "../types/structure";
@@ -14,8 +14,17 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
 
   if (loading && !alignment) {
     return (
-      <div className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] text-[10px] text-[#444] tracking-widest font-mono">
-        EVALUATING SIGNAL ALIGNMENT...
+      <div style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        fontFamily: "var(--font-mono)",
+        fontSize: 9,
+        letterSpacing: "0.08em",
+        color: "var(--text-disabled)",
+        textTransform: "uppercase",
+      }}>
+        Evaluating signal alignment…
       </div>
     );
   }
@@ -25,107 +34,238 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
   const isBullish = alignment.dominant_bias === "BULLISH_CONFLUENCE";
   const isBearish = alignment.dominant_bias === "BEARISH_CONFLUENCE";
 
-  const biasBadgeStyle = isBullish
-    ? "border-[#22C55E]/40 text-[#22C55E] bg-[#22C55E]/10"
+  const biasBadge = isBullish
+    ? { color: "var(--positive)", bg: "var(--positive-subtle)", border: "var(--positive-border)" }
     : isBearish
-    ? "border-[#EF4444]/40 text-[#EF4444] bg-[#EF4444]/10"
-    : "border-[#52525B] text-[#A1A1AA] bg-[#27272A]/20";
+    ? { color: "var(--negative)", bg: "var(--negative-subtle)", border: "var(--negative-border)" }
+    : { color: "var(--text-tertiary)", bg: "var(--neutral-subtle)", border: "var(--border-default)" };
 
   return (
     <div
       id="signal-alignment-card"
-      className="p-3 bg-[#0A0A0A] border border-[#1E1E1E] flex flex-col gap-2.5 font-mono select-none"
+      style={{
+        padding: 12,
+        backgroundColor: "var(--surface-raised)",
+        border: "1px solid var(--border-subtle)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        userSelect: "none",
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-1.5 border-b border-[#1A1A1A]">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#888] tracking-widest uppercase">
-            SIGNAL CONFLUENCE
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: 8,
+        borderBottom: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+          }}>
+            Signal Confluence
           </span>
-          <span className="text-[#333] text-[10px]">·</span>
-          <span className="text-[9px] text-[#555] tracking-wider uppercase">
-            RULE TALLY
+          <span style={{ color: "var(--border-default)", fontSize: 10 }}>·</span>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            color: "var(--text-disabled)",
+            textTransform: "uppercase",
+          }}>
+            Rule Tally
           </span>
         </div>
         <span
           id="signal-bias-badge"
-          className={`text-[9px] font-bold px-2 py-0.5 border tracking-wider uppercase ${biasBadgeStyle}`}
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            padding: "2px 7px",
+            border: `1px solid ${biasBadge.border}`,
+            backgroundColor: biasBadge.bg,
+            color: biasBadge.color,
+          }}
         >
-          {alignment.dominant_bias.replace("_", " ")}
+          {alignment.dominant_bias.replace(/_/g, " ")}
         </span>
       </div>
 
-      {/* Alignment Tally Bar */}
-      <div className="grid grid-cols-2 gap-2 bg-[#050505] p-2 border border-[#151515]">
-        <div className="flex flex-col">
-          <span className="text-[9px] text-[#555] tracking-wider uppercase">
-            BULLISH CONFLUENCE
+      {/* Tally */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 8,
+        padding: 10,
+        backgroundColor: "var(--surface-inset)",
+        border: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-disabled)",
+          }}>
+            Bullish
           </span>
-          <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-[15px] font-bold text-[#22C55E]">
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <span style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 16,
+              fontWeight: 700,
+              color: "var(--positive)",
+              fontVariantNumeric: "tabular-nums",
+            }}>
               {alignment.bullish_alignment_count}
             </span>
-            <span className="text-[#555] text-[10px]">/ {alignment.alignment_total}</span>
+            <span style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 10,
+              color: "var(--text-disabled)",
+            }}>
+              / {alignment.alignment_total}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-col">
-          <span className="text-[9px] text-[#555] tracking-wider uppercase">
-            BEARISH CONFLUENCE
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-disabled)",
+          }}>
+            Bearish
           </span>
-          <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-[15px] font-bold text-[#EF4444]">
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <span style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 16,
+              fontWeight: 700,
+              color: "var(--negative)",
+              fontVariantNumeric: "tabular-nums",
+            }}>
               {alignment.bearish_alignment_count}
             </span>
-            <span className="text-[#555] text-[10px]">/ {alignment.alignment_total}</span>
+            <span style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 10,
+              color: "var(--text-disabled)",
+            }}>
+              / {alignment.alignment_total}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Summary Note */}
-      <div className="text-[10px] text-[#888] leading-relaxed">
+      {/* Summary */}
+      <p style={{
+        fontFamily: "var(--font-sans)",
+        fontSize: 10,
+        lineHeight: 1.6,
+        color: "var(--text-secondary)",
+        margin: 0,
+      }}>
         {alignment.factual_summary}
-      </div>
+      </p>
 
-      {/* Toggle Conditions Checklist */}
-      <div className="pt-1 border-t border-[#151515]">
+      {/* Expand conditions */}
+      <div style={{ paddingTop: 6, borderTop: "1px solid var(--border-subtle)" }}>
         <button
           id="toggle-conditions-btn"
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="text-[9px] text-[#00E5FF] hover:text-[#33EAFF] font-semibold tracking-wider uppercase flex items-center justify-between w-full"
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--accent)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            padding: 0,
+            transition: "color 160ms cubic-bezier(0.16,1,0.3,1)",
+          }}
         >
-          <span>{expanded ? "▲ HIDE CONDITIONS" : "▼ INSPECT 12 CONDITIONS"}</span>
-          <span className="text-[#444] text-[8px]">DETERMINISTIC RULES</span>
+          <span>{expanded ? "▲ Hide conditions" : "▼ Inspect 12 conditions"}</span>
+          <span style={{ color: "var(--text-disabled)", fontSize: 8, letterSpacing: "0.06em" }}>
+            DETERMINISTIC RULES
+          </span>
         </button>
 
         {expanded && (
-          <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto pr-1">
+          <div style={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            maxHeight: 200,
+            overflowY: "auto",
+          }}>
             {alignment.conditions.map((c) => (
               <div
                 key={c.condition_id}
-                className="flex items-start gap-1.5 p-1.5 bg-[#050505] border border-[#151515] text-[9px]"
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 8,
+                  padding: "6px 8px",
+                  backgroundColor: "var(--surface-inset)",
+                  border: "1px solid var(--border-subtle)",
+                }}
               >
-                <span
-                  className={`px-1 rounded-sm text-[8px] font-bold shrink-0 ${
-                    c.satisfied
-                      ? c.bias === "bullish"
-                        ? "bg-[#22C55E]/20 text-[#22C55E]"
-                        : "bg-[#EF4444]/20 text-[#EF4444]"
-                      : "bg-[#27272A] text-[#52525B]"
-                  }`}
-                >
+                <span style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                  padding: "1px 4px",
+                  backgroundColor: c.satisfied
+                    ? c.bias === "bullish"
+                      ? "var(--positive-subtle)"
+                      : "var(--negative-subtle)"
+                    : "var(--neutral-subtle)",
+                  color: c.satisfied
+                    ? c.bias === "bullish"
+                      ? "var(--positive)"
+                      : "var(--negative)"
+                    : "var(--text-disabled)",
+                }}>
                   {c.satisfied ? "YES" : "NO"}
                 </span>
-                <div className="flex flex-col flex-1">
-                  <span
-                    className={`font-semibold ${
-                      c.satisfied ? "text-[#DDD]" : "text-[#555]"
-                    }`}
-                  >
-                    {c.label} ({c.bias})
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
+                  <span style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 9,
+                    fontWeight: 600,
+                    color: c.satisfied ? "var(--text-primary)" : "var(--text-disabled)",
+                  }}>
+                    {c.label} <span style={{ fontWeight: 400, color: "var(--text-tertiary)" }}>({c.bias})</span>
                   </span>
-                  <span className="text-[#666] text-[8.5px] leading-tight">
+                  <span style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 9,
+                    lineHeight: 1.5,
+                    color: "var(--text-tertiary)",
+                  }}>
                     {c.description}
                   </span>
                 </div>
