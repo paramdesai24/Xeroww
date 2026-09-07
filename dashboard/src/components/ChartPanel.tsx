@@ -63,30 +63,30 @@ export default function ChartPanel({
 
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: "#000000" },
-        textColor: "#737373", // Dimmer axis labels
-        fontFamily: "'Inter', monospace, system-ui, sans-serif",
-        fontSize: 11,
+        background: { type: ColorType.Solid, color: "#0F0F0E" },  // surface-base
+        textColor: "#5C5C58",  // text-tertiary
+        fontFamily: "'JetBrains Mono', 'Inter', monospace, system-ui",
+        fontSize: 10,
       },
       grid: {
-        vertLines: { color: "#1A1A1A" }, // Polished thin #1A1A1A grid
-        horzLines: { color: "#1A1A1A" },
+        vertLines: { color: "#1C1C1A" },  // surface-overlay
+        horzLines: { color: "#1C1C1A" },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: "#404040", labelBackgroundColor: "#171717" },
-        horzLine: { color: "#404040", labelBackgroundColor: "#171717" },
+        vertLine: { color: "#3A3A37", labelBackgroundColor: "#161614" },
+        horzLine: { color: "#3A3A37", labelBackgroundColor: "#161614" },
       },
       rightPriceScale: {
-        borderColor: "#262626",
-        textColor: "#737373",
+        borderColor: "#242422",  // border-subtle
+        textColor: "#5C5C58",
         scaleMargins: {
           top: 0.08,
           bottom: 0.08,
         },
       },
       timeScale: {
-        borderColor: "#262626",
+        borderColor: "#242422",
         timeVisible: true,
         secondsVisible: false,
         fixLeftEdge: true,
@@ -183,7 +183,7 @@ export default function ChartPanel({
     resZones.forEach((zone: SRZone) => {
       const line = series.createPriceLine({
         price: zone.price,
-        color: "#EF444499",
+        color: "#C0565688",  // negative desaturated
         lineWidth: zone.strength >= 7 ? 2 : 1,
         lineStyle: zone.strength >= 7 ? LineStyle.Solid : LineStyle.Dashed,
         axisLabelVisible: true,
@@ -195,7 +195,7 @@ export default function ChartPanel({
     supZones.forEach((zone: SRZone) => {
       const line = series.createPriceLine({
         price: zone.price,
-        color: "#22C55E99",
+        color: "#5C9E6E88",  // positive desaturated
         lineWidth: zone.strength >= 7 ? 2 : 1,
         lineStyle: zone.strength >= 7 ? LineStyle.Solid : LineStyle.Dashed,
         axisLabelVisible: true,
@@ -225,7 +225,7 @@ export default function ChartPanel({
     if (showFastMA) {
       // Compute EMA9
       const ema9Series = chart.addSeries(LineSeries, {
-        color: "#00E5FF",
+        color: "#5B7FA6",  // accent
         lineWidth: 1,
         title: "EMA 9",
       });
@@ -242,7 +242,7 @@ export default function ChartPanel({
 
       // Compute EMA 20
       const ema20Series = chart.addSeries(LineSeries, {
-        color: "#F59E0B",
+        color: "#9E7E3F",  // warning
         lineWidth: 1,
         title: "EMA 20",
       });
@@ -261,8 +261,8 @@ export default function ChartPanel({
     if (showSlowMA) {
       if (closes.length >= 50) {
         const sma50Series = chart.addSeries(LineSeries, {
-          color: "#A855F7",
-          lineWidth: 2,
+          color: "#9C9C95",  // text-secondary
+          lineWidth: 1,
           title: "SMA 50",
         });
         const sma50Data: { time: import("lightweight-charts").Time; value: number }[] = [];
@@ -276,7 +276,7 @@ export default function ChartPanel({
 
       if (closes.length >= 200) {
         const sma200Series = chart.addSeries(LineSeries, {
-          color: "#3B82F6",
+          color: "#3A3A37",  // border-strong
           lineWidth: 2,
           title: "SMA 200",
         });
@@ -295,40 +295,43 @@ export default function ChartPanel({
   const negative = (quote?.change_pct ?? 0) < 0;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 bg-[#000000]">
+    <div className="flex flex-col flex-1 min-w-0" style={{ backgroundColor: "var(--surface-base)" }}>
       {/* Compact Terminal Quote Bar — high density, crisp information */}
-      <div className="px-5 py-2.5 bg-[#0A0A0A] border-b border-[#262626] flex items-center justify-between shrink-0 select-none flex-wrap gap-2">
+      <div className="px-5 py-2.5 flex items-center justify-between shrink-0 select-none flex-wrap gap-2" style={{ backgroundColor: "var(--surface-raised)", borderBottom: "1px solid var(--border-subtle)" }}>
         {quote ? (
           <>
             <div className="flex items-center gap-4">
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold font-mono tracking-wider text-[#FAFAFA]">
+                <span style={{ fontFamily: "var(--font-sans)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.02em" }}>
                   {quote.symbol.replace(".NS", "")}
                 </span>
-                <span className="text-xs text-[#A1A1AA] hidden md:inline">
+                <span style={{ fontFamily: "var(--font-sans)", fontSize: 11, color: "var(--text-tertiary)" }} className="hidden md:inline">
                   {quote.display_name}
                 </span>
               </div>
 
-              <div className="h-4 w-px bg-[#262626]" />
+              <div style={{ height: 14, width: 1, backgroundColor: "var(--border-subtle)" }} />
 
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-mono font-bold text-[#FAFAFA] tabular-nums">
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
                   ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
                 <span
-                  className={`flex items-center gap-0.5 text-xs font-mono font-semibold tabular-nums ${
-                    positive
-                      ? "text-[#22C55E]"
-                      : negative
-                      ? "text-[#EF4444]"
-                      : "text-[#A1A1AA]"
-                  }`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 3,
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    fontVariantNumeric: "tabular-nums",
+                    color: positive ? "var(--positive)" : negative ? "var(--negative)" : "var(--text-tertiary)",
+                  }}
                 >
                   {positive ? (
-                    <TrendingUp size={12} className="stroke-[2.5]" />
+                    <TrendingUp size={11} strokeWidth={2.5} />
                   ) : negative ? (
-                    <TrendingDown size={12} className="stroke-[2.5]" />
+                    <TrendingDown size={11} strokeWidth={2.5} />
                   ) : null}
                   {quote.change > 0 ? "+" : ""}
                   {quote.change.toFixed(2)} ({quote.change_pct > 0 ? "+" : ""}
@@ -338,31 +341,31 @@ export default function ChartPanel({
             </div>
 
             {/* Quick Session Stats strip & Layer Controls */}
-            <div className="flex items-center gap-4 text-[11px] font-mono text-[#A1A1AA]">
+            <div className="flex items-center gap-4 text-[11px] font-mono text-[var(--text-secondary)]">
               <div className="hidden lg:flex items-center gap-4">
                 <div>
-                  <span className="text-[#737373] mr-1.5">PREV</span>
-                  <span className="text-[#FAFAFA] tabular-nums">
+                  <span className="text-[var(--text-tertiary)] mr-1.5">PREV</span>
+                  <span className="text-[var(--text-primary)] tabular-nums">
                     ₹{quote.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#737373] mr-1.5">RANGE</span>
-                  <span className="text-[#FAFAFA] tabular-nums">
+                  <span className="text-[var(--text-tertiary)] mr-1.5">RANGE</span>
+                  <span className="text-[var(--text-primary)] tabular-nums">
                     ₹{quote.day_low.toFixed(1)} – ₹{quote.day_high.toFixed(1)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#737373] mr-1.5">VOL</span>
-                  <span className="text-[#FAFAFA] tabular-nums">
+                  <span className="text-[var(--text-tertiary)] mr-1.5">VOL</span>
+                  <span className="text-[var(--text-primary)] tabular-nums">
                     {(quote.volume / 1e5).toFixed(2)}L
                   </span>
                 </div>
               </div>
 
               {/* Overlays Toggle Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[#262626] pl-3">
-                <div className="flex items-center gap-1 text-[10px] text-[#737373] mr-1">
+              <div className="flex items-center gap-1.5 border-l border-[var(--border-subtle)] pl-3">
+                <div className="flex items-center gap-1 text-[10px] text-[var(--text-tertiary)] mr-1">
                   <Layers size={12} />
                   <span>LAYERS:</span>
                 </div>
@@ -370,8 +373,8 @@ export default function ChartPanel({
                   onClick={() => setShowSR(!showSR)}
                   className={`px-2 py-0.5 text-[10px] font-mono border rounded transition-colors ${
                     showSR
-                      ? "bg-[#172554] text-[#60A5FA] border-[#1D4ED8]"
-                      : "bg-[#111111] text-[#737373] border-[#262626] hover:text-[#FAFAFA]"
+                      ? "bg-[var(--surface-overlay)] text-[var(--accent)] border-[var(--border-strong)]"
+                      : "bg-[var(--surface-raised)] text-[var(--text-tertiary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]"
                   }`}
                   title="Toggle Support / Resistance level lines"
                 >
@@ -381,10 +384,10 @@ export default function ChartPanel({
                   onClick={() => setShowFastMA(!showFastMA)}
                   className={`px-2 py-0.5 text-[10px] font-mono border rounded transition-colors ${
                     showFastMA
-                      ? "bg-[#042f2e] text-[#2DD4BF] border-[#0D9488]"
-                      : "bg-[#111111] text-[#737373] border-[#262626] hover:text-[#FAFAFA]"
+                      ? "bg-[var(--surface-overlay)] text-[var(--accent)] border-[var(--border-strong)]"
+                      : "bg-[var(--surface-raised)] text-[var(--text-tertiary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]"
                   }`}
-                  title="Toggle EMA 9 (Cyan) & EMA 20 (Amber)"
+                  title="Toggle EMA 9 & EMA 20"
                 >
                   EMA 9/20
                 </button>
@@ -392,22 +395,22 @@ export default function ChartPanel({
                   onClick={() => setShowSlowMA(!showSlowMA)}
                   className={`px-2 py-0.5 text-[10px] font-mono border rounded transition-colors ${
                     showSlowMA
-                      ? "bg-[#2e1065] text-[#C084FC] border-[#7E22CE]"
-                      : "bg-[#111111] text-[#737373] border-[#262626] hover:text-[#FAFAFA]"
+                      ? "bg-[var(--surface-overlay)] text-[var(--text-primary)] border-[var(--border-strong)]"
+                      : "bg-[var(--surface-raised)] text-[var(--text-tertiary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]"
                   }`}
-                  title="Toggle SMA 50 (Purple) & SMA 200 (Blue)"
+                  title="Toggle SMA 50 & SMA 200"
                 >
                   SMA 50/200
                 </button>
               </div>
 
               {/* Differentiated Intelligence Feature Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[#262626] pl-3">
+              <div className="flex items-center gap-1.5 border-l border-[var(--border-subtle)] pl-3">
                 {onOpenReplay && (
                   <button
                     id="trigger-replay-btn"
                     onClick={onOpenReplay}
-                    className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/40 hover:border-[#00E5FF] transition-colors"
+                    className="px-2 py-0.5 text-[10px] font-mono font-medium rounded bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--accent)]/30 hover:border-[var(--accent)] transition-colors"
                     title="Launch Historical Market Replay Scrubber"
                   >
                     REPLAY
@@ -417,7 +420,7 @@ export default function ChartPanel({
                   <button
                     id="trigger-diff-btn"
                     onClick={onOpenDiff}
-                    className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#111] text-[#FAFAFA] border border-[#262626] hover:border-[#444] transition-colors"
+                    className="px-2 py-0.5 text-[10px] font-mono font-medium rounded bg-[var(--surface-raised)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
                     title="Inspect What Changed Diff"
                   >
                     DIFF
@@ -427,7 +430,7 @@ export default function ChartPanel({
                   <button
                     id="trigger-forensics-btn"
                     onClick={onOpenForensics}
-                    className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#111] text-[#FAFAFA] border border-[#262626] hover:border-[#444] transition-colors"
+                    className="px-2 py-0.5 text-[10px] font-mono font-medium rounded bg-[var(--surface-raised)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
                     title="Inspect Candle Forensics & Provenance"
                   >
                     FORENSICS
@@ -438,7 +441,7 @@ export default function ChartPanel({
           </>
 
         ) : (
-          <div className="flex items-center gap-2 text-[#A1A1AA] py-0.5">
+          <div className="flex items-center gap-2 text-[var(--text-tertiary)] py-0.5">
             <BarChart2 size={16} />
             <span className="text-xs font-mono">
               {loading ? "INITIALIZING FEED…" : error ?? "SELECT AN ASSET"}
@@ -447,23 +450,23 @@ export default function ChartPanel({
         )}
       </div>
 
-      {/* Candlestick Chart Canvas — enlarged viewport, pure pitch-black, #1A1A1A grid */}
-      <div className="flex-1 relative bg-[#000000]">
+      {/* Candlestick Chart Canvas — enlarged viewport, graphite surface */}
+      <div className="flex-1 relative bg-[var(--surface-base)]">
         {/* Subtle skeleton overlay during stock switches */}
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#000000]/60 backdrop-blur-[1px] transition-opacity duration-200">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#111111] border border-[#262626] text-[#A1A1AA] text-xs font-mono">
-              <div className="w-2 h-2 rounded-full bg-[#6366F1] animate-ping" />
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--surface-base)]/70 backdrop-blur-[1px] transition-opacity duration-200">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--surface-raised)] border border-[var(--border-subtle)] text-[var(--text-secondary)] text-xs font-mono">
+              <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping" />
               <span>SYNCING OHLC BARS…</span>
             </div>
           </div>
         )}
 
         {error && !loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#000000]/80">
-            <div className="bg-[#171717] border border-[#262626] rounded px-5 py-3 text-center max-w-sm">
-              <p className="text-[#EF4444] text-xs font-mono font-medium">MARKET DATA ERROR</p>
-              <p className="text-[#A1A1AA] text-xs font-mono mt-1">{error}</p>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--surface-base)]/85">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded px-5 py-3 text-center max-w-sm">
+              <p className="text-[var(--negative)] text-xs font-mono font-medium">MARKET DATA ERROR</p>
+              <p className="text-[var(--text-secondary)] text-xs font-mono mt-1">{error}</p>
             </div>
           </div>
         )}
