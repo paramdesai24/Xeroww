@@ -7,22 +7,24 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "Segoe UI", "system-ui", "sans-serif"],
+        sans: ["Public Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "Cascadia Code", "monospace"],
       },
       colors: {
-        // Graphite surface stack
+        canvas: "var(--canvas)",
         surface: {
-          base:    "var(--surface-base)",
-          raised:  "var(--surface-raised)",
-          overlay: "var(--surface-overlay)",
-          inset:   "var(--surface-inset)",
+          base:     "var(--surface-base)",
+          DEFAULT:  "var(--surface)",
+          raised:   "var(--surface-raised)",
+          elevated: "var(--surface-elevated)",
+          overlay:  "var(--surface-overlay)",
+          inset:    "var(--surface-inset)",
         },
-        // Border stack
         border: {
-          subtle:  "var(--border-subtle)",
-          default: "var(--border-default)",
-          strong:  "var(--border-strong)",
+          subtle:   "var(--border-subtle)",
+          default:  "var(--border-default)",
+          strong:   "var(--border-strong)",
+          focus:    "var(--border-focus)",
         },
         // Text hierarchy
         text: {

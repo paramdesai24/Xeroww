@@ -11,7 +11,7 @@
 
 export const typography = {
   family: {
-    sans: "'Inter', 'Segoe UI', system-ui, sans-serif",
+    sans: "'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     mono: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
   },
 

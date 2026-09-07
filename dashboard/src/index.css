@@ -1,68 +1,76 @@
 /* ============================================================
-   XEROWW DESIGN SYSTEM — GRAPHITE & PAPER
-   "If you removed all color and left only grayscale, the
-    hierarchy should still read clearly through weight, size,
-    and spacing alone."
+   XEROWW DESIGN SYSTEM — V2 (PITCH BLACK & VIVID ACCENTS)
+   "Saturation is fine, luminous glow is not. Flat, opaque,
+    confident color fills on pure pitch-black canvas."
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── DESIGN TOKENS ──────────────────────────────────────────
-   All surfaces, text, border, and semantic colors live here.
-   Components use these variables — never raw hex values.
+/* ── DESIGN TOKENS V2 ──────────────────────────────────────────
+   True pitch black canvas, crisp 1px borders, vivid accents.
    ─────────────────────────────────────────────────────────── */
 :root {
-  /* Surface Stack — warm graphite, not cold black */
-  --surface-base:    #0F0F0E;   /* Page background */
-  --surface-raised:  #161614;   /* Cards, panels */
-  --surface-overlay: #1C1C1A;   /* Hover states, nested panels */
-  --surface-inset:   #111110;   /* Inset data regions */
+  /* Pitch Black Canvas & Surfaces */
+  --canvas:           #000000;
+  --surface-base:     #000000;   /* Canvas root */
+  --surface:          #0D0D0D;   /* Standard panel lift */
+  --surface-raised:   #0D0D0D;   /* Cards and sidebars */
+  --surface-elevated: #161616;   /* Dropdowns, modals, elevated widgets */
+  --surface-overlay:  #161616;   /* Hover states, selected rows */
+  --surface-inset:    #080808;   /* Telemetry strips, table header wells */
 
-  /* Border Stack — barely visible, weight-based */
-  --border-subtle:   #242422;   /* Panel dividers */
-  --border-default:  #2E2E2B;   /* Card outlines */
-  --border-strong:   #3A3A37;   /* Active states */
+  /* Borders — Crisp 1px, no soft halos */
+  --border-subtle:    #1A1A1A;   /* Minor internal lines */
+  --border-default:   #232323;   /* Default panel borders */
+  --border-strong:    #333333;   /* Visible section boundaries */
+  --border-focus:     #F59E0B;   /* Interactive focus / selection */
 
-  /* Text Stack — 4-level hierarchy */
-  --text-primary:    #E8E8E3;   /* Headlines, key values */
-  --text-secondary:  #9C9C95;   /* Labels, secondary content */
-  --text-tertiary:   #5C5C58;   /* Metadata, timestamps */
-  --text-disabled:   #3A3A37;   /* Inactive, placeholder */
+  /* Typography Colors — Natural high-contrast */
+  --text-primary:     #FAFAFA;   /* Headlines, values, titles */
+  --text-secondary:   #A0A0A8;   /* Body, descriptions, labels */
+  --text-tertiary:    #6B6B72;   /* Metadata, minor timestamps */
+  --text-disabled:    #44444A;   /* Placeholders, disabled states */
 
-  /* Accent — single, restrained cobalt-slate */
-  --accent:          #5B7FA6;   /* Primary accent */
-  --accent-subtle:   rgba(91, 127, 166, 0.12);  /* Accent backgrounds */
-  --accent-border:   rgba(91, 127, 166, 0.30);  /* Accent borders */
+  /* Primary Accent — Vivid Amber */
+  --accent:           #F59E0B;
+  --accent-primary:   #F59E0B;
+  --accent-subtle:    rgba(245, 158, 11, 0.12);
+  --accent-border:    rgba(245, 158, 11, 0.35);
 
-  /* Semantic — desaturated to match graphite world */
-  --positive:        #5C9E6E;   /* Bullish / gain — muted sage green */
-  --positive-subtle: rgba(92, 158, 110, 0.10);
-  --positive-border: rgba(92, 158, 110, 0.28);
+  /* Secondary Accent — Electric Blue / Indigo */
+  --accent-secondary: #3B82F6;
+  --accent-sec-subtle: rgba(59, 130, 246, 0.12);
+  --accent-sec-border: rgba(59, 130, 246, 0.35);
 
-  --negative:        #C05656;   /* Bearish / loss — muted terracotta */
-  --negative-subtle: rgba(192, 86, 86, 0.10);
-  --negative-border: rgba(192, 86, 86, 0.28);
+  /* Semantic Colors — Vivid and confident */
+  --positive:         #22C55E;   /* Confident Bullish green */
+  --positive-subtle:  rgba(34, 197, 94, 0.12);
+  --positive-border:  rgba(34, 197, 94, 0.35);
 
-  --warning:         #9E7E3F;   /* Caution — muted amber */
-  --warning-subtle:  rgba(158, 126, 63, 0.10);
-  --warning-border:  rgba(158, 126, 63, 0.28);
+  --negative:         #EF4444;   /* Confident Bearish red */
+  --negative-subtle:  rgba(239, 68, 68, 0.12);
+  --negative-border:  rgba(239, 68, 68, 0.35);
 
-  --neutral:         #5C5C58;   /* Neutral state */
-  --neutral-subtle:  rgba(92, 92, 88, 0.12);
+  --warning:          #F59E0B;   /* Caution amber */
+  --warning-subtle:   rgba(245, 158, 11, 0.12);
+  --warning-border:   rgba(245, 158, 11, 0.35);
 
-  /* Typography */
-  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --neutral:          #6B6B72;
+  --neutral-subtle:   rgba(107, 107, 114, 0.12);
+
+  /* Typography Families */
+  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
-  /* Motion — max 180ms, no bounce, no glow */
-  --ease-default:    cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-fast:   100ms;
-  --duration-base:   160ms;
-  --duration-slow:   180ms;
+  /* Deterministic Motion — max 180ms, snappy, no bounce */
+  --ease-default:     cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast:    100ms;
+  --duration-base:    160ms;
+  --duration-slow:    180ms;
 }
 
 /* ── BASE LAYER ─────────────────────────────────────────────── */
@@ -80,17 +88,17 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: var(--surface-base);
+    background-color: var(--canvas);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   }
 
-  /* Scrollbar — minimal, not decorative */
+  /* Minimal clean scrollbars */
   ::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -110,66 +118,12 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Typography scale */
-  .text-label {
-    font-size: 9px;
-    line-height: 1.4;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  .text-caption {
-    font-size: 10px;
-    line-height: 1.5;
-    letter-spacing: 0.04em;
-  }
-  .text-body {
-    font-size: 11px;
-    line-height: 1.6;
-  }
-  .text-data {
-    font-size: 12px;
-    line-height: 1.4;
-    font-variant-numeric: tabular-nums;
-  }
-  .text-value {
-    font-size: 14px;
-    line-height: 1.3;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
+  /* Top-edge colored accent border utility for pitch black elevation */
+  .border-t-accent {
+    border-top: 2px solid var(--accent-primary);
   }
 
-  /* Surface utilities */
-  .surface-base    { background-color: var(--surface-base); }
-  .surface-raised  { background-color: var(--surface-raised); }
-  .surface-overlay { background-color: var(--surface-overlay); }
-  .surface-inset   { background-color: var(--surface-inset); }
-
-  /* Border utilities */
-  .border-subtle  { border-color: var(--border-subtle); }
-  .border-default { border-color: var(--border-default); }
-  .border-strong  { border-color: var(--border-strong); }
-
-  /* Transition standard */
-  .transition-base {
-    transition-property: color, background-color, border-color, opacity;
-    transition-duration: var(--duration-base);
-    transition-timing-function: var(--ease-default);
+  .border-t-accent-secondary {
+    border-top: 2px solid var(--accent-secondary);
   }
-
-  /* Panel card — the Xeroww card primitive */
-  .x-card {
-    background-color: var(--surface-raised);
-    border: 1px solid var(--border-subtle);
-  }
-  .x-card-inset {
-    background-color: var(--surface-inset);
-    border: 1px solid var(--border-subtle);
-  }
-
-  /* Positive / negative semantic */
-  .text-positive { color: var(--positive); }
-  .text-negative { color: var(--negative); }
-  .text-warning  { color: var(--warning); }
-  .text-accent   { color: var(--accent); }
 }

@@ -59,13 +59,17 @@ export const colors = {
  * where CSS variables cannot be applied.
  */
 export const rawColors = {
-  positive:   "#5C9E6E",
-  negative:   "#C05656",
-  warning:    "#9E7E3F",
-  accent:     "#5B7FA6",
-  textPrimary: "#E8E8E3",
-  textSecondary: "#9C9C95",
-  borderSubtle: "#242422",
-  surfaceBase:  "#0F0F0E",
-  surfaceRaised: "#161614",
+  positive:        "#22C55E",
+  negative:        "#EF4444",
+  warning:         "#F59E0B",
+  accent:          "#F59E0B",
+  accentSecondary: "#3B82F6",
+  textPrimary:     "#FAFAFA",
+  textSecondary:   "#A0A0A8",
+  textMuted:       "#6B6B72",
+  borderDefault:   "#232323",
+  borderSubtle:    "#1A1A1A",
+  surfaceBase:     "#000000",
+  surface:         "#0D0D0D",
+  surfaceElevated: "#161616",
 } as const;
