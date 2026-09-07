@@ -1,6 +1,6 @@
 // src/components/ChartPanel.tsx
-// TradingView Lightweight Charts v5 candlestick panel with institutional terminal quote bar,
-// dynamic overlay layer toggles (S/R price lines, EMA 9/20, SMA 50/200), and click subscription.
+// TradingView Lightweight Charts v5 candlestick panel — v2 pitch-black canvas,
+// vivid saturated candles, crisp price lines, and natural typography.
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -18,9 +18,6 @@ import {
 import { TrendingUp, TrendingDown, BarChart2, Layers } from "lucide-react";
 import type { QuoteData, OHLCData, OHLCBar } from "../types/market";
 import type { MarketStructureSummaryResponse, SRZone } from "../types/structure";
-import config from "../config";
-
-const CHART_COLORS = config.chart.colors;
 
 interface ChartPanelProps {
   quote: QuoteData | null;
@@ -45,7 +42,6 @@ export default function ChartPanel({
   onOpenDiff,
   onOpenForensics,
 }: ChartPanelProps) {
-
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -63,30 +59,30 @@ export default function ChartPanel({
 
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: "#0F0F0E" },  // surface-base
-        textColor: "#5C5C58",  // text-tertiary
-        fontFamily: "'JetBrains Mono', 'Inter', monospace, system-ui",
-        fontSize: 10,
+        background: { type: ColorType.Solid, color: "#000000" }, // pitch black canvas
+        textColor: "#A0A0A8", // bright legible axis labels
+        fontFamily: "'JetBrains Mono', 'Public Sans', monospace",
+        fontSize: 11,
       },
       grid: {
-        vertLines: { color: "#1C1C1A" },  // surface-overlay
-        horzLines: { color: "#1C1C1A" },
+        vertLines: { color: "#1A1A1A" },
+        horzLines: { color: "#1A1A1A" },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: "#3A3A37", labelBackgroundColor: "#161614" },
-        horzLine: { color: "#3A3A37", labelBackgroundColor: "#161614" },
+        vertLine: { color: "#3B82F688", labelBackgroundColor: "#161616" }, // elegant secondary accent crosshair
+        horzLine: { color: "#3B82F688", labelBackgroundColor: "#161616" },
       },
       rightPriceScale: {
-        borderColor: "#242422",  // border-subtle
-        textColor: "#5C5C58",
+        borderColor: "#232323",
+        textColor: "#A0A0A8",
         scaleMargins: {
           top: 0.08,
           bottom: 0.08,
         },
       },
       timeScale: {
-        borderColor: "#242422",
+        borderColor: "#232323",
         timeVisible: true,
         secondsVisible: false,
         fixLeftEdge: true,
@@ -98,12 +94,12 @@ export default function ChartPanel({
     });
 
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: CHART_COLORS.upColor,
-      downColor: CHART_COLORS.downColor,
-      borderUpColor: CHART_COLORS.borderUp,
-      borderDownColor: CHART_COLORS.borderDown,
-      wickUpColor: CHART_COLORS.wickUp,
-      wickDownColor: CHART_COLORS.wickDown,
+      upColor: "#22C55E",
+      downColor: "#EF4444",
+      borderUpColor: "#22C55E",
+      borderDownColor: "#EF4444",
+      wickUpColor: "#22C55E",
+      wickDownColor: "#EF4444",
     });
 
     chartRef.current = chart;
@@ -138,38 +134,32 @@ export default function ChartPanel({
       low: c.low,
       close: c.close,
     }));
-    seriesRef.current.setData(data);
-    chartRef.current.timeScale().fitContent();
 
-    // Subscribe to chart clicks to update Candle Anatomy dynamically
-    const handleChartClick = (param: MouseEventParams) => {
-      if (!param.time || !onSelectCandle) return;
-      let dateStr = "";
-      if (typeof param.time === "string") {
-        dateStr = param.time;
-      } else if (typeof param.time === "object" && param.time !== null) {
-        const t = param.time as { year: number; month: number; day: number };
-        dateStr = `${t.year}-${String(t.month).padStart(2, "0")}-${String(t.day).padStart(2, "0")}`;
-      }
-      const matchingCandle = ohlc.candles.find((c) => c.time === dateStr);
-      if (matchingCandle) {
-        onSelectCandle(matchingCandle);
+    seriesRef.current.setData(data);
+
+    // Subscribe to crosshair click for candle forensic selection
+    const handleCrosshairMove = (param: MouseEventParams) => {
+      if (!param.time || !onSelectCandle || !ohlc?.candles) return;
+      const clickedTime = String(param.time);
+      const matched = ohlc.candles.find((c) => String(c.time) === clickedTime);
+      if (matched) {
+        onSelectCandle(matched);
       }
     };
 
-    chartRef.current.subscribeClick(handleChartClick);
+    chartRef.current.subscribeClick(handleCrosshairMove);
 
     return () => {
-      chartRef.current?.unsubscribeClick(handleChartClick);
+      chartRef.current?.unsubscribeClick(handleCrosshairMove);
     };
   }, [ohlc, onSelectCandle]);
 
-  // Support / Resistance Overlays
+  // Support / Resistance Lines
   useEffect(() => {
     const series = seriesRef.current;
     if (!series) return;
 
-    // Clear existing price lines
+    // Remove old lines
     priceLinesRef.current.forEach((line) => {
       series.removePriceLine(line);
     });
@@ -183,7 +173,7 @@ export default function ChartPanel({
     resZones.forEach((zone: SRZone) => {
       const line = series.createPriceLine({
         price: zone.price,
-        color: "#C0565688",  // negative desaturated
+        color: "#EF4444",
         lineWidth: zone.strength >= 7 ? 2 : 1,
         lineStyle: zone.strength >= 7 ? LineStyle.Solid : LineStyle.Dashed,
         axisLabelVisible: true,
@@ -195,7 +185,7 @@ export default function ChartPanel({
     supZones.forEach((zone: SRZone) => {
       const line = series.createPriceLine({
         price: zone.price,
-        color: "#5C9E6E88",  // positive desaturated
+        color: "#22C55E",
         lineWidth: zone.strength >= 7 ? 2 : 1,
         lineStyle: zone.strength >= 7 ? LineStyle.Solid : LineStyle.Dashed,
         axisLabelVisible: true,
@@ -223,13 +213,12 @@ export default function ChartPanel({
 
     // Fast MAs: EMA 9 & EMA 20
     if (showFastMA) {
-      // Compute EMA9
+      // Compute EMA 9 (secondary electric blue)
       const ema9Series = chart.addSeries(LineSeries, {
-        color: "#5B7FA6",  // accent
+        color: "#3B82F6",
         lineWidth: 1,
         title: "EMA 9",
       });
-      // Compute EMA 9 data
       const k9 = 2 / (9 + 1);
       let ema9 = closes[0];
       const ema9Data: { time: import("lightweight-charts").Time; value: number }[] = [];
@@ -240,9 +229,9 @@ export default function ChartPanel({
       ema9Series.setData(ema9Data);
       maSeriesRef.current.push(ema9Series);
 
-      // Compute EMA 20
+      // Compute EMA 20 (vivid amber primary)
       const ema20Series = chart.addSeries(LineSeries, {
-        color: "#9E7E3F",  // warning
+        color: "#F59E0B",
         lineWidth: 1,
         title: "EMA 20",
       });
@@ -261,7 +250,7 @@ export default function ChartPanel({
     if (showSlowMA) {
       if (closes.length >= 50) {
         const sma50Series = chart.addSeries(LineSeries, {
-          color: "#9C9C95",  // text-secondary
+          color: "#A0A0A8",
           lineWidth: 1,
           title: "SMA 50",
         });
@@ -276,7 +265,7 @@ export default function ChartPanel({
 
       if (closes.length >= 200) {
         const sma200Series = chart.addSeries(LineSeries, {
-          color: "#3A3A37",  // border-strong
+          color: "#6B6B72",
           lineWidth: 2,
           title: "SMA 200",
         });
@@ -295,43 +284,49 @@ export default function ChartPanel({
   const negative = (quote?.change_pct ?? 0) < 0;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0" style={{ backgroundColor: "var(--surface-base)" }}>
-      {/* Compact Terminal Quote Bar — high density, crisp information */}
-      <div className="px-5 py-2.5 flex items-center justify-between shrink-0 select-none flex-wrap gap-2" style={{ backgroundColor: "var(--surface-raised)", borderBottom: "1px solid var(--border-subtle)" }}>
+    <div className="flex flex-col flex-1 min-w-0" style={{ backgroundColor: "var(--canvas)" }}>
+      {/* Quote Bar — natural case, clear size jumps, crisp layout */}
+      <div
+        className="px-5 py-2.5 flex items-center justify-between shrink-0 select-none flex-wrap gap-2 border-b border-[var(--border-default)]"
+        style={{ backgroundColor: "var(--surface)" }}
+      >
         {quote ? (
           <>
             <div className="flex items-center gap-4">
               <div className="flex items-baseline gap-2">
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.02em" }}>
+                <span
+                  className="text-lg font-bold tracking-tight text-[var(--text-primary)]"
+                  style={{ fontFamily: "var(--font-sans)" }}
+                >
                   {quote.symbol.replace(".NS", "")}
                 </span>
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: 11, color: "var(--text-tertiary)" }} className="hidden md:inline">
+                <span
+                  className="text-xs text-[var(--text-secondary)] hidden md:inline"
+                  style={{ fontFamily: "var(--font-sans)" }}
+                >
                   {quote.display_name}
                 </span>
               </div>
 
-              <div style={{ height: 14, width: 1, backgroundColor: "var(--border-subtle)" }} />
+              <div style={{ height: 16, width: 1, backgroundColor: "var(--border-default)" }} />
 
               <div className="flex items-baseline gap-2">
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
-                  ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                <span
+                  className="text-xl font-bold text-[var(--text-primary)] tabular-nums"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 3,
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    fontWeight: 500,
-                    fontVariantNumeric: "tabular-nums",
-                    color: positive ? "var(--positive)" : negative ? "var(--negative)" : "var(--text-tertiary)",
-                  }}
+                  className={`flex items-center gap-0.5 text-xs font-semibold tabular-nums ${
+                    positive ? "text-[var(--positive)]" : negative ? "text-[var(--negative)]" : "text-[var(--text-tertiary)]"
+                  }`}
+                  style={{ fontFamily: "var(--font-mono)" }}
                 >
                   {positive ? (
-                    <TrendingUp size={11} strokeWidth={2.5} />
+                    <TrendingUp size={12} strokeWidth={2.5} />
                   ) : negative ? (
-                    <TrendingDown size={11} strokeWidth={2.5} />
+                    <TrendingDown size={12} strokeWidth={2.5} />
                   ) : null}
                   {quote.change > 0 ? "+" : ""}
                   {quote.change.toFixed(2)} ({quote.change_pct > 0 ? "+" : ""}
@@ -340,41 +335,38 @@ export default function ChartPanel({
               </div>
             </div>
 
-            {/* Quick Session Stats strip & Layer Controls */}
-            <div className="flex items-center gap-4 text-[11px] font-mono text-[var(--text-secondary)]">
-              <div className="hidden lg:flex items-center gap-4">
+            {/* Quick Session Stats & Overlay Controls */}
+            <div className="flex items-center gap-4 text-xs">
+              <div className="hidden lg:flex items-center gap-4 text-xs text-[var(--text-secondary)]">
                 <div>
-                  <span className="text-[var(--text-tertiary)] mr-1.5">PREV</span>
-                  <span className="text-[var(--text-primary)] tabular-nums">
+                  <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Prev</span>
+                  <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
                     ₹{quote.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--text-tertiary)] mr-1.5">RANGE</span>
-                  <span className="text-[var(--text-primary)] tabular-nums">
+                  <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Range</span>
+                  <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
                     ₹{quote.day_low.toFixed(1)} – ₹{quote.day_high.toFixed(1)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--text-tertiary)] mr-1.5">VOL</span>
-                  <span className="text-[var(--text-primary)] tabular-nums">
+                  <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Vol</span>
+                  <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
                     {(quote.volume / 1e5).toFixed(2)}L
                   </span>
                 </div>
               </div>
 
               {/* Overlays Toggle Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[var(--border-subtle)] pl-3">
-                <div className="flex items-center gap-1 text-[10px] text-[var(--text-tertiary)] mr-1">
-                  <Layers size={12} />
-                  <span>LAYERS:</span>
-                </div>
+              <div className="flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3">
+                <span className="text-[11px] text-[var(--text-tertiary)] mr-1 font-medium">Layers:</span>
                 <button
                   onClick={() => setShowSR(!showSR)}
-                  className={`px-2 py-0.5 text-[10px] font-mono border rounded transition-colors ${
+                  className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
                     showSR
-                      ? "bg-[var(--surface-overlay)] text-[var(--accent)] border-[var(--border-strong)]"
-                      : "bg-[var(--surface-raised)] text-[var(--text-tertiary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]"
+                      ? "bg-[var(--accent-subtle)] text-[var(--accent-primary)] border-[var(--accent-primary)]"
+                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
                   }`}
                   title="Toggle Support / Resistance level lines"
                 >
@@ -382,10 +374,10 @@ export default function ChartPanel({
                 </button>
                 <button
                   onClick={() => setShowFastMA(!showFastMA)}
-                  className={`px-2 py-0.5 text-[10px] font-mono border rounded transition-colors ${
+                  className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
                     showFastMA
-                      ? "bg-[var(--surface-overlay)] text-[var(--accent)] border-[var(--border-strong)]"
-                      : "bg-[var(--surface-raised)] text-[var(--text-tertiary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]"
+                      ? "bg-[var(--accent-sec-subtle)] text-[var(--accent-secondary)] border-[var(--accent-secondary)]"
+                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
                   }`}
                   title="Toggle EMA 9 & EMA 20"
                 >
@@ -393,10 +385,10 @@ export default function ChartPanel({
                 </button>
                 <button
                   onClick={() => setShowSlowMA(!showSlowMA)}
-                  className={`px-2 py-0.5 text-[10px] font-mono border rounded transition-colors ${
+                  className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
                     showSlowMA
-                      ? "bg-[var(--surface-overlay)] text-[var(--text-primary)] border-[var(--border-strong)]"
-                      : "bg-[var(--surface-raised)] text-[var(--text-tertiary)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]"
+                      ? "bg-[var(--surface-elevated)] text-[var(--text-primary)] border-[var(--border-strong)]"
+                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
                   }`}
                   title="Toggle SMA 50 & SMA 200"
                 >
@@ -404,69 +396,65 @@ export default function ChartPanel({
                 </button>
               </div>
 
-              {/* Differentiated Intelligence Feature Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[var(--border-subtle)] pl-3">
+              {/* Intelligence Feature Buttons */}
+              <div className="flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3">
                 {onOpenReplay && (
                   <button
                     id="trigger-replay-btn"
                     onClick={onOpenReplay}
-                    className="px-2 py-0.5 text-[10px] font-mono font-medium rounded bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--accent)]/30 hover:border-[var(--accent)] transition-colors"
+                    className="px-2.5 py-1 text-xs font-semibold rounded-sm bg-[var(--accent-subtle)] text-[var(--accent-primary)] border border-[var(--accent-border)] hover:border-[var(--accent-primary)] transition-colors duration-150"
                     title="Launch Historical Market Replay Scrubber"
                   >
-                    REPLAY
+                    Replay
                   </button>
                 )}
                 {onOpenDiff && (
                   <button
                     id="trigger-diff-btn"
                     onClick={onOpenDiff}
-                    className="px-2 py-0.5 text-[10px] font-mono font-medium rounded bg-[var(--surface-raised)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150"
                     title="Inspect What Changed Diff"
                   >
-                    DIFF
+                    Diff
                   </button>
                 )}
                 {onOpenForensics && (
                   <button
                     id="trigger-forensics-btn"
                     onClick={onOpenForensics}
-                    className="px-2 py-0.5 text-[10px] font-mono font-medium rounded bg-[var(--surface-raised)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors"
+                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150"
                     title="Inspect Candle Forensics & Provenance"
                   >
-                    FORENSICS
+                    Forensics
                   </button>
                 )}
               </div>
             </div>
           </>
-
         ) : (
-          <div className="flex items-center gap-2 text-[var(--text-tertiary)] py-0.5">
+          <div className="flex items-center gap-2 text-[var(--text-tertiary)] py-1 text-xs">
             <BarChart2 size={16} />
-            <span className="text-xs font-mono">
-              {loading ? "INITIALIZING FEED…" : error ?? "SELECT AN ASSET"}
-            </span>
+            <span>{loading ? "Initializing feed…" : error ?? "Select an asset"}</span>
           </div>
         )}
       </div>
 
-      {/* Candlestick Chart Canvas — enlarged viewport, graphite surface */}
-      <div className="flex-1 relative bg-[var(--surface-base)]">
-        {/* Subtle skeleton overlay during stock switches */}
+      {/* Candlestick Chart Canvas — True pitch black #000000 */}
+      <div className="flex-1 relative bg-[var(--canvas)]">
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--surface-base)]/70 backdrop-blur-[1px] transition-opacity duration-200">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--surface-raised)] border border-[var(--border-subtle)] text-[var(--text-secondary)] text-xs font-mono">
-              <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping" />
-              <span>SYNCING OHLC BARS…</span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 transition-opacity duration-150">
+            <div className="flex items-center gap-2.5 px-4 py-2 rounded-sm bg-[var(--surface-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] text-xs font-medium">
+              <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-ping" />
+              <span>Syncing OHLC bars…</span>
             </div>
           </div>
         )}
 
         {error && !loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--surface-base)]/85">
-            <div className="bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded px-5 py-3 text-center max-w-sm">
-              <p className="text-[var(--negative)] text-xs font-mono font-medium">MARKET DATA ERROR</p>
-              <p className="text-[var(--text-secondary)] text-xs font-mono mt-1">{error}</p>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80">
+            <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-sm px-6 py-4 text-center max-w-sm">
+              <p className="text-[var(--negative)] text-xs font-semibold">Market data error</p>
+              <p className="text-[var(--text-secondary)] text-xs mt-1">{error}</p>
             </div>
           </div>
         )}
@@ -476,4 +464,3 @@ export default function ChartPanel({
     </div>
   );
 }
-
