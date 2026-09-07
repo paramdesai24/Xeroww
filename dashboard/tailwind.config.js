@@ -8,27 +8,59 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "Segoe UI", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "Fira Code", "Cascadia Code", "monospace"],
       },
       colors: {
-        terminal: {
-          bg: "#000000",
-          surface1: "#0A0A0A",
-          surface2: "#111111",
-          card: "#171717",
-          border: "#262626",
-          text: "#FAFAFA",
-          muted: "#A1A1AA",
-          bull: "#22C55E",
-          bear: "#EF4444",
-          accent: "#6366F1",
+        // Graphite surface stack
+        surface: {
+          base:    "var(--surface-base)",
+          raised:  "var(--surface-raised)",
+          overlay: "var(--surface-overlay)",
+          inset:   "var(--surface-inset)",
         },
-        brand: {
-          indigo: "#6366f1",
-          violet: "#7c3aed",
+        // Border stack
+        border: {
+          subtle:  "var(--border-subtle)",
+          default: "var(--border-default)",
+          strong:  "var(--border-strong)",
+        },
+        // Text hierarchy
+        text: {
+          primary:   "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          tertiary:  "var(--text-tertiary)",
+          disabled:  "var(--text-disabled)",
+        },
+        // Accent
+        accent: {
+          DEFAULT: "var(--accent)",
+          subtle:  "var(--accent-subtle)",
+          border:  "var(--accent-border)",
+        },
+        // Semantic
+        positive: {
+          DEFAULT: "var(--positive)",
+          subtle:  "var(--positive-subtle)",
+          border:  "var(--positive-border)",
+        },
+        negative: {
+          DEFAULT: "var(--negative)",
+          subtle:  "var(--negative-subtle)",
+          border:  "var(--negative-border)",
+        },
+        warning: {
+          DEFAULT: "var(--warning)",
+          subtle:  "var(--warning-subtle)",
+          border:  "var(--warning-border)",
         },
       },
-      animation: {
-        "spin-slow": "spin 3s linear infinite",
+      transitionDuration: {
+        "fast": "100ms",
+        "base": "160ms",
+        "slow": "180ms",
+      },
+      transitionTimingFunction: {
+        "default": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },

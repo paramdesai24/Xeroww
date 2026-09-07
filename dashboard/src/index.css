@@ -1,9 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* ============================================================
+   XEROWW DESIGN SYSTEM — GRAPHITE & PAPER
+   "If you removed all color and left only grayscale, the
+    hierarchy should still read clearly through weight, size,
+    and spacing alone."
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── DESIGN TOKENS ──────────────────────────────────────────
+   All surfaces, text, border, and semantic colors live here.
+   Components use these variables — never raw hex values.
+   ─────────────────────────────────────────────────────────── */
+:root {
+  /* Surface Stack — warm graphite, not cold black */
+  --surface-base:    #0F0F0E;   /* Page background */
+  --surface-raised:  #161614;   /* Cards, panels */
+  --surface-overlay: #1C1C1A;   /* Hover states, nested panels */
+  --surface-inset:   #111110;   /* Inset data regions */
+
+  /* Border Stack — barely visible, weight-based */
+  --border-subtle:   #242422;   /* Panel dividers */
+  --border-default:  #2E2E2B;   /* Card outlines */
+  --border-strong:   #3A3A37;   /* Active states */
+
+  /* Text Stack — 4-level hierarchy */
+  --text-primary:    #E8E8E3;   /* Headlines, key values */
+  --text-secondary:  #9C9C95;   /* Labels, secondary content */
+  --text-tertiary:   #5C5C58;   /* Metadata, timestamps */
+  --text-disabled:   #3A3A37;   /* Inactive, placeholder */
+
+  /* Accent — single, restrained cobalt-slate */
+  --accent:          #5B7FA6;   /* Primary accent */
+  --accent-subtle:   rgba(91, 127, 166, 0.12);  /* Accent backgrounds */
+  --accent-border:   rgba(91, 127, 166, 0.30);  /* Accent borders */
+
+  /* Semantic — desaturated to match graphite world */
+  --positive:        #5C9E6E;   /* Bullish / gain — muted sage green */
+  --positive-subtle: rgba(92, 158, 110, 0.10);
+  --positive-border: rgba(92, 158, 110, 0.28);
+
+  --negative:        #C05656;   /* Bearish / loss — muted terracotta */
+  --negative-subtle: rgba(192, 86, 86, 0.10);
+  --negative-border: rgba(192, 86, 86, 0.28);
+
+  --warning:         #9E7E3F;   /* Caution — muted amber */
+  --warning-subtle:  rgba(158, 126, 63, 0.10);
+  --warning-border:  rgba(158, 126, 63, 0.28);
+
+  --neutral:         #5C5C58;   /* Neutral state */
+  --neutral-subtle:  rgba(92, 92, 88, 0.12);
+
+  /* Typography */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Motion — max 180ms, no bounce, no glow */
+  --ease-default:    cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast:   100ms;
+  --duration-base:   160ms;
+  --duration-slow:   180ms;
+}
+
+/* ── BASE LAYER ─────────────────────────────────────────────── */
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
@@ -17,32 +79,97 @@
   }
 
   body {
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    background-color: #000000;
-    color: #FAFAFA;
+    font-family: var(--font-sans);
+    background-color: var(--surface-base);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   }
 
-  /* Custom scrollbar for pitch-black terminal aesthetic */
+  /* Scrollbar — minimal, not decorative */
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 3px;
+    height: 3px;
   }
   ::-webkit-scrollbar-track {
-    background: #0A0A0A;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #262626;
+    background: var(--border-default);
     border-radius: 2px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #404040;
+    background: var(--border-strong);
   }
 }
 
+/* ── UTILITIES ──────────────────────────────────────────────── */
 @layer utilities {
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Typography scale */
+  .text-label {
+    font-size: 9px;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .text-caption {
+    font-size: 10px;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+  }
+  .text-body {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+  .text-data {
+    font-size: 12px;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+  }
+  .text-value {
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Surface utilities */
+  .surface-base    { background-color: var(--surface-base); }
+  .surface-raised  { background-color: var(--surface-raised); }
+  .surface-overlay { background-color: var(--surface-overlay); }
+  .surface-inset   { background-color: var(--surface-inset); }
+
+  /* Border utilities */
+  .border-subtle  { border-color: var(--border-subtle); }
+  .border-default { border-color: var(--border-default); }
+  .border-strong  { border-color: var(--border-strong); }
+
+  /* Transition standard */
+  .transition-base {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-default);
+  }
+
+  /* Panel card — the Xeroww card primitive */
+  .x-card {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+  }
+  .x-card-inset {
+    background-color: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Positive / negative semantic */
+  .text-positive { color: var(--positive); }
+  .text-negative { color: var(--negative); }
+  .text-warning  { color: var(--warning); }
+  .text-accent   { color: var(--accent); }
 }
