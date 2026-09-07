@@ -46,7 +46,6 @@ export default function App() {
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
     useMarketData();
 
-
   // Selected candle for dynamic Candle Anatomy (defaults to latest if none selected)
   const [selectedCandle, setSelectedCandle] = useState<OHLCBar | null>(null);
 
@@ -66,33 +65,105 @@ export default function App() {
     }
   };
 
+  // Auth gate — editorial, not alarming
   const renderAuthGate = (moduleName: string) => (
     <div
-      className="flex-1 flex flex-col items-center justify-center bg-[#000] text-[#e0e0e0] p-6"
-      style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "var(--surface-base)",
+        padding: 24,
+      }}
     >
-      <div className="w-full max-w-md border border-[#1E1E1E] bg-[#050505] p-6 text-center flex flex-col items-center gap-4">
-        <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-ping" />
-        <div className="text-[12px] font-bold text-[#FFF] tracking-[0.2em] uppercase">
-          {moduleName} REQUIRES AUTHENTICATION
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 360,
+          border: "1px solid var(--border-default)",
+          backgroundColor: "var(--surface-raised)",
+          padding: 28,
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 14,
+        }}
+      >
+        {/* Quiet presence indicator */}
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            backgroundColor: "var(--accent)",
+            display: "block",
+          }}
+        />
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-primary)",
+          }}
+        >
+          {moduleName} requires authentication
         </div>
-        <p className="text-[10px] text-[#666] leading-relaxed">
-          Access to multi-tenant persistence (custom watchlists, simulated portfolios, automated alert engines, and decision audits) requires a cryptographically verified session.
+        <p
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: 11,
+            lineHeight: 1.7,
+            color: "var(--text-secondary)",
+            margin: 0,
+          }}
+        >
+          Access to multi-tenant persistence — custom watchlists, simulated
+          portfolios, alert engines, and decision audits — requires a
+          cryptographically verified session.
         </p>
         <button
           id="gate-auth-btn"
           onClick={() => setShowAuthModal(true)}
-          className="mt-2 px-4 py-2 bg-[#00E5FF] hover:bg-[#33EAFF] text-[#000] font-bold text-[10px] tracking-widest uppercase transition-colors"
+          style={{
+            marginTop: 6,
+            padding: "8px 20px",
+            fontFamily: "var(--font-mono)",
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-primary)",
+            backgroundColor: "var(--surface-overlay)",
+            border: "1px solid var(--border-default)",
+            cursor: "pointer",
+            transition: "border-color 160ms cubic-bezier(0.16,1,0.3,1)",
+          }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)"}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)"}
         >
-          SIGN IN / REGISTER
+          Sign In / Register
         </button>
       </div>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-screen bg-[#000000] text-[#FAFAFA] overflow-hidden select-none">
-      {/* Top Module Navigator — Institutional V0.6 Header */}
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
+      backgroundColor: "var(--surface-base)",
+      color: "var(--text-primary)",
+      overflow: "hidden",
+      userSelect: "none",
+    }}>
+      {/* Top Module Navigator */}
       <ModuleNav
         activeModule={activeModule}
         onModuleChange={handleModuleChange}
@@ -102,20 +173,19 @@ export default function App() {
         onOpenBreadth={() => setShowBreadthModal(true)}
       />
 
-
-      {/* Main Terminal Body — Module Switching */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main Terminal Body */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {activeModule === "MARKET" && (
-          <div className="flex flex-1 overflow-hidden">
-            {/* Left: Watchlist sidebar (~68px rows) */}
+          <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+            {/* Left: Watchlist */}
             <Sidebar
               stocks={stocks}
               activeSymbol={activeSymbol}
               onSelectSymbol={setActiveSymbol}
             />
 
-            {/* Center: Candlestick chart hero + 10-session OHLC table */}
-            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            {/* Center: Chart + OHLC Table */}
+            <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, overflow: "hidden" }}>
               {isReplayMode && (
                 <ReplayControlBar
                   symbol={activeSymbol}
@@ -162,35 +232,54 @@ export default function App() {
               />
             </div>
 
-
-            {/* Right: Institutional Analytics & Market Structure Engine */}
-            <aside className="w-80 shrink-0 bg-[#0A0A0A] border-l border-[#262626] flex flex-col overflow-hidden">
-              {/* Tab Selector */}
-              <div className="flex items-center border-b border-[#262626] bg-[#000000] text-[11px] font-mono">
-                <button
-                  onClick={() => setSidebarTab("STRUCTURE")}
-                  className={`flex-1 py-2 text-center font-bold tracking-wider transition-colors border-b-2 ${
-                    sidebarTab === "STRUCTURE"
-                      ? "border-[#00E5FF] text-[#00E5FF] bg-[#0A0A0A]"
-                      : "border-transparent text-[#737373] hover:text-[#FAFAFA]"
-                  }`}
-                >
-                  STRUCTURE ENGINE
-                </button>
-                <button
-                  onClick={() => setSidebarTab("ANATOMY")}
-                  className={`flex-1 py-2 text-center font-bold tracking-wider transition-colors border-b-2 ${
-                    sidebarTab === "ANATOMY"
-                      ? "border-[#00E5FF] text-[#00E5FF] bg-[#0A0A0A]"
-                      : "border-transparent text-[#737373] hover:text-[#FAFAFA]"
-                  }`}
-                >
-                  OHLC & ANATOMY
-                </button>
+            {/* Right: Analytics Sidebar */}
+            <aside style={{
+              width: 296,
+              flexShrink: 0,
+              backgroundColor: "var(--surface-base)",
+              borderLeft: "1px solid var(--border-subtle)",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}>
+              {/* Tab selector */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                borderBottom: "1px solid var(--border-subtle)",
+                backgroundColor: "var(--surface-base)",
+                flexShrink: 0,
+              }}>
+                {(["STRUCTURE", "ANATOMY"] as const).map((tab) => {
+                  const active = sidebarTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setSidebarTab(tab)}
+                      style={{
+                        flex: 1,
+                        height: 32,
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 9,
+                        fontWeight: 500,
+                        letterSpacing: "0.10em",
+                        textTransform: "uppercase",
+                        color: active ? "var(--text-primary)" : "var(--text-disabled)",
+                        backgroundColor: active ? "var(--surface-raised)" : "transparent",
+                        border: "none",
+                        borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
+                        cursor: "pointer",
+                        transition: "color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1)",
+                      }}
+                    >
+                      {tab === "STRUCTURE" ? "Structure Engine" : "OHLC & Anatomy"}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Scrollable Analytics Body */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* Analytics body */}
+              <div style={{ flex: 1, overflowY: "auto", padding: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                 {sidebarTab === "STRUCTURE" ? (
                   <>
                     <MarketRegimeCard regime={structure?.market_regime ?? null} />
@@ -202,9 +291,7 @@ export default function App() {
                       category: structure.detected_patterns[0].category,
                       contextual_summary: structure.contextual_pattern?.context_summary,
                     } as any : pattern} />
-                    <SupportResistancePanel
-                      sr={structure?.support_resistance ?? null}
-                    />
+                    <SupportResistancePanel sr={structure?.support_resistance ?? null} />
                     <VolumeAnalyticsPanel volume={structure?.volume ?? null} />
                   </>
                 ) : (
@@ -228,7 +315,6 @@ export default function App() {
           </div>
         )}
 
-
         {activeModule === "WATCHLISTS" &&
           (auth.isAuthenticated ? (
             <WatchlistManager
@@ -238,28 +324,28 @@ export default function App() {
               }}
             />
           ) : (
-            renderAuthGate("WATCHLIST MANAGER")
+            renderAuthGate("Watchlist Manager")
           ))}
 
         {activeModule === "PORTFOLIO" &&
           (auth.isAuthenticated ? (
             <PortfolioView />
           ) : (
-            renderAuthGate("PORTFOLIO VALUATION ENGINE")
+            renderAuthGate("Portfolio Valuation Engine")
           ))}
 
         {activeModule === "ALERTS" &&
           (auth.isAuthenticated ? (
             <AlertsManager />
           ) : (
-            renderAuthGate("REAL-TIME ALERT ENGINE")
+            renderAuthGate("Real-Time Alert Engine")
           ))}
 
         {activeModule === "JOURNAL" &&
           (auth.isAuthenticated ? (
             <JournalView />
           ) : (
-            renderAuthGate("DECISION AUDIT JOURNAL")
+            renderAuthGate("Decision Audit Journal")
           ))}
 
         {activeModule === "SYSTEM" && (
@@ -267,15 +353,13 @@ export default function App() {
         )}
       </div>
 
-      {/* Signature Pipeline Status Footer (Visible across modules) */}
+      {/* Footer */}
       <Footer />
 
-      {/* Institutional Auth Modal */}
+      {/* Modals */}
       {showAuthModal && (
         <AuthModal auth={auth} onClose={() => setShowAuthModal(false)} />
       )}
-
-      {/* Candle Forensics Modal */}
       {showForensicsModal && (
         <CandleForensicsModal
           symbol={activeSymbol}
@@ -283,16 +367,12 @@ export default function App() {
           onClose={() => setShowForensicsModal(false)}
         />
       )}
-
-      {/* What Changed Event Diff Modal */}
       {showDiffModal && (
         <EventDiffModal
           symbol={activeSymbol}
           onClose={() => setShowDiffModal(false)}
         />
       )}
-
-      {/* Market Breadth & Correlation Modal */}
       {showBreadthModal && (
         <MarketBreadthModal
           onClose={() => setShowBreadthModal(false)}
@@ -301,4 +381,3 @@ export default function App() {
     </div>
   );
 }
-
