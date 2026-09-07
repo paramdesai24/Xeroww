@@ -1,8 +1,8 @@
 // src/components/OHLCTable.tsx
-// Recent session history table — graphite-and-paper design system.
-// Compact terminal table displaying the 10 most recent OHLC daily sessions.
+// Recent session history table — v2 publication-quality table.
 
 import type { OHLCBar } from "../types/market";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui";
 
 interface OHLCTableProps {
   candles: OHLCBar[] | undefined;
@@ -15,113 +15,77 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
 
   const recent10 = candles.slice(-10).reverse();
 
-  const headerStyle: React.CSSProperties = {
-    fontFamily: "var(--font-mono)",
-    fontSize: 8,
-    fontWeight: 500,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    color: "var(--text-disabled)",
-    padding: "5px 12px",
-    textAlign: "right",
-    whiteSpace: "nowrap",
-  };
-
   return (
-    <div style={{
-      backgroundColor: "var(--surface-base)",
-      borderTop: "1px solid var(--border-subtle)",
-      display: "flex",
-      flexDirection: "column",
-      flexShrink: 0,
-      maxHeight: 160,
-      overflow: "hidden",
-      userSelect: "none",
-      fontFamily: "var(--font-mono)",
-    }}>
+    <div
+      className="flex flex-col shrink-0 max-h-44 border-t border-[var(--border-default)] select-none"
+      style={{ backgroundColor: "var(--canvas)", fontFamily: "var(--font-sans)" }}
+    >
       {/* Header strip */}
-      <div style={{
-        padding: "5px 12px",
-        backgroundColor: "var(--surface-base)",
-        borderBottom: "1px solid var(--border-subtle)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexShrink: 0,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase", color: "var(--text-tertiary)" }}>
+      <div
+        className="px-4 py-2 flex items-center justify-between border-b border-[var(--border-default)] shrink-0"
+        style={{ backgroundColor: "var(--surface)" }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-[var(--text-primary)]">
             Recent Sessions
           </span>
-          <span style={{ fontSize: 9, color: "var(--text-disabled)" }}>
-            Last 10 days · click row for anatomy
+          <span className="text-[11px] text-[var(--text-tertiary)]">
+            (Last 10 sessions · Click row for candle forensics)
           </span>
         </div>
-        <span style={{ fontSize: 9, color: "var(--text-disabled)" }}>NSE Regular Trading</span>
+        <span className="text-[10px] text-[var(--text-tertiary)]">NSE Daily Feed</span>
       </div>
 
-      {/* Table */}
-      <div style={{ overflowY: "auto", overflowX: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ backgroundColor: "var(--surface-base)", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid var(--border-subtle)" }}>
-              <th style={{ ...headerStyle, textAlign: "left" }}>Date</th>
-              <th style={headerStyle}>Open</th>
-              <th style={headerStyle}>High</th>
-              <th style={headerStyle}>Low</th>
-              <th style={headerStyle}>Close</th>
-              <th style={headerStyle}>Change</th>
+      {/* Table Container */}
+      <div className="overflow-y-auto overflow-x-hidden">
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead align="left">Date</TableHead>
+              <TableHead align="right">Open</TableHead>
+              <TableHead align="right">High</TableHead>
+              <TableHead align="right">Low</TableHead>
+              <TableHead align="right">Close</TableHead>
+              <TableHead align="right">Change</TableHead>
             </tr>
-          </thead>
-          <tbody>
+          </TableHeader>
+          <TableBody>
             {recent10.map((c) => {
               const isBullish = c.close >= c.open;
               const isSelected = selectedDate === c.time;
               const change = c.close - c.open;
               const changePct = c.open > 0 ? (change / c.open) * 100 : 0;
-              const dirColor = isBullish ? "var(--positive)" : "var(--negative)";
+              const dirColor = isBullish ? "text-[var(--positive)]" : "text-[var(--negative)]";
 
               return (
-                <tr
+                <TableRow
                   key={c.time}
+                  isSelected={isSelected}
                   onClick={() => onSelectCandle && onSelectCandle(c)}
-                  style={{
-                    height: 26,
-                    cursor: "pointer",
-                    backgroundColor: isSelected ? "var(--surface-overlay)" : "transparent",
-                    borderBottom: "1px solid var(--border-subtle)",
-                    transition: "background-color 160ms cubic-bezier(0.16,1,0.3,1)",
-                  }}
-                  onMouseEnter={e => {
-                    if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface-raised)";
-                  }}
-                  onMouseLeave={e => {
-                    if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
-                  }}
                 >
-                  <td style={{ padding: "0 12px", fontSize: 10, color: "var(--text-secondary)", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+                  <TableCell className="text-[11px] text-[var(--text-secondary)]">
                     {c.time}
-                  </td>
-                  <td style={{ padding: "0 12px", textAlign: "right", fontSize: 10, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                  </TableCell>
+                  <TableCell numeric className="text-[11px]">
                     ₹{c.open.toFixed(2)}
-                  </td>
-                  <td style={{ padding: "0 12px", textAlign: "right", fontSize: 10, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                  </TableCell>
+                  <TableCell numeric className="text-[11px]">
                     ₹{c.high.toFixed(2)}
-                  </td>
-                  <td style={{ padding: "0 12px", textAlign: "right", fontSize: 10, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                  </TableCell>
+                  <TableCell numeric className="text-[11px]">
                     ₹{c.low.toFixed(2)}
-                  </td>
-                  <td style={{ padding: "0 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: dirColor, fontVariantNumeric: "tabular-nums" }}>
+                  </TableCell>
+                  <TableCell numeric className={`text-[11px] font-semibold ${dirColor}`}>
                     ₹{c.close.toFixed(2)}
-                  </td>
-                  <td style={{ padding: "0 12px", textAlign: "right", fontSize: 9, fontWeight: 500, color: dirColor, fontVariantNumeric: "tabular-nums" }}>
+                  </TableCell>
+                  <TableCell numeric className={`text-[11px] font-bold ${dirColor}`}>
                     {change >= 0 ? "+" : ""}{changePct.toFixed(2)}%
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
