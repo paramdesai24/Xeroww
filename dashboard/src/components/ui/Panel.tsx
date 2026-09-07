@@ -25,7 +25,7 @@ export const Panel: React.FC<PanelProps> = ({
 
   return (
     <div
-      className={`border border-[var(--border-default)] transition-colors duration-150 ${className}`}
+      className={`shrink-0 border border-[var(--border-default)] transition-colors duration-150 ${className}`}
       style={{
         backgroundColor: elevated ? "var(--surface-elevated)" : "var(--surface)",
         borderTop: borderTopMap[accentEdge],

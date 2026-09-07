@@ -27,7 +27,7 @@
   --border-subtle:    #1A1A1A;   /* Minor internal lines */
   --border-default:   #232323;   /* Default panel borders */
   --border-strong:    #333333;   /* Visible section boundaries */
-  --border-focus:     #F59E0B;   /* Interactive focus / selection */
+  --border-focus:     #1E90FF;   /* Interactive focus / selection */
 
   /* Typography Colors — Natural high-contrast */
   --text-primary:     #FAFAFA;   /* Headlines, values, titles */
@@ -35,11 +35,11 @@
   --text-tertiary:    #6B6B72;   /* Metadata, minor timestamps */
   --text-disabled:    #44444A;   /* Placeholders, disabled states */
 
-  /* Primary Accent — Vivid Amber */
-  --accent:           #F59E0B;
-  --accent-primary:   #F59E0B;
-  --accent-subtle:    rgba(245, 158, 11, 0.12);
-  --accent-border:    rgba(245, 158, 11, 0.35);
+  /* Primary Accent — Dodger Blue */
+  --accent:           #1E90FF;
+  --accent-primary:   #1E90FF;
+  --accent-subtle:    rgba(30, 144, 255, 0.12);
+  --accent-border:    rgba(30, 144, 255, 0.35);
 
   /* Secondary Accent — Electric Blue / Indigo */
   --accent-secondary: #3B82F6;
@@ -55,9 +55,9 @@
   --negative-subtle:  rgba(239, 68, 68, 0.12);
   --negative-border:  rgba(239, 68, 68, 0.35);
 
-  --warning:          #F59E0B;   /* Caution amber */
-  --warning-subtle:   rgba(245, 158, 11, 0.12);
-  --warning-border:   rgba(245, 158, 11, 0.35);
+  --warning:          #1E90FF;   /* Accent Dodger Blue */
+  --warning-subtle:   rgba(30, 144, 255, 0.12);
+  --warning-border:   rgba(30, 144, 255, 0.35);
 
   --neutral:          #6B6B72;
   --neutral-subtle:   rgba(107, 107, 114, 0.12);

@@ -61,8 +61,8 @@ export const colors = {
 export const rawColors = {
   positive:        "#22C55E",
   negative:        "#EF4444",
-  warning:         "#F59E0B",
-  accent:          "#F59E0B",
+  warning:         "#1E90FF",
+  accent:          "#1E90FF",
   accentSecondary: "#3B82F6",
   textPrimary:     "#FAFAFA",
   textSecondary:   "#A0A0A8",
