@@ -137,7 +137,7 @@ class RedisCacheService(CacheService):
 
     def set(self, key: str, value: Any, ttl_seconds: int) -> bool:
         try:
-            serialized = json.dumps(value)
+            serialized = json.dumps(value, default=str)
             self._redis.set(key, serialized, ex=ttl_seconds)
             return True
         except Exception as exc:

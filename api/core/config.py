@@ -25,7 +25,7 @@ class Settings:
         o.strip()
         for o in os.getenv(
             "CORS_ORIGINS",
-            "http://localhost:5173,http://localhost:3000",
+            "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000,http://localhost:80,http://127.0.0.1:80,http://localhost,http://127.0.0.1",
         ).split(",")
     ]
 
@@ -81,10 +81,9 @@ class Settings:
     CACHE_QUOTE_TTL: int = int(os.getenv("CACHE_QUOTE_TTL", "15"))
     CACHE_OHLC_TTL: int = int(os.getenv("CACHE_OHLC_TTL", "300"))
     CACHE_BREADTH_TTL: int = int(os.getenv("CACHE_BREADTH_TTL", "60"))
-    RATE_LIMIT_UNAUTH_RPM: int = int(os.getenv("RATE_LIMIT_UNAUTH_RPM", "60"))
-    RATE_LIMIT_AUTH_RPM: int = int(os.getenv("RATE_LIMIT_AUTH_RPM", "180"))
+    RATE_LIMIT_UNAUTH_RPM: int = int(os.getenv("RATE_LIMIT_UNAUTH_RPM", "600"))
+    RATE_LIMIT_AUTH_RPM: int = int(os.getenv("RATE_LIMIT_AUTH_RPM", "1800"))
 
 
 # Singleton instance — import this everywhere
 settings = Settings()
-

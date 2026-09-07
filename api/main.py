@@ -71,24 +71,23 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# ---------------------------------------------------------------------------
-# CORS Middleware
-# ---------------------------------------------------------------------------
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 from api.core.tracing import TracingMiddleware
 from api.core.rate_limit import RateLimitMiddleware
 from api.core.metrics import PrometheusMetricsMiddleware, metrics_endpoint
 
-app.add_middleware(TracingMiddleware)
-app.add_middleware(RateLimitMiddleware)
 app.add_middleware(PrometheusMetricsMiddleware)
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(TracingMiddleware)
+
+# CORS Middleware added on outer layer to handle all preflight and error responses
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Prometheus metrics endpoint
 app.add_api_route("/metrics", metrics_endpoint, methods=["GET"], include_in_schema=False)

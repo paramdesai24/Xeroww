@@ -22,7 +22,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     EXEMPT_PATHS = {"/health", "/docs", "/redoc", "/openapi.json", "/metrics", "/"}
 
     async def dispatch(self, request: Request, call_next):
-        if request.url.path in self.EXEMPT_PATHS:
+        if request.method == "OPTIONS" or request.url.path in self.EXEMPT_PATHS:
             return await call_next(request)
 
         cache = get_cache_service()
