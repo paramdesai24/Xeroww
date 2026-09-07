@@ -116,7 +116,7 @@ export default function PortfolioView() {
               onClick={() => selectPortfolio(p.id)}
               className={`px-4 py-3 border-b border-[#1E2538]/60 cursor-pointer transition-colors ${
                 active?.id === p.id
-                  ? "bg-[#10141D] border-l-2 border-l-[#F59E0B]"
+                  ? "bg-[#10141D] border-l-2 border-l-[#1E90FF]"
                   : "hover:bg-[#0B0E14] border-l-2 border-l-transparent"
               }`}
             >
@@ -184,7 +184,7 @@ export default function PortfolioView() {
                 onClick={() => setTab(t.id as any)}
                 className={`px-4 py-2.5 text-xs font-medium border-r border-[#1E2538] transition-colors ${
                   tab === t.id
-                    ? "text-[#F8FAFC] bg-[#0B0E14] border-b-2 border-b-[#F59E0B] font-semibold"
+                    ? "text-[#F8FAFC] bg-[#0B0E14] border-b-2 border-b-[#1E90FF] font-semibold"
                     : "text-[#64748B] hover:text-[#94A3B8] hover:bg-[#0B0E14]/50"
                 }`}
               >
@@ -381,7 +381,7 @@ export default function PortfolioView() {
 
               <button
                 onClick={executeTrade}
-                className="w-full py-2.5 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black transition-colors"
+                className="w-full py-2.5 text-xs font-semibold bg-[#1E90FF] hover:bg-[#1C86EE] text-white transition-colors"
               >
                 Execute {tradeSide} Order
               </button>

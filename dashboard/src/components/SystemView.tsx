@@ -58,13 +58,13 @@ export default function SystemView({ user }: Props) {
       active: true,
     },
     {
-      num: "04", label: "Streaming", status: "Planned (v0.7)", statusColor: "#F59E0B",
+      num: "04", label: "Streaming", status: "Planned (v0.7)", statusColor: "#1E90FF",
       title: "Kafka Event Bus",
       desc: "Decouple ingestion events into partitioned Kafka topics for parallel multi-worker evaluation.",
       active: false,
     },
     {
-      num: "05", label: "Computing", status: "Planned (v0.8)", statusColor: "#F59E0B",
+      num: "05", label: "Computing", status: "Planned (v0.8)", statusColor: "#1E90FF",
       title: "Spark Streaming",
       desc: "Distributed stateful streaming across large universe of equities for real-time anomaly detection.",
       active: false,
@@ -91,7 +91,7 @@ export default function SystemView({ user }: Props) {
           id="run-diagnostics-btn"
           onClick={runDiagnostics}
           disabled={loading}
-          className="px-3.5 py-1.5 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black disabled:opacity-50 transition-colors"
+          className="px-3.5 py-1.5 text-xs font-semibold bg-[#1E90FF] hover:bg-[#1C86EE] text-white disabled:opacity-50 transition-colors"
         >
           {loading ? "Probing…" : "Run Diagnostics"}
         </button>
@@ -124,7 +124,7 @@ export default function SystemView({ user }: Props) {
         {/* Latency */}
         <div className="p-4 bg-[#0B0E14] border border-[#1E2538] flex flex-col gap-2">
           <div className="text-xs text-[#64748B]">Probe Roundtrip</div>
-          <div className="text-xl font-bold font-mono text-[#F59E0B] tabular-nums mt-0.5">
+          <div className="text-xl font-bold font-mono text-[#1E90FF] tabular-nums mt-0.5">
             {latency !== null ? `${latency} ms` : "—"}
           </div>
           <div className="text-[11px] font-mono text-[#64748B]">Last: {lastCheckTime || "—"}</div>
@@ -166,7 +166,7 @@ export default function SystemView({ user }: Props) {
           {pipelineStages.map((stage) => (
             <div key={stage.num} className="p-3 bg-[#10141D] border border-[#1E2538] flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-semibold text-[#F59E0B]">
+                <span className="text-xs font-mono font-semibold text-[#1E90FF]">
                   {stage.num} // {stage.label}
                 </span>
                 <span className="text-[10px] font-medium" style={{ color: stage.statusColor }}>

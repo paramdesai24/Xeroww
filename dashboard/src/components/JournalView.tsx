@@ -95,7 +95,7 @@ export default function JournalView() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="text-[#64748B]">Module:</span>
-            <span className="text-[#F59E0B] font-semibold">Decision Journal</span>
+            <span className="text-[#1E90FF] font-semibold">Decision Journal</span>
           </div>
           <span className="text-[#334155]">|</span>
           <div className="flex items-center gap-1.5 font-mono">
@@ -104,7 +104,7 @@ export default function JournalView() {
           </div>
           <div className="flex items-center gap-1.5 font-mono">
             <span className="text-[#64748B]">Open:</span>
-            <span className="text-[#F59E0B] font-bold tabular-nums">{openCount}</span>
+            <span className="text-[#1E90FF] font-bold tabular-nums">{openCount}</span>
           </div>
           <div className="flex items-center gap-1.5 font-mono">
             <span className="text-[#64748B]">Concluded:</span>
@@ -120,7 +120,7 @@ export default function JournalView() {
               onClick={() => setStatusFilter(s)}
               className={`px-2.5 py-1 text-xs font-medium border transition-colors ${
                 statusFilter === s
-                  ? "border-[#F59E0B] text-[#F59E0B] bg-[#F59E0B]/10 font-semibold"
+                  ? "border-[#1E90FF] text-[#1E90FF] bg-[#1E90FF]/10 font-semibold"
                   : "border-[#1E2538] text-[#64748B] hover:text-[#94A3B8] bg-transparent"
               }`}
             >
@@ -142,7 +142,7 @@ export default function JournalView() {
         {/* Left Column: Log New Thesis Form */}
         <div className="w-full md:w-[340px] border-b md:border-b-0 md:border-r border-[#1E2538] bg-[#05070B] p-4 flex flex-col shrink-0 overflow-y-auto">
           <div className="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E2538]">
-            <div className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+            <div className="w-2 h-2 rounded-full bg-[#1E90FF]" />
             <span className="text-xs font-semibold text-[#F8FAFC]">
               Log Trade Thesis
             </span>
@@ -186,7 +186,7 @@ export default function JournalView() {
                           ? "bg-[#22C55E] border-[#22C55E] text-black"
                           : act === "SELL"
                           ? "bg-[#EF4444] border-[#EF4444] text-white"
-                          : "bg-[#F59E0B] border-[#F59E0B] text-black"
+                          : "bg-[#1E90FF] border-[#1E90FF] text-white"
                         : "border-[#1E2538] bg-[#10141D] text-[#64748B] hover:text-[#94A3B8]"
                     }`}
                   >
@@ -214,7 +214,7 @@ export default function JournalView() {
               id="submit-journal-entry-btn"
               type="submit"
               disabled={creating}
-              className="w-full mt-1 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-semibold text-xs transition-colors disabled:opacity-50"
+              className="w-full mt-1 py-2.5 bg-[#1E90FF] hover:bg-[#1C86EE] text-white font-semibold text-xs transition-colors disabled:opacity-50"
             >
               {creating ? "Committing…" : "Commit to Audit Trail"}
             </button>
@@ -269,7 +269,7 @@ export default function JournalView() {
                               ? "border-[#22C55E]/40 text-[#22C55E] bg-[#22C55E]/10"
                               : isSell
                               ? "border-[#EF4444]/40 text-[#EF4444] bg-[#EF4444]/10"
-                              : "border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/10"
+                              : "border-[#1E90FF]/40 text-[#1E90FF] bg-[#1E90FF]/10"
                           }`}
                         >
                           {entry.action}
@@ -277,7 +277,7 @@ export default function JournalView() {
                         <span
                           className={`text-[10px] font-mono font-semibold ${
                             isOpen
-                              ? "text-[#F59E0B]"
+                              ? "text-[#1E90FF]"
                               : entry.status === "CLOSED"
                               ? "text-[#64748B]"
                               : "text-[#64748B] line-through"

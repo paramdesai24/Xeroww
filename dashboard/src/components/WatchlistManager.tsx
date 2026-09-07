@@ -112,7 +112,7 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
                 key={wl.id}
                 className={`group flex items-center justify-between px-4 py-2.5 cursor-pointer border-b border-[#1E2538]/60 transition-colors ${
                   activeWl?.id === wl.id
-                    ? "bg-[#10141D] border-l-2 border-l-[#F59E0B]"
+                    ? "bg-[#10141D] border-l-2 border-l-[#1E90FF]"
                     : "hover:bg-[#0B0E14] border-l-2 border-l-transparent"
                 }`}
                 onClick={() => selectWatchlist(wl.id)}
@@ -175,7 +175,7 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-[#F8FAFC]">{activeWl.name}</span>
                 {activeWl.is_default && (
-                  <span className="text-[10px] px-1.5 py-0.5 bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30 font-semibold uppercase">
+                  <span className="text-[10px] px-1.5 py-0.5 bg-[#1E90FF]/10 text-[#1E90FF] border border-[#1E90FF]/30 font-semibold uppercase">
                     Default
                   </span>
                 )}
@@ -199,7 +199,7 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
               <button
                 id="add-symbol-btn"
                 onClick={addSymbol}
-                className="text-xs px-4 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-semibold transition-colors"
+                className="text-xs px-4 py-1.5 bg-[#1E90FF] hover:bg-[#1C86EE] text-white font-semibold transition-colors"
               >
                 Add Symbol
               </button>

@@ -138,7 +138,7 @@ export default function AlertsManager() {
 
           <button
             onClick={createAlert}
-            className="w-full py-2.5 text-xs font-semibold bg-[#F59E0B] hover:bg-[#D97706] text-black transition-colors"
+            className="w-full py-2.5 text-xs font-semibold bg-[#1E90FF] hover:bg-[#1C86EE] text-white transition-colors"
           >
             Create Alert
           </button>
@@ -177,7 +177,7 @@ export default function AlertsManager() {
                         <span className="text-xs text-[#F8FAFC] font-mono font-bold">{alert.symbol}</span>
                         <span className="text-xs text-[#64748B]">{alert.alert_type}</span>
                         {alert.triggered_at && (
-                          <span className="text-[10px] px-1.5 py-0.2 bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30 font-semibold uppercase">
+                          <span className="text-[10px] px-1.5 py-0.2 bg-[#1E90FF]/10 text-[#1E90FF] border border-[#1E90FF]/30 font-semibold">
                             Triggered
                           </span>
                         )}
@@ -186,7 +186,7 @@ export default function AlertsManager() {
                         {JSON.stringify(alert.condition_payload)}
                       </div>
                       {result && (
-                        <div className={`mt-1.5 text-xs font-mono ${result.triggered ? "text-[#F59E0B]" : "text-[#94A3B8]"}`}>
+                        <div className={`mt-1.5 text-xs font-mono ${result.triggered ? "text-[#1E90FF]" : "text-[#94A3B8]"}`}>
                           {result.triggered ? "⚡ " : "· "}{result.message}
                         </div>
                       )}
