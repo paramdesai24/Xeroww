@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends, status
 from api.services.yahoo_provider import YahooFinanceProvider
 from api.analytics import default_orchestrator, AnalyticsOrchestrator
 from api.schemas.replay import ReplayTimelineResponse, ReplayStepResponse
+from api.services.health_registry import record_replay_access
 
 router = APIRouter(prefix="/replay", tags=["Market Replay Engine"])
 _provider = YahooFinanceProvider()
@@ -46,6 +47,7 @@ def get_timeline(
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ):
     norm_sym, candles = _get_candles(symbol, period=period)
+    record_replay_access(norm_sym, len(candles), 0)
     return orchestrator.run_replay_timeline(norm_sym, candles)
 
 
@@ -61,6 +63,7 @@ def evaluate_step(
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ):
     norm_sym, candles = _get_candles(symbol, period=period)
+    record_replay_access(norm_sym, len(candles), step)
     return orchestrator.run_replay_step(norm_sym, candles, step)
 
 
@@ -76,4 +79,6 @@ def evaluate_timestamp(
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ):
     norm_sym, candles = _get_candles(symbol, period=period)
-    return orchestrator.run_replay_jump(norm_sym, candles, timestamp)
+    res = orchestrator.run_replay_jump(norm_sym, candles, timestamp)
+    record_replay_access(norm_sym, len(candles), res.current_step)
+    return res

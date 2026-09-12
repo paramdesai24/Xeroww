@@ -22,6 +22,12 @@ def log_event_subscriber(event: DomainEvent) -> None:
     Diagnostic / audit subscriber.
     Prints every domain event that transits through the event bus.
     """
+    try:
+        from api.services.health_registry import record_ws_message
+        record_ws_message(1)
+    except Exception:
+        pass
+
     logger.info(
         f"[DOMAIN EVENT] {event.event_type} "
         f"| aggregate={event.aggregate_id} "
