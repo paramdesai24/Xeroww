@@ -14,8 +14,7 @@ import {
   type ISeriesApi,
   type IPriceLine,
   type MouseEventParams,
-} from "lightweight-charts";
-import { TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart2, Plus, Minus, RotateCcw } from "lucide-react";
 import type { QuoteData, OHLCData, OHLCBar } from "../types/market";
 import type { MarketStructureSummaryResponse, SRZone } from "../types/structure";
 
@@ -287,6 +286,39 @@ export default function ChartPanel({
   const positive = (quote?.change_pct ?? 0) > 0;
   const negative = (quote?.change_pct ?? 0) < 0;
 
+  // Programmatic chart zoom and scaling controls
+  const handleZoomIn = () => {
+    if (!chartRef.current) return;
+    const timeScale = chartRef.current.timeScale();
+    const range = timeScale.getVisibleLogicalRange();
+    if (!range) return;
+    const currentSpan = range.to - range.from;
+    if (currentSpan <= 6) return; // Prevent over-zooming
+    const delta = Math.max(1, Math.round(currentSpan * 0.18));
+    timeScale.setVisibleLogicalRange({
+      from: range.from + delta,
+      to: range.to - delta,
+    });
+  };
+
+  const handleZoomOut = () => {
+    if (!chartRef.current) return;
+    const timeScale = chartRef.current.timeScale();
+    const range = timeScale.getVisibleLogicalRange();
+    if (!range) return;
+    const currentSpan = range.to - range.from;
+    const delta = Math.max(1, Math.round(currentSpan * 0.18));
+    timeScale.setVisibleLogicalRange({
+      from: range.from - delta,
+      to: range.to + delta,
+    });
+  };
+
+  const handleResetZoom = () => {
+    if (!chartRef.current) return;
+    chartRef.current.timeScale().fitContent();
+  };
+
   return (
     <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden" style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
@@ -479,6 +511,44 @@ export default function ChartPanel({
         )}
 
         <div ref={containerRef} className="w-full h-full" />
+
+        {/* Zoom & Scaling Control Bar — Bottom Right Corner */}
+        {ohlc && ohlc.candles && ohlc.candles.length > 0 && !loading && (
+          <div
+            id="chart-zoom-controls"
+            className="absolute bottom-9 right-[72px] z-20 flex items-center bg-[#12141A]/95 backdrop-blur-md border border-[#232734] rounded-md p-0.5 shadow-lg shadow-black/60 gap-0.5 select-none"
+            title="Chart Scale & Zoom Controls"
+          >
+            <button
+              id="btn-zoom-in"
+              onClick={handleZoomIn}
+              className="w-7 h-7 flex items-center justify-center rounded text-[#9CA3AF] hover:text-white hover:bg-[#1E2538] active:scale-95 transition-all duration-150"
+              title="Zoom In (+)"
+              aria-label="Zoom In"
+            >
+              <Plus size={15} strokeWidth={2.2} />
+            </button>
+            <button
+              id="btn-zoom-out"
+              onClick={handleZoomOut}
+              className="w-7 h-7 flex items-center justify-center rounded text-[#9CA3AF] hover:text-white hover:bg-[#1E2538] active:scale-95 transition-all duration-150"
+              title="Zoom Out (-)"
+              aria-label="Zoom Out"
+            >
+              <Minus size={15} strokeWidth={2.2} />
+            </button>
+            <div className="w-[1px] h-3.5 bg-[#232734] mx-0.5" />
+            <button
+              id="btn-zoom-reset"
+              onClick={handleResetZoom}
+              className="w-7 h-7 flex items-center justify-center rounded text-[#9CA3AF] hover:text-white hover:bg-[#1E2538] active:scale-95 transition-all duration-150"
+              title="Reset View / Fit All Candles"
+              aria-label="Reset Zoom"
+            >
+              <RotateCcw size={13} strokeWidth={2} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
