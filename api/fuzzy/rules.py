@@ -258,7 +258,7 @@ def defuzzify_max_membership(fired_rules: list[FiredRule]) -> tuple[str, float]:
         term = fr.rule.consequent.term
         aggregated[term] = max(aggregated.get(term, 0.0), fr.activation)
 
-    if not aggregated:
+    if not aggregated or max(aggregated.values()) == 0.0:
         return ("UNKNOWN", 0.0)
 
     best_term = max(aggregated, key=lambda t: aggregated[t])

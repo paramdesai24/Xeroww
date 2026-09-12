@@ -68,7 +68,7 @@ _ZONE_PROXIMITY_VAR = LinguisticVariable(
         ("NEAR_ZONE",        lambda x: trimf(x, 0.3, 0.8, 1.8)),
         ("APPROACHING_ZONE", lambda x: trimf(x, 1.2, 2.5, 4.5)),
         ("BETWEEN_ZONES",    lambda x: trimf(x, 3.5, 6.0, 10.0)),
-        ("FAR_FROM_ZONES",   lambda x: trapmf(x, 8.0, 12.0, 99.0, 99.0)),
+        ("FAR_FROM_ZONES",   lambda x: trapmf(x, 8.0, 12.0, 1000.0, 1000.0)),
     ],
 )
 
@@ -186,6 +186,33 @@ _STRUCTURE_RULES = RuleBase(
             consequent=Conclusion("structure", "CONTESTED"),
             weight=0.8,
             description="Price at zone in fragile regime → CONTESTED (unstable structure)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "AT_ZONE"),
+                Condition("regime_strength", "WEAK"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.85,
+            description="Price at zone in weak regime → CONTESTED (zone under pressure)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "NEAR_ZONE"),
+                Condition("regime_strength", "WEAK"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.80,
+            description="Price near zone in weak regime → CONTESTED (unstable boundary)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "NEAR_ZONE"),
+                Condition("regime_strength", "FRAGILE"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.75,
+            description="Price near zone in fragile regime → CONTESTED",
         ),
         FuzzyRule(
             antecedent=(

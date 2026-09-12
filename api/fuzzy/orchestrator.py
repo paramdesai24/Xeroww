@@ -63,20 +63,75 @@ DIMENSION_WEIGHTS: dict[str, float] = {
     "structure": 0.15,
 }
 
-# Composite label thresholds (applied to weighted activation score)
+# ---------------------------------------------------------------------------
+# Dimension Polarity Mapping
+#
+# Each dimension output label has a defined directional polarity in [-1.0, +1.0]
+# representing its alignment along the market bias spectrum:
+#   +1.0 = Maximum Bullish
+#    0.0 = Neutral / Indeterminate
+#   -1.0 = Maximum Bearish
+# ---------------------------------------------------------------------------
+
+TREND_POLARITY: dict[str, float] = {
+    "STRONGLY_BULLISH": +1.0,
+    "BULLISH":          +0.7,
+    "NEUTRAL":           0.0,
+    "BEARISH":          -0.7,
+    "STRONGLY_BEARISH": -1.0,
+}
+
+MOMENTUM_POLARITY: dict[str, float] = {
+    "SURGING":  +1.0,
+    "STRONG":   +0.7,
+    "MODERATE":  0.0,
+    "WEAK":     -0.7,
+}
+
+
+def _structure_polarity(label: str, regime: str) -> float:
+    """
+    Structure describes whether the current price location is structurally intact
+    within the dominant market regime.
+    """
+    if regime == "TRENDING_UP":
+        mapping = {"DOMINANT": +0.8, "FIRM": +0.5, "CONTESTED": 0.0, "BROKEN": -0.6}
+        return mapping.get(label, 0.0)
+    elif regime == "TRENDING_DOWN":
+        mapping = {"DOMINANT": -0.8, "FIRM": -0.5, "CONTESTED": 0.0, "BROKEN": +0.6}
+        return mapping.get(label, 0.0)
+    return 0.0
+
+
+def _volume_polarity(label: str, core_dir: float) -> float:
+    """
+    Volume confirms directional movement (accumulation vs distribution).
+    High/climactic volume reinforces prevailing core direction; dry volume indicates drift.
+    """
+    if core_dir > 0.05:  # Bullish move
+        mapping = {"CLIMACTIC": +1.0, "ELEVATED": +0.7, "NORMAL": +0.3, "DRY": 0.0}
+        return mapping.get(label, 0.0)
+    elif core_dir < -0.05:  # Bearish move
+        mapping = {"CLIMACTIC": -1.0, "ELEVATED": -0.7, "NORMAL": -0.3, "DRY": 0.0}
+        return mapping.get(label, 0.0)
+    return 0.0
+
+
+# Composite label thresholds (applied to normalized directional score [0.0, 1.0])
+# Normalized score U = (signed_directional_score + 1.0) / 2.0
 _OVERALL_THRESHOLDS: list[tuple[float, str]] = [
-    (0.80, "STRONGLY_BULLISH"),
-    (0.62, "MODERATELY_BULLISH"),
-    (0.48, "NEUTRAL"),
-    (0.32, "MODERATELY_BEARISH"),
+    (0.70, "STRONGLY_BULLISH"),
+    (0.55, "MODERATELY_BULLISH"),
+    (0.45, "NEUTRAL"),
+    (0.30, "MODERATELY_BEARISH"),
     (0.00, "STRONGLY_BEARISH"),
 ]
 
 
-def _composite_label(weighted_score: float) -> str:
-    """Map a weighted activation score [0,1] to an overall linguistic label."""
+def _composite_label(normalized_score: float) -> str:
+    """Map a normalized directional score [0,1] to an overall linguistic label."""
     for threshold, label in _OVERALL_THRESHOLDS:
-        if weighted_score >= threshold:
+        if normalized_score >= threshold:
             return label
     return "STRONGLY_BEARISH"
 
@@ -237,10 +292,17 @@ class FuzzyOrchestrator:
         # ── Step 7: Evaluate StructureFIS ─────────────────────────────────
         regime_label = str(getattr(regime, "regime", "MIXED"))
         sr_zones_raw = []
-        if sr and hasattr(sr, "zones"):
+        if sr:
+            all_zones = []
+            if hasattr(sr, "support_zones") and sr.support_zones:
+                all_zones.extend(sr.support_zones)
+            if hasattr(sr, "resistance_zones") and sr.resistance_zones:
+                all_zones.extend(sr.resistance_zones)
+            if hasattr(sr, "zones") and sr.zones:
+                all_zones.extend(sr.zones)
             sr_zones_raw = [
                 {"zone_high": float(z.zone_high), "zone_low": float(z.zone_low)}
-                for z in sr.zones
+                for z in all_zones
                 if hasattr(z, "zone_high") and hasattr(z, "zone_low")
             ]
 
@@ -291,12 +353,40 @@ class FuzzyOrchestrator:
             ),
         ]
 
-        # ── Step 9: Compute overall composite ────────────────────────────
-        weighted_score = sum(
+        # ── Step 9: Compute directional score & conviction ───────────────
+        trend_pol = TREND_POLARITY.get(trend_result.label, 0.0)
+        trend_contrib = trend_pol * trend_result.activation
+
+        momentum_pol = MOMENTUM_POLARITY.get(momentum_result.label, 0.0)
+        momentum_contrib = momentum_pol * momentum_result.activation
+
+        core_weights = DIMENSION_WEIGHTS["trend"] + DIMENSION_WEIGHTS["momentum"]
+        core_dir = (
+            trend_contrib * DIMENSION_WEIGHTS["trend"]
+            + momentum_contrib * DIMENSION_WEIGHTS["momentum"]
+        ) / max(0.001, core_weights)
+
+        structure_pol = _structure_polarity(structure_result.label, regime_label)
+        structure_contrib = structure_pol * structure_result.activation
+
+        volume_pol = _volume_polarity(volume_result.label, core_dir)
+        volume_contrib = volume_pol * volume_result.activation
+
+        directional_score = (
+            trend_contrib * DIMENSION_WEIGHTS["trend"]
+            + momentum_contrib * DIMENSION_WEIGHTS["momentum"]
+            + volume_contrib * DIMENSION_WEIGHTS["volume"]
+            + structure_contrib * DIMENSION_WEIGHTS["structure"]
+        )
+
+        normalized_score = max(0.0, min(1.0, (directional_score + 1.0) / 2.0))
+        overall_label = _composite_label(normalized_score)
+
+        # Conviction represents the weighted firing strength / certainty across dimensions
+        weighted_activation = sum(
             d.activation * DIMENSION_WEIGHTS.get(d.name, 0.25)
             for d in dimensions
         )
-        overall_label = _composite_label(weighted_score)
 
         elapsed_ms = round((time.perf_counter() - t_start) * 1000.0, 2)
 
@@ -306,7 +396,7 @@ class FuzzyOrchestrator:
             current_price=round(current_price, 2),
             dimensions=dimensions,
             overall_label=overall_label,
-            overall_activation=round(weighted_score, 4),
+            overall_activation=round(weighted_activation, 4),
             methodology_note=(
                 "Classical Mamdani Fuzzy Inference System. "
                 "Linguistic interpretation layer only — no price prediction, "
