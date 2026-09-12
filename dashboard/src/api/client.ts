@@ -345,5 +345,20 @@ export const api = {
     getAtStep: (symbol: string, step: number, period = "3mo"): Promise<import("../types/events").MarketEvent[]> =>
       apiFetch<import("../types/events").MarketEvent[]>(`/events/at/${encodeURIComponent(symbol)}?step=${step}&period=${period}`),
   },
+
+  // -------------------------------------------------------------------------
+  // V0.8 — Mamdani Fuzzy Explainability Engine
+  // -------------------------------------------------------------------------
+  fuzzy: {
+    /**
+     * Get the full Mamdani FIS explainability report for a symbol.
+     * Returns 4 dimensions: momentum, volume, trend, structure.
+     * NOT a buy/sell signal. NOT ML. Deterministic linguistic classification.
+     */
+    explain: (symbol: string, period = "1y"): Promise<import("../types/fuzzy").FuzzyExplainabilityReport> =>
+      apiFetch<import("../types/fuzzy").FuzzyExplainabilityReport>(
+        `/fuzzy/explain?symbol=${encodeURIComponent(symbol)}&period=${period}`
+      ),
+  },
 };
 
