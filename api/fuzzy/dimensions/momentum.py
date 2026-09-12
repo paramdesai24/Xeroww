@@ -23,19 +23,18 @@ from typing import Any
 from api.fuzzy.membership import (
     LinguisticVariable,
     MembershipResult,
-    trimf,
     trapmf,
+    trimf,
 )
 from api.fuzzy.rules import (
-    Condition,
     Conclusion,
-    FuzzyRule,
+    Condition,
     FiredRule,
+    FuzzyRule,
     RuleBase,
     build_activations_map,
     defuzzify_max_membership,
 )
-
 
 # ---------------------------------------------------------------------------
 # Linguistic Variables — EMA Spread (%)

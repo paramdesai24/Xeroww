@@ -10,8 +10,8 @@ Unit tests for the Mamdani Fuzzy Explainability Engine:
 
 from __future__ import annotations
 
-from api.fuzzy.orchestrator import default_fuzzy_orchestrator
 from api.fuzzy.dimensions.structure import StructureFIS, StructureInputs
+from api.fuzzy.orchestrator import default_fuzzy_orchestrator
 
 
 def _generate_downtrend_candles(n: int = 220) -> list[dict]:
@@ -90,3 +90,50 @@ class TestFuzzyOrchestrator:
 
         assert result.label in ("CONTESTED", "BROKEN")
         assert result.activation > 0.0
+
+    def test_structure_fis_at_zone_zero_proximity_never_unknown(self):
+        """Verifies StructureFIS at zone boundary 0.0% (like TCS/ICICI) evaluates to valid state."""
+        inputs_tcs = StructureInputs(zone_proximity_pct=0.0, regime_strength=0.975)
+        res_tcs = StructureFIS.evaluate(inputs_tcs, regime_label="TRENDING_UP")
+        assert res_tcs.label in ("DOMINANT", "FIRM")
+        assert res_tcs.activation > 0.0
+        assert res_tcs.label != "UNKNOWN"
+
+        inputs_icici = StructureInputs(zone_proximity_pct=0.0, regime_strength=0.453)
+        res_icici = StructureFIS.evaluate(inputs_icici, regime_label="MIXED")
+        assert res_icici.label in ("FIRM", "CONTESTED")
+        assert res_icici.activation > 0.0
+        assert res_icici.label != "UNKNOWN"
+
+    def test_structure_fis_no_nearby_zones_classifies_as_contested_with_low_activation(self):
+        """If no zone exists nearby, classify as CONTESTED with very low activation instead of UNKNOWN."""
+        # Explicit flag
+        inputs = StructureInputs(zone_proximity_pct=99.0, regime_strength=0.5, no_zone_nearby=True)
+        res = StructureFIS.evaluate(inputs, regime_label="RANGE_BOUND")
+        assert res.label == "CONTESTED"
+        assert res.activation == 0.05
+        assert "No SR zones exist nearby" in res.narrative
+
+        # Derived via extract_inputs with empty zones
+        extracted = StructureFIS.extract_inputs(
+            current_price=2500.0,
+            sr_zones=[],
+            regime="RANGE_BOUND",
+        )
+        assert extracted.no_zone_nearby is True
+        res_extracted = StructureFIS.evaluate(extracted, regime_label="RANGE_BOUND")
+        assert res_extracted.label == "CONTESTED"
+        assert res_extracted.activation == 0.05
+
+    def test_structure_fis_universe_is_always_complete(self):
+        """The fuzzy universe must be complete: strictly emit DOMINANT, FIRM, CONTESTED, or BROKEN."""
+        valid_labels = {"DOMINANT", "FIRM", "CONTESTED", "BROKEN"}
+        for prox in [0.0, 0.1, 0.5, 1.0, 2.5, 4.0, 6.0, 10.0, 25.0, 99.0]:
+            for reg in [0.0, 0.15, 0.35, 0.5, 0.75, 0.85, 1.0]:
+                for no_zone in (False, True):
+                    inp = StructureInputs(zone_proximity_pct=prox, regime_strength=reg, no_zone_nearby=no_zone)
+                    res = StructureFIS.evaluate(inp)
+                    assert res.label in valid_labels, f"Got invalid label {res.label} for prox={prox}, reg={reg}"
+                    assert res.label != "UNKNOWN"
+                    assert res.activation > 0.0
+

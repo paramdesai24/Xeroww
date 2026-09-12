@@ -23,7 +23,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Literal
 
-
 ModifierType = Literal["IS", "IS_NOT"]
 
 
@@ -238,19 +237,22 @@ class RuleBase:
 # Defuzzification
 # ---------------------------------------------------------------------------
 
-def defuzzify_max_membership(fired_rules: list[FiredRule]) -> tuple[str, float]:
+def defuzzify_max_membership(
+    fired_rules: list[FiredRule],
+    fallback: tuple[str, float] = ("UNKNOWN", 0.0),
+) -> tuple[str, float]:
     """
     Max-Membership defuzzification.
 
     Selects the consequent term with the highest firing activation.
-    If no rule fires (all activations == 0.0), returns ("UNKNOWN", 0.0).
+    If no rule fires (all activations == 0.0), returns fallback (default: ("UNKNOWN", 0.0)).
 
     Returns
     -------
     (winning_label: str, winning_activation: float)
     """
     if not fired_rules:
-        return ("UNKNOWN", 0.0)
+        return fallback
 
     # Aggregate: for each output term, take the MAX activation across all rules
     aggregated: dict[str, float] = {}
@@ -259,7 +261,7 @@ def defuzzify_max_membership(fired_rules: list[FiredRule]) -> tuple[str, float]:
         aggregated[term] = max(aggregated.get(term, 0.0), fr.activation)
 
     if not aggregated or max(aggregated.values()) == 0.0:
-        return ("UNKNOWN", 0.0)
+        return fallback
 
     best_term = max(aggregated, key=lambda t: aggregated[t])
     return (best_term, round(aggregated[best_term], 4))

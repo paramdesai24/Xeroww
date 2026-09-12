@@ -48,10 +48,9 @@ from typing import Any
 
 from api.analytics.orchestrator import AnalyticsOrchestrator, default_orchestrator
 from api.fuzzy.dimensions.momentum import MomentumFIS
-from api.fuzzy.dimensions.volume import VolumeFIS
-from api.fuzzy.dimensions.trend import TrendFIS
 from api.fuzzy.dimensions.structure import StructureFIS
-
+from api.fuzzy.dimensions.trend import TrendFIS
+from api.fuzzy.dimensions.volume import VolumeFIS
 
 # ---------------------------------------------------------------------------
 # Weight configuration (non-learned constants)

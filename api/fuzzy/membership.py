@@ -21,9 +21,9 @@ exposes:
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
-
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Core membership function shapes
@@ -47,6 +47,10 @@ def trimf(x: float, a: float, b: float, c: float) -> float:
     """
     if a == b == c:
         return 1.0 if x == b else 0.0
+    if a == b and x <= b:
+        return 1.0
+    if b == c and x >= b:
+        return 1.0
     if x <= a or x >= c:
         return 0.0
     if x == b:
@@ -58,9 +62,11 @@ def trimf(x: float, a: float, b: float, c: float) -> float:
 
 def trapmf(x: float, a: float, b: float, c: float, d: float) -> float:
     """
-    Trapezoidal membership function.
+    Trapezoidal membership function with open-shoulder support.
 
     Shape:
+        1 when a == b and x <= b (open left shoulder)
+        1 when c == d and x >= c (open right shoulder)
         0 when x <= a or x >= d
         1 when b <= x <= c
         linear ramp on [a,b] and [c,d]
@@ -73,6 +79,10 @@ def trapmf(x: float, a: float, b: float, c: float, d: float) -> float:
     c : right shoulder (100% plateau ends)
     d : right foot (0%)
     """
+    if a == b and x <= b:
+        return 1.0
+    if c == d and x >= c:
+        return 1.0
     if x <= a or x >= d:
         return 0.0
     if b <= x <= c:
@@ -81,6 +91,7 @@ def trapmf(x: float, a: float, b: float, c: float, d: float) -> float:
         return (x - a) / (b - a) if (b - a) != 0 else 1.0
     # c < x < d
     return (d - x) / (d - c) if (d - c) != 0 else 1.0
+
 
 
 def gaussmf(x: float, mean: float, sigma: float) -> float:

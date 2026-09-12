@@ -23,20 +23,12 @@ Zero external dependencies. Pure Python math.
 """
 
 from api.fuzzy.membership import (
-    trimf,
-    trapmf,
+    LinguisticVariable,
+    MembershipResult,
     gaussmf,
     sigmf,
-    MembershipResult,
-    LinguisticVariable,
-)
-from api.fuzzy.rules import (
-    Condition,
-    Conclusion,
-    FuzzyRule,
-    FiredRule,
-    RuleBase,
-    defuzzify_max_membership,
+    trapmf,
+    trimf,
 )
 from api.fuzzy.orchestrator import (
     FuzzyDimension,
@@ -44,25 +36,33 @@ from api.fuzzy.orchestrator import (
     FuzzyOrchestrator,
     default_fuzzy_orchestrator,
 )
+from api.fuzzy.rules import (
+    Conclusion,
+    Condition,
+    FiredRule,
+    FuzzyRule,
+    RuleBase,
+    defuzzify_max_membership,
+)
 
 __all__ = [
-    # Membership
-    "trimf",
-    "trapmf",
-    "gaussmf",
-    "sigmf",
-    "MembershipResult",
-    "LinguisticVariable",
+    "Conclusion",
     # Rules
     "Condition",
-    "Conclusion",
-    "FuzzyRule",
     "FiredRule",
-    "RuleBase",
-    "defuzzify_max_membership",
     # Orchestrator
     "FuzzyDimension",
     "FuzzyExplainabilityReport",
     "FuzzyOrchestrator",
+    "FuzzyRule",
+    "LinguisticVariable",
+    "MembershipResult",
+    "RuleBase",
     "default_fuzzy_orchestrator",
+    "defuzzify_max_membership",
+    "gaussmf",
+    "sigmf",
+    "trapmf",
+    # Membership
+    "trimf",
 ]

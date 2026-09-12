@@ -23,19 +23,18 @@ from typing import Any
 from api.fuzzy.membership import (
     LinguisticVariable,
     MembershipResult,
-    trimf,
     trapmf,
+    trimf,
 )
 from api.fuzzy.rules import (
-    Condition,
     Conclusion,
-    FuzzyRule,
+    Condition,
     FiredRule,
+    FuzzyRule,
     RuleBase,
     build_activations_map,
     defuzzify_max_membership,
 )
-
 
 # ---------------------------------------------------------------------------
 # Regime Strength Encoding
@@ -159,6 +158,15 @@ _STRUCTURE_RULES = RuleBase(
             weight=0.75,
             description="Price approaching zone in dominant regime → FIRM (momentum into structure)",
         ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "APPROACHING_ZONE"),
+                Condition("regime_strength", "STRONG"),
+            ),
+            consequent=Conclusion("structure", "FIRM"),
+            weight=0.80,
+            description="Price approaching zone in strong regime → FIRM structure",
+        ),
         # ── CONTESTED ────────────────────────────────────────────────────
         FuzzyRule(
             antecedent=(
@@ -168,6 +176,42 @@ _STRUCTURE_RULES = RuleBase(
             consequent=Conclusion("structure", "CONTESTED"),
             weight=1.0,
             description="Price between SR zones in moderate regime → CONTESTED",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "BETWEEN_ZONES"),
+                Condition("regime_strength", "DOMINANT"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.70,
+            description="Between zones in dominant trend → CONTESTED (mid-trend air pocket)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "BETWEEN_ZONES"),
+                Condition("regime_strength", "STRONG"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.70,
+            description="Between zones in strong trend → CONTESTED (mid-trend air pocket)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "BETWEEN_ZONES"),
+                Condition("regime_strength", "FRAGILE"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.80,
+            description="Price between zones in fragile regime → CONTESTED",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "APPROACHING_ZONE"),
+                Condition("regime_strength", "MODERATE"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.80,
+            description="Price approaching zone in moderate regime → CONTESTED",
         ),
         FuzzyRule(
             antecedent=(
@@ -216,12 +260,30 @@ _STRUCTURE_RULES = RuleBase(
         ),
         FuzzyRule(
             antecedent=(
-                Condition("zone_proximity", "BETWEEN_ZONES"),
+                Condition("zone_proximity", "FAR_FROM_ZONES"),
+                Condition("regime_strength", "DOMINANT"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.60,
+            description="Price far from zones in dominant trend → CONTESTED (transient gap)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "FAR_FROM_ZONES"),
                 Condition("regime_strength", "STRONG"),
             ),
             consequent=Conclusion("structure", "CONTESTED"),
-            weight=0.7,
-            description="Between zones in strong trend → CONTESTED (mid-trend air pocket)",
+            weight=0.65,
+            description="Price far from zones in strong trend → CONTESTED",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "FAR_FROM_ZONES"),
+                Condition("regime_strength", "MODERATE"),
+            ),
+            consequent=Conclusion("structure", "CONTESTED"),
+            weight=0.70,
+            description="Price far from zones in moderate regime → CONTESTED",
         ),
         # ── BROKEN ───────────────────────────────────────────────────────
         FuzzyRule(
@@ -234,21 +296,30 @@ _STRUCTURE_RULES = RuleBase(
         ),
         FuzzyRule(
             antecedent=(
-                Condition("zone_proximity", "BETWEEN_ZONES"),
-                Condition("regime_strength", "WEAK"),
-            ),
-            consequent=Conclusion("structure", "BROKEN"),
-            weight=0.9,
-            description="Between zones in weak regime → BROKEN structure",
-        ),
-        FuzzyRule(
-            antecedent=(
                 Condition("zone_proximity", "FAR_FROM_ZONES"),
                 Condition("regime_strength", "WEAK"),
             ),
             consequent=Conclusion("structure", "BROKEN"),
             weight=1.0,
             description="Far from zones in weak regime → BROKEN (no structure, no trend)",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "FAR_FROM_ZONES"),
+                Condition("regime_strength", "FRAGILE"),
+            ),
+            consequent=Conclusion("structure", "BROKEN"),
+            weight=0.85,
+            description="Far from zones in fragile regime → BROKEN structure",
+        ),
+        FuzzyRule(
+            antecedent=(
+                Condition("zone_proximity", "BETWEEN_ZONES"),
+                Condition("regime_strength", "WEAK"),
+            ),
+            consequent=Conclusion("structure", "BROKEN"),
+            weight=0.9,
+            description="Between zones in weak regime → BROKEN structure",
         ),
         FuzzyRule(
             antecedent=(
@@ -272,6 +343,7 @@ class StructureInputs:
     """Pre-computed numeric inputs for the Structure FIS."""
     zone_proximity_pct: float   # % distance to nearest SR zone (0 = at zone)
     regime_strength: float       # [0.0, 1.0] numeric regime encoding
+    no_zone_nearby: bool = False # True if no SR zones exist or nearest zone is >= 20% away
 
 
 @dataclass(frozen=True)
@@ -304,6 +376,7 @@ class StructureFIS:
     Structure Fuzzy Inference System.
 
     Evaluates SR zone proximity and market regime strength → BROKEN / CONTESTED / FIRM / DOMINANT.
+    Guarantees a complete fuzzy universe — never returns UNKNOWN.
     """
 
     @staticmethod
@@ -319,17 +392,34 @@ class StructureFIS:
         activations.update(build_activations_map("regime_strength", regime_mfs))
 
         fired: list[FiredRule] = _STRUCTURE_RULES.evaluate(activations)
-        label, act = defuzzify_max_membership(fired)
 
-        prox_dominant = _ZONE_PROXIMITY_VAR.dominant_term(x_prox)
-        regime_dominant = _REGIME_STRENGTH_VAR.dominant_term(x_regime)
+        # Universe completeness guarantee:
+        # If no zone exists nearby, classify as CONTESTED with very low activation instead of UNKNOWN.
+        if inputs.no_zone_nearby:
+            label = "CONTESTED"
+            act = 0.05
+            narrative = (
+                f"No SR zones exist nearby (distance: {x_prox:.2f}%). "
+                f"Market regime '{regime_label}' encodes to strength {x_regime:.2f}. "
+                f"Structure is classified as CONTESTED with low activation ({act:.2f})."
+            )
+        else:
+            label, act = defuzzify_max_membership(fired, fallback=("CONTESTED", 0.05))
 
-        narrative = (
-            f"Price is {x_prox:.2f}% from the nearest SR zone (classified as {prox_dominant}). "
-            f"Market regime '{regime_label}' encodes to strength {x_regime:.2f} "
-            f"(classified as {regime_dominant}). "
-            f"Mamdani inference yields structure label: {label} with activation {act:.2f}."
-        )
+            # Structure FIS must strictly emit one of: DOMINANT, FIRM, CONTESTED, BROKEN. Never UNKNOWN.
+            if label not in ("DOMINANT", "FIRM", "CONTESTED", "BROKEN") or act <= 0.0:
+                label = "CONTESTED"
+                act = 0.05
+
+            prox_dominant = _ZONE_PROXIMITY_VAR.dominant_term(x_prox)
+            regime_dominant = _REGIME_STRENGTH_VAR.dominant_term(x_regime)
+
+            narrative = (
+                f"Price is {x_prox:.2f}% from the nearest SR zone (classified as {prox_dominant}). "
+                f"Market regime '{regime_label}' encodes to strength {x_regime:.2f} "
+                f"(classified as {regime_dominant}). "
+                f"Mamdani inference yields structure label: {label} with activation {act:.2f}."
+            )
 
         return StructureFISResult(
             label=label,
@@ -366,7 +456,8 @@ class StructureFIS:
         """
         # Distance = min(|Price - Lower|, |Price - Upper|) (0.0 if inside the zone band)
         min_proximity_pct = 99.0
-        if current_price > 0 and sr_zones:
+        has_zones = bool(current_price > 0 and sr_zones)
+        if has_zones:
             for zone in sr_zones:
                 zone_high = float(zone.get("zone_high", 0.0))
                 zone_low = float(zone.get("zone_low", 0.0))
@@ -377,6 +468,9 @@ class StructureFIS:
                         edge_dist = min(abs(current_price - zone_low), abs(current_price - zone_high))
                     dist_pct = (edge_dist / current_price) * 100.0
                     min_proximity_pct = min(min_proximity_pct, dist_pct)
+
+        # Flag if no zone exists nearby: either no SR zones exist or the closest is far away (>= 20%)
+        no_zone_nearby = (not has_zones) or (min_proximity_pct >= 20.0)
 
         # Data-driven regime strength: (|Alignment| + TrendMembership) / 2
         if alignment_score is not None and trend_membership is not None:
@@ -389,4 +483,5 @@ class StructureFIS:
         return StructureInputs(
             zone_proximity_pct=round(min_proximity_pct, 4),
             regime_strength=round(max(0.0, min(1.0, regime_strength)), 4),
+            no_zone_nearby=no_zone_nearby,
         )
