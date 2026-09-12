@@ -22,6 +22,8 @@ import type {
   MarketStructureSummaryResponse,
 } from "../types/structure";
 import config from "../config";
+import { fetchSystemHealth } from "./systemHealth";
+import type { SystemHealthSnapshot } from "../types/health";
 
 const BASE_URL = config.apiBaseUrl;
 
@@ -82,6 +84,7 @@ export const api = {
   // V0.5 — Market data (preserved, no auth required)
   // -------------------------------------------------------------------------
   health: (): Promise<HealthStatus> => apiFetch<HealthStatus>("/health"),
+  systemHealth: (): Promise<SystemHealthSnapshot> => fetchSystemHealth(),
 
   getStocks: (): Promise<StockMeta[]> => apiFetch<StockMeta[]>("/stocks"),
 
