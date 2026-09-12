@@ -33,6 +33,7 @@ def calculate_histogram_quantiles(
     # bucket_bound -> total count
     bucket_counts: dict[float, float] = {}
     total_count: float = 0.0
+    total_sum: float = 0.0
 
     for metric_family in histogram.collect():
         for sample in metric_family.samples:
@@ -43,6 +44,8 @@ def calculate_histogram_quantiles(
                     bucket_counts[le] = bucket_counts.get(le, 0.0) + sample.value
             elif sample.name.endswith("_count"):
                 total_count += sample.value
+            elif sample.name.endswith("_sum"):
+                total_sum += sample.value
 
     # If no samples collected yet, provide sensible default baselines
     if total_count <= 0 or not bucket_counts:
@@ -55,7 +58,6 @@ def calculate_histogram_quantiles(
 
     # Sort bucket boundaries
     sorted_bounds = sorted(b for b in bucket_counts.keys() if b != float("inf"))
-    total_inf = bucket_counts.get(float("inf"), total_count)
 
     res: dict[str, float] = {}
     for q in quantiles:
@@ -84,9 +86,14 @@ def calculate_histogram_quantiles(
             lower_count = count
 
         if not found:
-            # Fallback to highest finite bucket or +Inf
             last_b = sorted_bounds[-1] if sorted_bounds else 1.0
             res[label] = round(last_b * 1000.0, 2)
+
+    res["avg_ms"] = (
+        round((total_sum / total_count) * 1000.0, 2)
+        if total_count > 0 and total_sum > 0
+        else res.get("p50_ms", 15.0)
+    )
 
     return res
 
