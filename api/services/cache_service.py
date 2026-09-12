@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from api.core.config import settings
+from api.core.metrics import CACHE_OPERATIONS_TOTAL
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,11 @@ class CacheService(ABC):
         """Clear all entries in the cache (used in testing and maintenance)."""
         ...
 
+    @abstractmethod
+    def stats(self) -> dict[str, Any]:
+        """Return cache health metrics, backend type, and key statistics."""
+        ...
+
 
 class InMemoryCacheService(CacheService):
     """
@@ -66,16 +72,33 @@ class InMemoryCacheService(CacheService):
     def __init__(self):
         self._store: dict[str, tuple[Any, float]] = {}
         self._lock = threading.Lock()
+        self._hits = 0
+        self._misses = 0
 
     def get(self, key: str) -> Any | None:
         with self._lock:
             item = self._store.get(key)
             if item is None:
+                self._misses += 1
+                try:
+                    CACHE_OPERATIONS_TOTAL.labels(cache_name="memory", status="miss").inc()
+                except Exception:
+                    pass
                 return None
             val, expiry = item
             if time.time() > expiry:
                 del self._store[key]
+                self._misses += 1
+                try:
+                    CACHE_OPERATIONS_TOTAL.labels(cache_name="memory", status="miss").inc()
+                except Exception:
+                    pass
                 return None
+            self._hits += 1
+            try:
+                CACHE_OPERATIONS_TOTAL.labels(cache_name="memory", status="hit").inc()
+            except Exception:
+                pass
             return val
 
     def set(self, key: str, value: Any, ttl_seconds: int) -> bool:
@@ -111,6 +134,22 @@ class InMemoryCacheService(CacheService):
         with self._lock:
             self._store.clear()
 
+    def stats(self) -> dict[str, Any]:
+        with self._lock:
+            now = time.time()
+            active_keys = sum(1 for _, exp in self._store.values() if exp > now)
+            total_ops = self._hits + self._misses
+            hit_rate = (self._hits / total_ops * 100.0) if total_ops > 0 else 0.0
+            return {
+                "backend": "memory",
+                "connected": True,
+                "total_keys": active_keys,
+                "hits": self._hits,
+                "misses": self._misses,
+                "hit_rate_pct": round(hit_rate, 1),
+                "status": "operational",
+            }
+
 
 class RedisCacheService(CacheService):
     """
@@ -122,6 +161,8 @@ class RedisCacheService(CacheService):
         import redis
         self._redis = redis.Redis.from_url(redis_url, decode_responses=True, socket_timeout=1.0)
         self._fallback = InMemoryCacheService()
+        self._hits = 0
+        self._misses = 0
         # Verify connection
         self._redis.ping()
 
@@ -129,7 +170,17 @@ class RedisCacheService(CacheService):
         try:
             val = self._redis.get(key)
             if val is None:
+                self._misses += 1
+                try:
+                    CACHE_OPERATIONS_TOTAL.labels(cache_name="redis", status="miss").inc()
+                except Exception:
+                    pass
                 return None
+            self._hits += 1
+            try:
+                CACHE_OPERATIONS_TOTAL.labels(cache_name="redis", status="hit").inc()
+            except Exception:
+                pass
             return json.loads(val)
         except Exception as exc:
             logger.warning(f"Redis get failed for key {key}: {exc}. Using fallback.")
@@ -177,6 +228,28 @@ class RedisCacheService(CacheService):
         except Exception as exc:
             logger.warning(f"Redis flushdb failed: {exc}.")
             self._fallback.flush()
+
+    def stats(self) -> dict[str, Any]:
+        try:
+            dbsize = self._redis.dbsize()
+            total_ops = self._hits + self._misses
+            hit_rate = (self._hits / total_ops * 100.0) if total_ops > 0 else 0.0
+            return {
+                "backend": "redis",
+                "connected": True,
+                "total_keys": dbsize,
+                "hits": self._hits,
+                "misses": self._misses,
+                "hit_rate_pct": round(hit_rate, 1),
+                "status": "operational",
+            }
+        except Exception as exc:
+            fb = self._fallback.stats()
+            fb["backend"] = "redis (degraded -> memory)"
+            fb["connected"] = False
+            fb["status"] = "degraded"
+            fb["error"] = str(exc)
+            return fb
 
 
 # ---------------------------------------------------------------------------
