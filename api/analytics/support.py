@@ -12,7 +12,6 @@ from api.services.support_resistance_service import (
     analyze_support_resistance,
     find_swing_points,
     compute_atr,
-    cluster_swing_points,
 )
 
 
