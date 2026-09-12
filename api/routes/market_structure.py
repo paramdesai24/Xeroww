@@ -9,19 +9,16 @@ FastAPI endpoints for deterministic Market Structure Engine V2:
   - /market-regime/{symbol}
   - /signal-alignment/{symbol}
   - /market-structure/{symbol} (unified summary)
+
+Architectural Boundary: Routes delegate exclusively to AnalyticsOrchestrator.
+No routes directly touch internal analytical services.
 """
 
 from fastapi import APIRouter, Depends, Path
 
 from api.core.dependencies import get_market_provider
 from api.services.market_data_service import MarketDataService
-from api.services.support_resistance_service import analyze_support_resistance
-from api.services.volume_service import analyze_volume
-from api.services.moving_average_service import analyze_moving_averages
-from api.services.market_regime_service import classify_market_regime
-from api.services.signal_alignment_service import evaluate_signal_alignment
-from api.services.pattern_engine import scan_patterns
-from api.services.contextual_pattern_service import enrich_pattern_with_context
+from api.analytics import default_orchestrator, AnalyticsOrchestrator
 
 from api.schemas.market_structure import (
     SupportResistanceResponse,
@@ -42,6 +39,10 @@ def _get_service() -> MarketDataService:
     return MarketDataService(provider)
 
 
+def _get_orchestrator() -> AnalyticsOrchestrator:
+    return default_orchestrator
+
+
 @router.get(
     "/support-resistance/{symbol}",
     response_model=SupportResistanceResponse,
@@ -50,9 +51,10 @@ def _get_service() -> MarketDataService:
 def get_support_resistance(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> SupportResistanceResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
-    analysis = analyze_support_resistance(candles, sym)
+    analysis = orchestrator.run_support_resistance(candles, sym)
     return SupportResistanceResponse(**analysis.to_dict())
 
 
@@ -64,9 +66,10 @@ def get_support_resistance(
 def get_volume_analytics(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> VolumeAnalyticsResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
-    analysis = analyze_volume(candles, sym)
+    analysis = orchestrator.run_volume(candles, sym)
     return VolumeAnalyticsResponse(**analysis.to_dict())
 
 
@@ -78,9 +81,10 @@ def get_volume_analytics(
 def get_moving_averages(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MovingAveragesResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
-    analysis = analyze_moving_averages(candles, sym)
+    analysis = orchestrator.run_moving_averages(candles, sym)
     return MovingAveragesResponse(**analysis.to_dict())
 
 
@@ -92,8 +96,9 @@ def get_moving_averages(
 def get_trend_alias(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MovingAveragesResponse:
-    return get_moving_averages(symbol, market_data=market_data)
+    return get_moving_averages(symbol, market_data=market_data, orchestrator=orchestrator)
 
 
 @router.get(
@@ -104,9 +109,10 @@ def get_trend_alias(
 def get_market_regime(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MarketRegimeResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
-    analysis = classify_market_regime(candles, sym)
+    analysis = orchestrator.run_market_regime(candles, sym)
     return MarketRegimeResponse(**analysis.to_dict())
 
 
@@ -118,9 +124,10 @@ def get_market_regime(
 def get_signal_alignment(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> SignalAlignmentResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
-    analysis = evaluate_signal_alignment(candles, sym)
+    analysis = orchestrator.run_signal_alignment(candles, sym)
     return SignalAlignmentResponse(**analysis.to_dict())
 
 
@@ -132,29 +139,19 @@ def get_signal_alignment(
 def get_market_structure_summary(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MarketStructureSummaryResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
-    current_price = float(candles[-1]["close"])
-
-    sr = analyze_support_resistance(candles, sym)
-    vol = analyze_volume(candles, sym)
-    ma = analyze_moving_averages(candles, sym)
-    regime = classify_market_regime(candles, sym)
-    alignment = evaluate_signal_alignment(candles, sym)
-    patterns = scan_patterns(candles, lookback=5)
-
-    contextual = None
-    if patterns:
-        contextual = enrich_pattern_with_context(patterns[-1], candles, sym)
+    summary = orchestrator.run_market_structure_summary(candles, sym)
 
     return MarketStructureSummaryResponse(
-        symbol=sym,
-        current_price=round(current_price, 2),
-        support_resistance=SupportResistanceResponse(**sr.to_dict()),
-        volume=VolumeAnalyticsResponse(**vol.to_dict()),
-        moving_averages=MovingAveragesResponse(**ma.to_dict()),
-        market_regime=MarketRegimeResponse(**regime.to_dict()),
-        signal_alignment=SignalAlignmentResponse(**alignment.to_dict()),
-        detected_patterns=[PatternDetectionSchema(**p.to_dict()) for p in patterns],
-        contextual_pattern=ContextualPatternSchema(**contextual.to_dict()) if contextual else None,
+        symbol=summary.symbol,
+        current_price=summary.current_price,
+        support_resistance=SupportResistanceResponse(**summary.support_resistance.to_dict()),
+        volume=VolumeAnalyticsResponse(**summary.volume.to_dict()),
+        moving_averages=MovingAveragesResponse(**summary.moving_averages.to_dict()),
+        market_regime=MarketRegimeResponse(**summary.market_regime.to_dict()),
+        signal_alignment=SignalAlignmentResponse(**summary.signal_alignment.to_dict()),
+        detected_patterns=[PatternDetectionSchema(**p.to_dict()) for p in summary.detected_patterns],
+        contextual_pattern=ContextualPatternSchema(**summary.contextual_pattern.to_dict()) if summary.contextual_pattern else None,
     )
