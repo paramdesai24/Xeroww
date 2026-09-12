@@ -9,7 +9,7 @@ Endpoints:
 """
 
 import time
-from typing import Dict, Tuple, List, Any
+from typing import Dict, Tuple, List
 from fastapi import APIRouter, HTTPException, Query, status
 from api.services.yahoo_provider import YahooFinanceProvider
 from api.services.event_engine import EventEngine
