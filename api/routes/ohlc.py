@@ -1,4 +1,11 @@
-"""routes/ohlc.py — GET /ohlc/{symbol} endpoint."""
+"""
+routes/ohlc.py
+──────────────
+FastAPI endpoint for historical candlestick OHLC data:
+  - GET /ohlc/{symbol}
+
+Routes delegate candle normalization to AnalyticsOrchestrator.
+"""
 
 from fastapi import APIRouter, Depends, Path, Query
 
@@ -6,8 +13,13 @@ from api.core.dependencies import get_market_data_service
 from api.schemas.ohlc import OHLCResponse, OHLCBar
 from api.services.yahoo_provider import SYMBOL_META
 from api.services.market_data_service import MarketDataService
+from api.analytics import default_orchestrator, AnalyticsOrchestrator
 
 router = APIRouter(tags=["Market Data"])
+
+
+def _get_orchestrator() -> AnalyticsOrchestrator:
+    return default_orchestrator
 
 
 @router.get(
@@ -20,6 +32,7 @@ async def get_ohlc(
     period: str = Query(default="1mo", description="Data period: 1mo, 3mo, 6mo, 1y"),
     interval: str = Query(default="1d", description="Candle interval: 1d, 1wk"),
     market_data: MarketDataService = Depends(get_market_data_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> OHLCResponse:
     """
     Returns historical OHLCV candlestick data for the given symbol.
@@ -28,7 +41,8 @@ async def get_ohlc(
     (time field is YYYY-MM-DD string). Data is from the configured MarketDataProvider.
     """
     sym, candles_raw = market_data.get_candles(symbol, period=period, interval=interval)
-    candles = [OHLCBar(**c) for c in candles_raw]
+    normalized_bars = orchestrator.parse_ohlc_bars(candles_raw)
+    candles = [OHLCBar(**c) for c in normalized_bars]
     meta = SYMBOL_META.get(sym, {})
     return OHLCResponse(
         symbol=sym,

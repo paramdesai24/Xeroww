@@ -258,6 +258,20 @@ class AnalyticsOrchestrator:
     def run_candle_analysis(self, candle: dict[str, Any]) -> CandleSummaryDTO:
         return self.pattern.analyse_candle(candle)
 
+    def parse_ohlc_bars(self, candles: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Normalize and validate raw OHLC candle records for client charts."""
+        return [
+            {
+                "time": str(c.get("time", "")),
+                "open": round(float(c.get("open", 0.0)), 2),
+                "high": round(float(c.get("high", 0.0)), 2),
+                "low": round(float(c.get("low", 0.0)), 2),
+                "close": round(float(c.get("close", 0.0)), 2),
+                "volume": round(float(c.get("volume", 0.0)), 2),
+            }
+            for c in candles
+        ]
+
     def run_marubozu(self, candles: list[dict[str, Any]], symbol: str, display_name: str) -> MarubozuResultDTO:
         return self.pattern.detect_marubozu(candles, symbol, display_name)
 

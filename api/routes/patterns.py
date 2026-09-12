@@ -1,14 +1,19 @@
-"""routes/patterns.py — GET /patterns/{symbol} endpoint."""
+"""
+routes/patterns.py
+──────────────────
+FastAPI endpoint for candlestick pattern recognition:
+  - GET /patterns/{symbol}
+
+Routes delegate pattern recognition and contextual analysis to AnalyticsOrchestrator.
+"""
 
 from fastapi import APIRouter, Depends, Path
 
 from api.core.dependencies import get_market_provider
 from api.schemas.pattern import PatternResponse
 from api.services.yahoo_provider import SYMBOL_META
-from api.services.pattern_service import detect_marubozu
-from api.services.pattern_engine import scan_patterns
-from api.services.contextual_pattern_service import enrich_pattern_with_context
 from api.services.market_data_service import MarketDataService
+from api.analytics import default_orchestrator, AnalyticsOrchestrator
 
 router = APIRouter(tags=["Pattern Detection"])
 provider = get_market_provider()
@@ -16,6 +21,10 @@ provider = get_market_provider()
 
 def _get_service() -> MarketDataService:
     return MarketDataService(provider)
+
+
+def _get_orchestrator() -> AnalyticsOrchestrator:
+    return default_orchestrator
 
 
 @router.get(
@@ -26,6 +35,7 @@ def _get_service() -> MarketDataService:
 async def get_patterns(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
     market_data: MarketDataService = Depends(_get_service),
+    orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> PatternResponse:
     """
     Detects candlestick patterns on the given symbol.
@@ -34,20 +44,21 @@ async def get_patterns(
     """
     sym, candles = market_data.get_candles(symbol, period="1mo", interval="1d")
     meta = SYMBOL_META.get(sym, {})
-    result = detect_marubozu(
+    marubozu_dto = orchestrator.run_marubozu(
         candles=candles,
         symbol=sym,
         display_name=meta.get("display_name", sym),
     )
+    result = marubozu_dto.to_dict()
 
-    # Pattern Engine V2 scan
-    detected = scan_patterns(candles, lookback=5)
+    # Pattern Engine V2 scan via orchestrator
+    detected = orchestrator.run_patterns(candles, lookback=5)
     result["detected_patterns"] = [d.to_dict() for d in detected]
 
     # Contextual enrichment if any patterns found
     if detected:
-        ctx = enrich_pattern_with_context(detected[-1], candles, sym)
-        result["contextual_pattern"] = ctx.to_dict()
+        ctx = orchestrator.run_contextual_pattern(detected[-1], candles, sym)
+        result["contextual_pattern"] = ctx.to_dict() if ctx else None
     else:
         result["contextual_pattern"] = None
 
