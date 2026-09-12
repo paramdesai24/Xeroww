@@ -25,6 +25,12 @@ from api.events.journal_events import (
     JournalEntryReviewed,
     JournalEntryUpdated,
 )
+from api.events.alert_events import (
+    AlertCreated,
+    AlertTriggered,
+    AlertEvaluated,
+    AlertDeleted,
+)
 
 __all__ = [
     "DomainEvent",
@@ -39,7 +45,12 @@ __all__ = [
     "JournalEntryCreated",
     "JournalEntryReviewed",
     "JournalEntryUpdated",
+    "AlertCreated",
+    "AlertTriggered",
+    "AlertEvaluated",
+    "AlertDeleted",
 ]
+
 
 
 
