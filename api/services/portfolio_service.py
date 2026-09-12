@@ -307,6 +307,22 @@ class PortfolioService:
         self.db.add(txn)
         self.db.commit()
         self.db.refresh(txn)
+
+        try:
+            from api.events import get_event_bus, AssetBought
+            get_event_bus().publish(
+                AssetBought.create(
+                    portfolio_id=portfolio.id,
+                    symbol=symbol,
+                    quantity=quantity,
+                    price=price,
+                    total_cost=total_cost,
+                    user_id=self.user_id,
+                )
+            )
+        except Exception:
+            pass
+
         return TransactionResponse.model_validate(txn)
 
     def _execute_sell(
@@ -361,6 +377,23 @@ class PortfolioService:
         self.db.add(txn)
         self.db.commit()
         self.db.refresh(txn)
+
+        try:
+            from api.events import get_event_bus, AssetSold
+            get_event_bus().publish(
+                AssetSold.create(
+                    portfolio_id=portfolio.id,
+                    symbol=symbol,
+                    quantity=quantity,
+                    price=price,
+                    proceeds=proceeds,
+                    realized_pnl=realized_pnl,
+                    user_id=self.user_id,
+                )
+            )
+        except Exception:
+            pass
+
         return TransactionResponse.model_validate(txn)
 
     # -----------------------------------------------------------------------
@@ -378,4 +411,19 @@ class PortfolioService:
         db.add(portfolio)
         db.commit()
         db.refresh(portfolio)
+
+        try:
+            from api.events import get_event_bus, PortfolioCreated
+            get_event_bus().publish(
+                PortfolioCreated.create(
+                    portfolio_id=portfolio.id,
+                    name=portfolio.name,
+                    user_id=user_id,
+                    initial_cash=portfolio.cash_balance,
+                )
+            )
+        except Exception:
+            pass
+
         return portfolio
+
