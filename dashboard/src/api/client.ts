@@ -331,5 +331,16 @@ export const api = {
     getCorrelationMatrix: (window = 20): Promise<import("../types/structure").CorrelationMatrixResponse> =>
       apiFetch<import("../types/structure").CorrelationMatrixResponse>(`/intelligence/correlation/matrix?window=${window}`),
   },
+
+  // -------------------------------------------------------------------------
+  // V0.6 — Market Event Timeline & Explainability Engine
+  // -------------------------------------------------------------------------
+  events: {
+    getTimeline: (symbol: string, period = "3mo"): Promise<import("../types/events").MarketEventsTimelineResponse> =>
+      apiFetch<import("../types/events").MarketEventsTimelineResponse>(`/events/timeline/${encodeURIComponent(symbol)}?period=${period}`),
+
+    getAtStep: (symbol: string, step: number, period = "3mo"): Promise<import("../types/events").MarketEvent[]> =>
+      apiFetch<import("../types/events").MarketEvent[]>(`/events/at/${encodeURIComponent(symbol)}?step=${step}&period=${period}`),
+  },
 };
 
