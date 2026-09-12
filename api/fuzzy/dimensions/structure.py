@@ -18,14 +18,13 @@ resistance, and whether the overall regime context supports that structure.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any
 
 from api.fuzzy.membership import (
     LinguisticVariable,
     MembershipResult,
     trimf,
     trapmf,
-    gaussmf,
 )
 from api.fuzzy.rules import (
     Condition,

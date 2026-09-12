@@ -139,7 +139,7 @@ interface ActivationBarProps {
 
 function ActivationBar({ activation, color, delay = 0, height = 4 }: ActivationBarProps) {
   const [width, setWidth] = useState(0);
-  const ref = useRef<ReturnType<typeof setTimeout>>();
+  const ref = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     setWidth(0);
