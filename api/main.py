@@ -30,6 +30,9 @@ from api.routes import health, stocks, quote, ohlc, patterns
 # V0.6 routes (new)
 from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay, diff, forensics, annotations, intelligence, events, system_health
 
+# V0.8 routes (Fuzzy Explainability Engine)
+from api.routes import fuzzy
+
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
 # ---------------------------------------------------------------------------
@@ -152,6 +155,11 @@ app.include_router(intelligence.router)
 app.include_router(events.router)
 app.include_router(system_health.router)
 
+# ---------------------------------------------------------------------------
+# Register V0.8 routers (Fuzzy Explainability Engine)
+# ---------------------------------------------------------------------------
+app.include_router(fuzzy.router)
+
 
 # ---------------------------------------------------------------------------
 # Root redirect to docs
@@ -185,5 +193,8 @@ async def root():
             "POST /alerts/evaluate-all",
             "GET  /journal",
             "POST /journal",
+        ],
+        "v08_endpoints": [
+            "GET  /fuzzy/explain",
         ],
     }
