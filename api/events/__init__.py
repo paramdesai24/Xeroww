@@ -20,6 +20,11 @@ from api.events.portfolio_events import (
     AssetSold,
     PortfolioUpdated,
 )
+from api.events.journal_events import (
+    JournalEntryCreated,
+    JournalEntryReviewed,
+    JournalEntryUpdated,
+)
 
 __all__ = [
     "DomainEvent",
@@ -31,6 +36,10 @@ __all__ = [
     "AssetBought",
     "AssetSold",
     "PortfolioUpdated",
+    "JournalEntryCreated",
+    "JournalEntryReviewed",
+    "JournalEntryUpdated",
 ]
+
 
 
