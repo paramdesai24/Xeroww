@@ -25,7 +25,7 @@ export function useMarketData(): MarketState {
   const [ohlc, setOhlc] = useState<OHLCData | null>(null);
   const [pattern, setPattern] = useState<PatternData | null>(null);
   const [structure, setStructure] = useState<MarketStructureSummaryResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch watchlist once on mount

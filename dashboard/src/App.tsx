@@ -27,6 +27,7 @@ import { XRayDrawer } from "./components/xray";
 import { EventTimeline } from "./components/replay";
 import { FuzzyExplainCard } from "./components/FuzzyExplainCard";
 import type { FuzzyExplainabilityReport } from "./types/fuzzy";
+import { Skeleton } from "./components/ui";
 
 import { useMarketData } from "./hooks/useMarketData";
 import { useAuth } from "./hooks/useAuth";
@@ -39,7 +40,7 @@ export default function App() {
   const auth = useAuth();
   const [activeModule, setActiveModule] = useState<Module>("MARKET");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "FUZZY" | "ANATOMY" | "EVENTS">("STRUCTURE");
+  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "CONTEXT" | "ANATOMY" | "EVENTS">("STRUCTURE");
 
   // Differentiated intelligence modals state
   const [isReplayMode, setIsReplayMode] = useState<boolean>(false);
@@ -268,10 +269,11 @@ export default function App() {
             {/* Right: Analytics Sidebar */}
             <aside className="w-[360px] xl:w-[380px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 h-full overflow-hidden">
               {/* Tab selector */}
+              {/* Tab selector */}
               <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
                 {(isReplayMode
-                  ? (["EVENTS", "STRUCTURE", "FUZZY", "ANATOMY"] as const)
-                  : (["STRUCTURE", "FUZZY", "ANATOMY"] as const)
+                  ? (["EVENTS", "STRUCTURE", "CONTEXT", "ANATOMY"] as const)
+                  : (["STRUCTURE", "CONTEXT", "ANATOMY"] as const)
                 ).map((tab) => {
                   const active = sidebarTab === tab;
                   return (
@@ -289,12 +291,12 @@ export default function App() {
                           ? "Events"
                           : tab === "STRUCTURE"
                           ? "Structure"
-                          : tab === "FUZZY"
-                          ? "Mamdani FIS"
+                          : tab === "CONTEXT"
+                          ? "Context"
                           : "Anatomy"}
                       </span>
-                      {tab === "FUZZY" && (
-                        <span className="px-1 py-0.2 text-[9px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-xs font-mono">
+                      {tab === "CONTEXT" && (
+                        <span className="px-1 py-0.2 text-[9px] bg-[#1E90FF]/15 text-[#60A5FA] border border-[#1E90FF]/30 rounded-xs font-mono">
                           v0.8
                         </span>
                       )}
@@ -320,7 +322,7 @@ export default function App() {
                     loading={loadingEvents}
                     onRefresh={fetchEvents}
                   />
-                ) : sidebarTab === "FUZZY" ? (
+                ) : sidebarTab === "CONTEXT" ? (
                   <FuzzyExplainCard
                     report={fuzzyReport}
                     loading={fuzzyLoading}
@@ -328,33 +330,73 @@ export default function App() {
                     onRefresh={fetchFuzzyReport}
                   />
                 ) : sidebarTab === "STRUCTURE" ? (
-                  <>
-                    {/* V0.8 — Mamdani Fuzzy Explainability Engine placed at TOP for immediate visibility */}
-                    <FuzzyExplainCard
-                      report={fuzzyReport}
-                      loading={fuzzyLoading}
-                      error={fuzzyError}
-                      onRefresh={fetchFuzzyReport}
-                    />
-                    <MarketRegimeCard regime={structure?.market_regime ?? null} />
-                    <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />
-                    <PatternCard pattern={structure?.detected_patterns?.[0] ? {
-                      symbol: structure.symbol,
-                      display_name: structure.symbol.replace(".NS", ""),
-                      pattern: (structure.detected_patterns[0].pattern.toLowerCase().includes("marubozu")
-                        ? structure.detected_patterns[0].pattern.toLowerCase().replace(/ /g, "_")
-                        : "none") as any,
-                      signal_day: structure.detected_patterns[0].timestamp,
-                      textbook_action: "watch_next_session_for_confirmation",
-                      rationale: structure.detected_patterns[0].explanation,
-                      stop_loss: (structure.detected_patterns[0].context?.stop_loss as number) ?? null,
-                      detected_patterns: structure.detected_patterns,
-                      contextual_pattern: structure.contextual_pattern,
-                      data_note: "Deterministic pattern detection",
-                    } : pattern} />
-                    <SupportResistancePanel sr={structure?.support_resistance ?? null} />
-                    <VolumeAnalyticsPanel volume={structure?.volume ?? null} />
-                  </>
+                  loading || !structure ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="border border-[var(--border-default)] bg-[var(--surface)] overflow-hidden">
+                        <div className="px-3 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-inset)]">
+                          <span className="text-xs font-semibold text-[var(--text-primary)]">Market Regime</span>
+                          <span className="text-[10px] text-[var(--text-tertiary)] animate-pulse">Classifying regime…</span>
+                        </div>
+                        <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-2">
+                          <Skeleton height={28} />
+                          <Skeleton height={28} />
+                          <Skeleton height={28} />
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <Skeleton height={14} width="85%" />
+                          <Skeleton height={14} width="70%" />
+                        </div>
+                      </div>
+                      <div className="border border-[var(--border-default)] bg-[var(--surface)] overflow-hidden">
+                        <div className="px-3 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-inset)]">
+                          <span className="text-xs font-semibold text-[var(--text-primary)]">Signal Confluence</span>
+                          <span className="text-[10px] text-[var(--text-tertiary)] animate-pulse">Tallying indicators…</span>
+                        </div>
+                        <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-2 gap-4">
+                          <Skeleton height={28} />
+                          <Skeleton height={28} />
+                        </div>
+                      </div>
+                      <div className="border border-[var(--border-default)] bg-[var(--surface)] overflow-hidden">
+                        <div className="px-3 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-inset)]">
+                          <span className="text-xs font-semibold text-[var(--text-primary)]">Structure & Patterns</span>
+                          <span className="text-[10px] text-[var(--text-tertiary)] animate-pulse">Scanning geometry…</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <Skeleton height={14} width="65%" />
+                          <Skeleton height={28} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <MarketRegimeCard regime={structure?.market_regime ?? null} loading={loading} />
+                      <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} loading={loading} />
+                      {/* V0.8 — Market Context & Synthesis */}
+                      <FuzzyExplainCard
+                        report={fuzzyReport}
+                        loading={fuzzyLoading}
+                        error={fuzzyError}
+                        onRefresh={fetchFuzzyReport}
+                      />
+                      <PatternCard pattern={structure?.detected_patterns?.[0] ? {
+                        symbol: structure.symbol,
+                        display_name: structure.symbol.replace(".NS", ""),
+                        pattern: (structure.detected_patterns[0].pattern.toLowerCase().includes("marubozu")
+                          ? structure.detected_patterns[0].pattern.toLowerCase().replace(/ /g, "_")
+                          : "none") as any,
+                        signal_day: structure.detected_patterns[0].timestamp,
+                        textbook_action: "watch_next_session_for_confirmation",
+                        rationale: structure.detected_patterns[0].explanation,
+                        stop_loss: (structure.detected_patterns[0].context?.stop_loss as number) ?? null,
+                        detected_patterns: structure.detected_patterns,
+                        contextual_pattern: structure.contextual_pattern,
+                        data_note: "Deterministic pattern detection",
+                      } : pattern} />
+                      <SupportResistancePanel sr={structure?.support_resistance ?? null} />
+                      <VolumeAnalyticsPanel volume={structure?.volume ?? null} />
+                    </>
+                  )
                 ) : (
                   <>
                     <OHLCStats quote={quote} ohlc={ohlc} />
