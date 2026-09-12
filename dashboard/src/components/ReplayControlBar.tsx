@@ -3,7 +3,7 @@
 // Zero ML, zero prediction — strictly chronological historical playback.
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Play, Pause, StepForward, StepBack, RotateCcw, History } from "lucide-react";
+import { Play, Pause, StepForward, StepBack, RotateCcw, History, GitCommit } from "lucide-react";
 import { api } from "../api/client";
 import type { ReplayTimelineResponse, ReplayStepResponse } from "../types/structure";
 
@@ -11,6 +11,11 @@ interface Props {
   symbol: string;
   onStateUpdate: (state: ReplayStepResponse) => void;
   onExitReplay: () => void;
+  showTimeline?: boolean;
+  onToggleTimeline?: () => void;
+  timelineEventCount?: number;
+  externalStep?: number | null;
+  onStepChange?: (step: number) => void;
 }
 
 // Minimal icon button
@@ -37,13 +42,36 @@ function IconBtn({
   );
 }
 
-export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }: Props) {
+export default function ReplayControlBar({
+  symbol,
+  onStateUpdate,
+  onExitReplay,
+  showTimeline = false,
+  onToggleTimeline,
+  timelineEventCount = 0,
+  externalStep = null,
+  onStepChange,
+}: Props) {
   const [timeline, setTimeline] = useState<ReplayTimelineResponse | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const timerRef = useRef<number | null>(null);
+
+  // Notify parent of step changes
+  useEffect(() => {
+    onStepChange?.(currentStep);
+  }, [currentStep, onStepChange]);
+
+  // Synchronize when externalStep changes (e.g. from EventTimeline jump)
+  useEffect(() => {
+    if (externalStep !== null && externalStep !== undefined && externalStep !== currentStep && timeline) {
+      const clamped = Math.max(0, Math.min(externalStep, timeline.total_bars - 1));
+      setCurrentStep(clamped);
+      fetchStep(clamped);
+    }
+  }, [externalStep, timeline]);
 
   useEffect(() => {
     let active = true;
@@ -192,6 +220,28 @@ export default function ReplayControlBar({ symbol, onStateUpdate, onExitReplay }
             </button>
           ))}
         </div>
+
+        {/* Event Timeline Toggle */}
+        {onToggleTimeline && (
+          <button
+            id="replay-toggle-timeline-btn"
+            onClick={onToggleTimeline}
+            className={`h-7 px-2.5 flex items-center gap-1.5 text-xs font-mono transition-colors border shrink-0 whitespace-nowrap ${
+              showTimeline
+                ? "bg-[#1E90FF]/15 border-[#1E90FF] text-[#60A5FA]"
+                : "bg-[#10141D] hover:bg-[#18202F] border-[#1E2538] text-[#94A3B8] hover:text-[#F8FAFC]"
+            }`}
+            title="Toggle Market Event Timeline"
+          >
+            <GitCommit size={12} className="text-[#1E90FF] shrink-0" />
+            <span className="whitespace-nowrap font-medium">Events</span>
+            {typeof timelineEventCount === "number" && timelineEventCount > 0 && (
+              <span className="px-1 py-0.2 text-[10px] bg-[#1E2538] text-[#38BDF8] rounded-sm font-semibold whitespace-nowrap">
+                {timelineEventCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Scrubber */}
