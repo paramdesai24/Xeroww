@@ -29,6 +29,8 @@ interface ChartPanelProps {
   onOpenReplay?: () => void;
   onOpenDiff?: () => void;
   onOpenForensics?: () => void;
+  isXRayOpen?: boolean;
+  onToggleXRay?: () => void;
 }
 
 export default function ChartPanel({
@@ -41,6 +43,8 @@ export default function ChartPanel({
   onOpenReplay,
   onOpenDiff,
   onOpenForensics,
+  isXRayOpen,
+  onToggleXRay,
 }: ChartPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -416,6 +420,21 @@ export default function ChartPanel({
                     title="Inspect What Changed Diff"
                   >
                     Diff
+                  </button>
+                )}
+                {onToggleXRay && (
+                  <button
+                    id="trigger-xray-btn"
+                    onClick={onToggleXRay}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-sm border transition-colors duration-150 flex items-center gap-1.5 ${
+                      isXRayOpen
+                        ? "bg-[#1E90FF] text-white border-[#1E90FF]"
+                        : "bg-[var(--surface-elevated)] text-[var(--accent-primary)] border-[var(--border-default)] hover:border-[var(--accent-primary)]"
+                    }`}
+                    title="Toggle Flagship X-Ray Inspection Drawer (Click any candlestick)"
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${isXRayOpen ? "bg-white animate-ping" : "bg-[#1E90FF]"}`} />
+                    X-Ray
                   </button>
                 )}
                 {onOpenForensics && (
