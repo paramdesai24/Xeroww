@@ -233,7 +233,20 @@ class AnalyticsOrchestrator:
     # Structure Pipeline (Regime & Alignment)
     # -------------------------------------------------------------------------
     def run_market_regime(self, candles: list[dict[str, Any]], symbol: str) -> MarketRegimeDTO:
-        return self.structure.classify_regime(candles, symbol)
+        dto = self.structure.classify_regime(candles, symbol)
+        try:
+            from api.events import get_event_bus, RegimeChanged
+            get_event_bus().publish(
+                RegimeChanged.create(
+                    symbol=symbol,
+                    old_regime="UNKNOWN",
+                    new_regime=dto.regime,
+                    confidence=1.0,
+                )
+            )
+        except Exception:
+            pass
+        return dto
 
     def run_signal_alignment(self, candles: list[dict[str, Any]], symbol: str) -> SignalAlignmentDTO:
         return self.structure.evaluate_alignment(candles, symbol)
@@ -244,8 +257,31 @@ class AnalyticsOrchestrator:
     # -------------------------------------------------------------------------
     # Pattern Recognition Pipeline
     # -------------------------------------------------------------------------
-    def run_patterns(self, candles: list[dict[str, Any]], lookback: int = 5) -> list[PatternDetectionDTO]:
-        return self.pattern.scan(candles, lookback=lookback)
+    def run_patterns(
+        self,
+        candles: list[dict[str, Any]],
+        lookback: int = 5,
+        symbol: str = "",
+    ) -> list[PatternDetectionDTO]:
+        patterns = self.pattern.scan(candles, lookback=lookback)
+        if patterns and symbol:
+            try:
+                from api.events import get_event_bus, PatternDetected
+                bus = get_event_bus()
+                for p in patterns:
+                    bus.publish(
+                        PatternDetected.create(
+                            symbol=symbol,
+                            pattern_name=p.pattern_type,
+                            confidence=p.confidence,
+                            direction=p.direction,
+                            candle_index=p.candle_index,
+                        )
+                    )
+            except Exception:
+                pass
+        return patterns
+
 
     def run_contextual_pattern(
         self,

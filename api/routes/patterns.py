@@ -52,8 +52,9 @@ async def get_patterns(
     result = marubozu_dto.to_dict()
 
     # Pattern Engine V2 scan via orchestrator
-    detected = orchestrator.run_patterns(candles, lookback=5)
+    detected = orchestrator.run_patterns(candles, lookback=5, symbol=sym)
     result["detected_patterns"] = [d.to_dict() for d in detected]
+
 
     # Contextual enrichment if any patterns found
     if detected:
