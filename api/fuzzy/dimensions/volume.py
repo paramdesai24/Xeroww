@@ -284,25 +284,37 @@ class VolumeFIS:
         )
 
     @staticmethod
+    def calculate_volume_ema10(volumes: list[float]) -> float | None:
+        """Calculate standard 10-period exponential moving average of volume."""
+        if not volumes:
+            return None
+        if len(volumes) < 10:
+            return sum(volumes) / len(volumes)
+        # Standard EMA recursion: alpha = 2 / (period + 1) = 2 / 11
+        k = 2.0 / (10.0 + 1.0)
+        ema = sum(volumes[:10]) / 10.0
+        for v in volumes[10:]:
+            ema = v * k + ema * (1.0 - k)
+        return ema
+
+    @staticmethod
     def extract_inputs(
         rvol: float,
         current_volume: float,
-        recent_volumes: list[float],
+        recent_volumes: list[float] | None = None,
     ) -> VolumeInputs:
         """
         Derive VolumeInputs from raw service data.
-
-        Parameters
-        ----------
-        rvol           : float — from RVOLService (today_vol / baseline_avg)
-        current_volume : float — today's volume
-        recent_volumes : list[float] — last 5 sessions' volumes for trend calculation
+        VolumeTrend = (Volume_t - EMA10(Volume)) / EMA10(Volume) * 100
         """
         if not recent_volumes:
             return VolumeInputs(rvol=rvol, volume_trend_pct=0.0)
 
-        avg_5d = sum(recent_volumes) / len(recent_volumes)
-        trend_pct = ((current_volume - avg_5d) / avg_5d * 100.0) if avg_5d > 0 else 0.0
+        ema10 = VolumeFIS.calculate_volume_ema10(recent_volumes)
+        if ema10 and ema10 > 0:
+            trend_pct = ((current_volume - ema10) / ema10 * 100.0)
+        else:
+            trend_pct = 0.0
 
         return VolumeInputs(
             rvol=round(rvol, 4),

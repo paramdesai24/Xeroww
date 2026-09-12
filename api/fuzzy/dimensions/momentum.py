@@ -299,7 +299,9 @@ class MomentumFIS:
         if current_price <= 0 or ema9 is None or ema20 is None:
             return MomentumInputs(ema_spread_pct=0.0, price_vs_ema20_pct=0.0)
 
-        ema_spread_pct = (ema9 - ema20) / current_price * 100.0
+        raw_spread = (ema9 - ema20) / current_price * 100.0
+        # Clip spread to [-5.0%, +5.0%] to prevent penny stock / outlier distortion
+        ema_spread_pct = max(-5.0, min(5.0, raw_spread))
         price_vs_ema20_pct = (current_price - ema20) / current_price * 100.0
 
         return MomentumInputs(

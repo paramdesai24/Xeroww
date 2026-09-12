@@ -40,6 +40,7 @@ This module NEVER:
 
 from __future__ import annotations
 
+import math
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -249,7 +250,6 @@ class FuzzyOrchestrator:
         summary = self._analytics.run_market_structure_summary(candles, symbol)
         ma = summary.moving_averages
         vol = summary.volume
-        alignment = summary.signal_alignment
         regime = summary.market_regime
         sr = summary.support_resistance
 
@@ -261,35 +261,41 @@ class FuzzyOrchestrator:
         ema20_val = ma.ema_20 if ma else None
         sma200_val = ma.sma_200 if ma else None
 
-        # ── Step 3: Compute volume trend ─────────────────────────────────
-        # Take last 5 sessions' volumes (excluding today) for trend baseline
-        recent_vols = [float(c.get("volume", 0.0)) for c in candles[-6:-1]]
+        # ── Step 3: Compute volume trend using EMA10 ─────────────────────
+        vol_history = [float(c.get("volume", 0.0)) for c in candles]
         today_vol = float(candles[-1].get("volume", 0.0))
 
-        # ── Step 4: Evaluate MomentumFIS ─────────────────────────────────
+        # ── Step 4: Evaluate MomentumFIS (clipped spread) ─────────────────
         momentum_inputs = MomentumFIS.extract_inputs(current_price, ema9_val, ema20_val)
         momentum_result = MomentumFIS.evaluate(momentum_inputs)
 
-        # ── Step 5: Evaluate VolumeFIS ────────────────────────────────────
+        # ── Step 5: Evaluate VolumeFIS (EMA10 of volume) ──────────────────
         rvol_val = float(getattr(vol, "rvol", 1.0)) if vol and hasattr(vol, "rvol") else 1.0
-        volume_inputs = VolumeFIS.extract_inputs(rvol_val, today_vol, recent_vols)
+        volume_inputs = VolumeFIS.extract_inputs(rvol_val, today_vol, vol_history)
         volume_result = VolumeFIS.evaluate(volume_inputs)
 
-        # ── Step 6: Evaluate TrendFIS ─────────────────────────────────────
-        bullish_count = int(getattr(alignment, "bullish_alignment_count", 0))
-        bearish_count = int(getattr(alignment, "bearish_alignment_count", 0))
-        total_conditions = int(getattr(alignment, "alignment_total", max(1, bullish_count + bearish_count)))
+        # ── Step 6: Evaluate TrendFIS (deterministic 6-signal alignment) ──
+        pattern_direction = summary.detected_patterns[0].direction if summary.detected_patterns else None
+        swing_structure = str(getattr(regime, "swing_structure", "CONSOLIDATION"))
+
+        deterministic_align = TrendFIS.calculate_deterministic_alignment(
+            current_price=current_price,
+            ema9=ema9_val,
+            ema20=ema20_val,
+            sma50=ma.sma_50 if ma else None,
+            sma200=sma200_val,
+            swing_structure=swing_structure,
+            pattern_direction=pattern_direction,
+        )
 
         trend_inputs = TrendFIS.extract_inputs(
             current_price=current_price,
             sma200=sma200_val,
-            bullish_count=bullish_count,
-            bearish_count=bearish_count,
-            total_conditions=total_conditions,
+            alignment_score=deterministic_align,
         )
         trend_result = TrendFIS.evaluate(trend_inputs)
 
-        # ── Step 7: Evaluate StructureFIS ─────────────────────────────────
+        # ── Step 7: Evaluate StructureFIS (data-driven regime strength) ──
         regime_label = str(getattr(regime, "regime", "MIXED"))
         sr_zones_raw = []
         if sr:
@@ -310,6 +316,8 @@ class FuzzyOrchestrator:
             current_price=current_price,
             sr_zones=sr_zones_raw,
             regime=regime_label,
+            alignment_score=deterministic_align,
+            trend_membership=trend_result.activation,
         )
         structure_result = StructureFIS.evaluate(structure_inputs, regime_label=regime_label)
 
@@ -353,7 +361,7 @@ class FuzzyOrchestrator:
             ),
         ]
 
-        # ── Step 9: Compute directional score & conviction ───────────────
+        # ── Step 9: Compute directional score & agreement-scaled conviction ──
         trend_pol = TREND_POLARITY.get(trend_result.label, 0.0)
         trend_contrib = trend_pol * trend_result.activation
 
@@ -382,11 +390,19 @@ class FuzzyOrchestrator:
         normalized_score = max(0.0, min(1.0, (directional_score + 1.0) / 2.0))
         overall_label = _composite_label(normalized_score)
 
-        # Conviction represents the weighted firing strength / certainty across dimensions
-        weighted_activation = sum(
+        # ── Agreement & Conviction ─────────────────────────────────────────
+        # Agreement = 1 - sigma(D_i): drops conviction if signals fight each other
+        dir_contributions = [trend_contrib, momentum_contrib, volume_contrib, structure_contrib]
+        mean_d = sum(dir_contributions) / len(dir_contributions)
+        variance_d = sum((d - mean_d) ** 2 for d in dir_contributions) / len(dir_contributions)
+        std_dev_d = math.sqrt(variance_d)
+        agreement = max(0.0, min(1.0, 1.0 - std_dev_d))
+
+        base_activation = sum(
             d.activation * DIMENSION_WEIGHTS.get(d.name, 0.25)
             for d in dimensions
         )
+        conviction = max(0.0, min(1.0, base_activation * agreement))
 
         elapsed_ms = round((time.perf_counter() - t_start) * 1000.0, 2)
 
@@ -396,7 +412,7 @@ class FuzzyOrchestrator:
             current_price=round(current_price, 2),
             dimensions=dimensions,
             overall_label=overall_label,
-            overall_activation=round(weighted_activation, 4),
+            overall_activation=round(conviction, 4),
             methodology_note=(
                 "Classical Mamdani Fuzzy Inference System. "
                 "Linguistic interpretation layer only — no price prediction, "

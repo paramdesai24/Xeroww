@@ -349,32 +349,44 @@ class StructureFIS:
     def extract_inputs(
         current_price: float,
         sr_zones: list[dict[str, Any]],
-        regime: str,
+        regime: str = "MIXED",
+        alignment_score: float | None = None,
+        trend_membership: float | None = None,
     ) -> StructureInputs:
         """
-        Derive StructureInputs from SupportResistanceService and MarketRegimeDTO.
+        Derive StructureInputs from SupportResistanceService and data-driven market structure.
 
         Parameters
         ----------
-        current_price : float — latest close price
-        sr_zones      : list of SR zone dicts with 'zone_high' and 'zone_low' keys
-        regime        : str — regime label from MarketRegimeDTO.regime
+        current_price    : float — latest close price
+        sr_zones         : list of SR zone dicts with 'zone_high' and 'zone_low' keys
+        regime           : str — regime label from MarketRegimeDTO.regime
+        alignment_score  : float | None — deterministic alignment in [-1.0, 1.0]
+        trend_membership : float | None — TrendFIS winning activation in [0.0, 1.0]
         """
-        # Compute proximity as minimum percentage distance to any zone boundary
+        # Distance = min(|Price - Lower|, |Price - Upper|) (0.0 if inside the zone band)
         min_proximity_pct = 99.0
         if current_price > 0 and sr_zones:
             for zone in sr_zones:
                 zone_high = float(zone.get("zone_high", 0.0))
                 zone_low = float(zone.get("zone_low", 0.0))
-                zone_mid = (zone_high + zone_low) / 2.0 if zone_high and zone_low else 0.0
-
-                if zone_mid > 0:
-                    dist_pct = abs(current_price - zone_mid) / current_price * 100.0
+                if zone_high > 0 and zone_low > 0:
+                    if zone_low <= current_price <= zone_high:
+                        edge_dist = 0.0
+                    else:
+                        edge_dist = min(abs(current_price - zone_low), abs(current_price - zone_high))
+                    dist_pct = (edge_dist / current_price) * 100.0
                     min_proximity_pct = min(min_proximity_pct, dist_pct)
 
-        regime_strength = encode_regime_strength(regime)
+        # Data-driven regime strength: (|Alignment| + TrendMembership) / 2
+        if alignment_score is not None and trend_membership is not None:
+            regime_strength = (abs(alignment_score) + trend_membership) / 2.0
+        elif alignment_score is not None:
+            regime_strength = abs(alignment_score)
+        else:
+            regime_strength = encode_regime_strength(regime)
 
         return StructureInputs(
             zone_proximity_pct=round(min_proximity_pct, 4),
-            regime_strength=round(regime_strength, 4),
+            regime_strength=round(max(0.0, min(1.0, regime_strength)), 4),
         )

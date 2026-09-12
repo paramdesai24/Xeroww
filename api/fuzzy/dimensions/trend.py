@@ -295,27 +295,111 @@ class TrendFIS:
         )
 
     @staticmethod
+    def calculate_deterministic_alignment(
+        current_price: float,
+        ema9: float | None = None,
+        ema20: float | None = None,
+        sma50: float | None = None,
+        sma200: float | None = None,
+        swing_structure: str | None = None,
+        pattern_direction: str | None = None,
+    ) -> float:
+        """
+        Deterministic 6-signal market alignment in [-1.0, +1.0]:
+        1. Price > EMA20        : +1 if True else -1
+        2. EMA9 > EMA20         : +1 if True else -1
+        3. EMA20 > SMA50        : +1 if True else -1
+        4. Price > SMA200       : +1 if True else -1
+        5. HH/HL structure      : +1 if 'HIGHER_HIGHS_AND_LOWS', -1 if 'LOWER_HIGHS_AND_LOWS', else 0
+        6. Bullish pattern      : +1 if 'bullish', -1 if 'bearish', else 0
+
+        Alignment = sum(signal_i) / 6.0
+        """
+        signals: list[float] = []
+
+        # 1. Price > EMA20
+        if ema20 and current_price > 0:
+            signals.append(1.0 if current_price > ema20 else -1.0)
+        else:
+            signals.append(0.0)
+
+        # 2. EMA9 > EMA20
+        if ema9 and ema20:
+            signals.append(1.0 if ema9 > ema20 else -1.0)
+        else:
+            signals.append(0.0)
+
+        # 3. EMA20 > SMA50
+        if ema20 and sma50:
+            signals.append(1.0 if ema20 > sma50 else -1.0)
+        else:
+            signals.append(0.0)
+
+        # 4. Price > SMA200
+        if sma200 and current_price > 0:
+            signals.append(1.0 if current_price > sma200 else -1.0)
+        else:
+            signals.append(0.0)
+
+        # 5. HH/HL structure
+        if swing_structure == "HIGHER_HIGHS_AND_LOWS":
+            signals.append(1.0)
+        elif swing_structure == "LOWER_HIGHS_AND_LOWS":
+            signals.append(-1.0)
+        else:
+            signals.append(0.0)
+
+        # 6. Bullish pattern
+        if pattern_direction == "bullish":
+            signals.append(1.0)
+        elif pattern_direction == "bearish":
+            signals.append(-1.0)
+        else:
+            signals.append(0.0)
+
+        alignment = sum(signals) / 6.0
+        return max(-1.0, min(1.0, alignment))
+
+    @staticmethod
     def extract_inputs(
         current_price: float,
         sma200: float | None,
-        bullish_count: int,
-        bearish_count: int,
-        total_conditions: int,
+        alignment_score: float | None = None,
+        ema9: float | None = None,
+        ema20: float | None = None,
+        sma50: float | None = None,
+        swing_structure: str | None = None,
+        pattern_direction: str | None = None,
+        bullish_count: int = 0,
+        bearish_count: int = 0,
+        total_conditions: int = 0,
     ) -> TrendInputs:
         """
-        Derive TrendInputs from SMA and SignalAlignmentDTO data.
+        Derive TrendInputs from SMA and deterministic 6-signal alignment.
         """
         if current_price <= 0 or sma200 is None or sma200 <= 0:
             price_vs_sma200_pct = 0.0
         else:
             price_vs_sma200_pct = (current_price - sma200) / current_price * 100.0
 
-        if total_conditions > 0:
-            alignment_score = (bullish_count - bearish_count) / total_conditions
+        if alignment_score is not None:
+            final_align = alignment_score
+        elif ema20 is not None or sma50 is not None or swing_structure is not None:
+            final_align = TrendFIS.calculate_deterministic_alignment(
+                current_price=current_price,
+                ema9=ema9,
+                ema20=ema20,
+                sma50=sma50,
+                sma200=sma200,
+                swing_structure=swing_structure,
+                pattern_direction=pattern_direction,
+            )
+        elif total_conditions > 0:
+            final_align = (bullish_count - bearish_count) / total_conditions
         else:
-            alignment_score = 0.0
+            final_align = 0.0
 
         return TrendInputs(
             price_vs_sma200_pct=round(price_vs_sma200_pct, 4),
-            alignment_score=round(max(-1.0, min(1.0, alignment_score)), 4),
+            alignment_score=round(max(-1.0, min(1.0, final_align)), 4),
         )
