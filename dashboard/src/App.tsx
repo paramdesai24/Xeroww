@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -23,10 +23,11 @@ import AlertsManager from "./components/AlertsManager";
 import JournalView from "./components/JournalView";
 import SystemView from "./components/SystemView";
 import AuthModal from "./components/AuthModal";
+import { XRayDrawer } from "./components/xray";
 
 import { useMarketData } from "./hooks/useMarketData";
 import { useAuth } from "./hooks/useAuth";
-import type { OHLCBar } from "./types/market";
+import { useSelectedCandle } from "./hooks/useSelectedCandle";
 import type { ReplayStepResponse } from "./types/structure";
 
 export default function App() {
@@ -46,16 +47,28 @@ export default function App() {
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
     useMarketData();
 
-  // Selected candle for dynamic Candle Anatomy (defaults to latest if none selected)
-  const [selectedCandle, setSelectedCandle] = useState<OHLCBar | null>(null);
+  // Active candles slice (either historical slice from Replay or live OHLC bars)
+  const activeCandles = isReplayMode && replayState ? (replayState.candles_slice as any) : ohlc?.candles;
 
-  // Reset selected candle when switching stocks
-  useEffect(() => {
-    setSelectedCandle(null);
-  }, [activeSymbol]);
+  // Flagship X-Ray Mode Hook (memoized deep forensics, deterministic pattern evaluation, Kafka lineage)
+  const xray = useSelectedCandle({
+    symbol: activeSymbol,
+    candles: activeCandles,
+    structure: isReplayMode && replayState ? {
+      symbol: activeSymbol,
+      current_price: replayState.current_candle?.close ?? 0,
+      support_resistance: replayState.support_resistance!,
+      volume: replayState.volume!,
+      moving_averages: replayState.moving_averages!,
+      market_regime: replayState.market_regime!,
+      signal_alignment: replayState.signal_alignment!,
+      detected_patterns: replayState.pattern ? [replayState.pattern as any] : [],
+      contextual_pattern: null,
+    } : structure,
+  });
 
-  // Active candle displayed in Candle Anatomy
-  const activeCandle = selectedCandle ?? ohlc?.candles.at(-1) ?? null;
+  // Active candle displayed in sidebar Candle Anatomy & Modals
+  const activeCandle = xray.selectedCandle ?? activeCandles?.at(-1) ?? null;
 
   const handleModuleChange = (mod: Module) => {
     setActiveModule(mod);
@@ -148,15 +161,17 @@ export default function App() {
                 } : structure}
                 loading={loading}
                 error={error}
-                onSelectCandle={setSelectedCandle}
+                onSelectCandle={xray.selectCandle}
                 onOpenReplay={() => setIsReplayMode(true)}
                 onOpenDiff={() => setShowDiffModal(true)}
                 onOpenForensics={() => setShowForensicsModal(true)}
+                isXRayOpen={xray.isDrawerOpen}
+                onToggleXRay={xray.toggleDrawer}
               />
               <OHLCTable
                 candles={isReplayMode && replayState ? replayState.candles_slice as any : ohlc?.candles}
                 selectedDate={activeCandle?.time}
-                onSelectCandle={setSelectedCandle}
+                onSelectCandle={xray.selectCandle}
               />
             </div>
 
@@ -210,7 +225,7 @@ export default function App() {
                     <OHLCStats quote={quote} ohlc={ohlc} />
                     <CandleAnatomy
                       candle={activeCandle}
-                      isLatest={!selectedCandle || selectedCandle.time === ohlc?.candles.at(-1)?.time}
+                      isLatest={!xray.selectedCandle || xray.selectedCandle.time === ohlc?.candles.at(-1)?.time}
                     />
                     <PatternCard pattern={structure?.detected_patterns?.[0] ? {
                       symbol: structure.symbol,
@@ -296,6 +311,15 @@ export default function App() {
           onClose={() => setShowBreadthModal(false)}
         />
       )}
+
+      {/* Flagship X-Ray Mode Right-Side Inspection Drawer */}
+      <XRayDrawer
+        isOpen={xray.isDrawerOpen}
+        data={xray.inspectionData}
+        onClose={xray.closeDrawer}
+        onPrevCandle={xray.selectPrevCandle}
+        onNextCandle={xray.selectNextCandle}
+      />
     </div>
   );
 }
