@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -81,23 +81,27 @@ export default function App() {
   const activeCandle = xray.selectedCandle ?? activeCandles?.at(-1) ?? null;
 
   // Fetch market domain events when entering replay mode or switching symbol
+  const fetchEvents = useCallback(() => {
+    setLoadingEvents(true);
+    api.events
+      .getTimeline(activeSymbol, "3mo")
+      .then((res) => {
+        setReplayEvents(res.events || []);
+        setLoadingEvents(false);
+      })
+      .catch(() => setLoadingEvents(false));
+  }, [activeSymbol]);
+
   useEffect(() => {
     if (isReplayMode) {
       setSidebarTab("EVENTS");
-      setLoadingEvents(true);
-      api.events
-        .getTimeline(activeSymbol, "3mo")
-        .then((res) => {
-          setReplayEvents(res.events || []);
-          setLoadingEvents(false);
-        })
-        .catch(() => setLoadingEvents(false));
+      fetchEvents();
     } else {
       if (sidebarTab === "EVENTS") {
         setSidebarTab("STRUCTURE");
       }
     }
-  }, [isReplayMode, activeSymbol]);
+  }, [isReplayMode, fetchEvents]);
 
   // Handle clicking a timeline event:
   // - Jump chart to that candle
@@ -272,6 +276,7 @@ export default function App() {
                     selectedEventId={selectedEventId}
                     onSelectEvent={handleSelectEvent}
                     loading={loadingEvents}
+                    onRefresh={fetchEvents}
                   />
                 ) : sidebarTab === "STRUCTURE" ? (
                   <>

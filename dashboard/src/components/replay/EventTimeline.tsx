@@ -24,6 +24,7 @@ interface EventTimelineProps {
   selectedEventId?: string | null;
   onSelectEvent: (event: MarketEvent) => void;
   loading?: boolean;
+  onRefresh?: () => void;
 }
 
 function getEventIcon(type: MarketEventType, _severity?: EventSeverity) {
@@ -83,6 +84,7 @@ export function EventTimeline({
   selectedEventId,
   onSelectEvent,
   loading = false,
+  onRefresh,
 }: EventTimelineProps) {
   const [severityFilter, setSeverityFilter] = useState<"ALL" | EventSeverity>("ALL");
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
@@ -103,8 +105,16 @@ export function EventTimeline({
 
   if (!events || events.length === 0) {
     return (
-      <div className="p-4 text-center text-xs font-mono text-[#64748B]">
+      <div className="p-6 text-center text-xs font-mono text-[#64748B] flex flex-col items-center gap-2.5">
         <span className="whitespace-nowrap">No market domain events detected in this historical window.</span>
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="px-3 py-1 bg-[#1E90FF]/15 hover:bg-[#1E90FF]/25 border border-[#1E90FF]/40 text-[#1E90FF] text-[11px] font-semibold transition-colors whitespace-nowrap"
+          >
+            Reload Events
+          </button>
+        )}
       </div>
     );
   }
