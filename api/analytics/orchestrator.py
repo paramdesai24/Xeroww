@@ -262,6 +262,38 @@ class AnalyticsOrchestrator:
         return self.pattern.detect_marubozu(candles, symbol, display_name)
 
     # -------------------------------------------------------------------------
+    # Replay & Event Engine Orchestration
+    # -------------------------------------------------------------------------
+    def run_replay_timeline(self, symbol: str, candles: list[dict[str, Any]]) -> dict[str, Any]:
+        from api.services.replay_service import ReplayEngine
+        engine = ReplayEngine(symbol=symbol, all_candles=candles)
+        return {
+            "symbol": engine.symbol,
+            "total_bars": engine.total_bars,
+            "timeline": engine.get_timeline(),
+        }
+
+    def run_replay_step(self, symbol: str, candles: list[dict[str, Any]], step: int) -> dict[str, Any]:
+        from api.services.replay_service import ReplayEngine
+        engine = ReplayEngine(symbol=symbol, all_candles=candles)
+        return engine.evaluate_at_step(step)
+
+    def run_replay_jump(self, symbol: str, candles: list[dict[str, Any]], timestamp: str) -> dict[str, Any]:
+        from api.services.replay_service import ReplayEngine
+        engine = ReplayEngine(symbol=symbol, all_candles=candles)
+        return engine.evaluate_at_timestamp(timestamp)
+
+    def run_events_timeline(self, symbol: str, candles: list[dict[str, Any]]) -> list[Any]:
+        from api.services.event_engine import EventEngine
+        engine = EventEngine(symbol=symbol, all_candles=candles)
+        return engine.generate_all_events()
+
+    def run_events_at_step(self, symbol: str, candles: list[dict[str, Any]], step: int) -> list[Any]:
+        from api.services.event_engine import EventEngine
+        engine = EventEngine(symbol=symbol, all_candles=candles)
+        return engine.detect_events_at_step(step)
+
+    # -------------------------------------------------------------------------
     # Full Unified Analytics Suite (Single-Trip)
     # -------------------------------------------------------------------------
     def run_market_structure_summary(
