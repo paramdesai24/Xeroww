@@ -21,6 +21,7 @@ import type { MarketEvent, EventSeverity, MarketEventType } from "../../types/ev
 interface EventTimelineProps {
   events: MarketEvent[];
   currentStep: number;
+  totalSteps?: number;
   selectedEventId?: string | null;
   onSelectEvent: (event: MarketEvent) => void;
   loading?: boolean;
@@ -81,6 +82,7 @@ function getSeverityColor(severity: EventSeverity) {
 export function EventTimeline({
   events,
   currentStep,
+  totalSteps,
   selectedEventId,
   onSelectEvent,
   loading = false,
@@ -89,10 +91,20 @@ export function EventTimeline({
   const [severityFilter, setSeverityFilter] = useState<"ALL" | EventSeverity>("ALL");
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
 
+  // Strictly chronological point-in-time filter: only events that have occurred up to currentStep
+  const revealedEvents = useMemo(() => {
+    return events.filter((e) => e.candle_index <= currentStep);
+  }, [events, currentStep]);
+
+  // Sort descending by candle_index so the latest session event is on top (like recent sessions)
+  const sortedRevealedEvents = useMemo(() => {
+    return [...revealedEvents].sort((a, b) => b.candle_index - a.candle_index);
+  }, [revealedEvents]);
+
   const filteredEvents = useMemo(() => {
-    if (severityFilter === "ALL") return events;
-    return events.filter((e) => e.severity === severityFilter);
-  }, [events, severityFilter]);
+    if (severityFilter === "ALL") return sortedRevealedEvents;
+    return sortedRevealedEvents.filter((e) => e.severity === severityFilter);
+  }, [sortedRevealedEvents, severityFilter]);
 
   if (loading) {
     return (
@@ -119,6 +131,34 @@ export function EventTimeline({
     );
   }
 
+  // If events exist for this symbol but none have occurred yet up to currentStep
+  if (sortedRevealedEvents.length === 0) {
+    return (
+      <div className="flex flex-col h-full bg-[#05070B] border border-[#1E2538] select-none min-h-0">
+        <div className="px-3 py-2 bg-[#0B0E14] border-b border-[#1E2538] flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <GitCommit size={13} className="text-[#1E90FF] shrink-0" />
+            <span className="text-xs font-bold font-mono tracking-wider text-[#F8FAFC] whitespace-nowrap">
+              EVENT TIMELINE
+            </span>
+            <span className="text-[10px] text-[#64748B] font-mono px-1.5 py-0.2 bg-[#10141D] border border-[#1E2538] rounded-sm whitespace-nowrap">
+              0 revealed · {events.length} total
+            </span>
+          </div>
+        </div>
+        <div className="flex-1 p-6 text-center text-xs font-mono text-[#64748B] flex flex-col items-center justify-center gap-2.5">
+          <GitCommit size={24} className="text-[#1E90FF] animate-pulse" />
+          <span className="text-[#94A3B8] font-semibold whitespace-nowrap">
+            Awaiting chronological market events…
+          </span>
+          <p className="text-[11px] text-[#64748B] leading-relaxed max-w-[280px] m-0">
+            Bar {currentStep + 1}{totalSteps ? ` / ${totalSteps}` : ""}: Advance playback or press <span className="text-[#1E90FF] font-semibold">Play</span>. Events will reveal dynamically as sessions unfold.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-[#05070B] border border-[#1E2538] select-none min-h-0">
       {/* Header with filter controls */}
@@ -129,7 +169,7 @@ export function EventTimeline({
             EVENT TIMELINE
           </span>
           <span className="text-[10px] text-[#64748B] font-mono px-1.5 py-0.2 bg-[#10141D] border border-[#1E2538] rounded-sm whitespace-nowrap">
-            {filteredEvents.length}/{events.length}
+            {filteredEvents.length} revealed · {events.length} total
           </span>
         </div>
 

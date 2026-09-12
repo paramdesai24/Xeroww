@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -52,6 +52,11 @@ export default function App() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [externalStep, setExternalStep] = useState<number | null>(null);
   const [currentReplayStep, setCurrentReplayStep] = useState<number>(0);
+
+  // Chronological point-in-time revealed events count up to currentReplayStep
+  const revealedEventsCount = useMemo(() => {
+    return replayEvents.filter((e) => e.candle_index <= currentReplayStep).length;
+  }, [replayEvents, currentReplayStep]);
 
   // V0.5 Market Terminal State (Fully preserved + V0.6 Structure)
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
@@ -188,7 +193,7 @@ export default function App() {
                   onToggleTimeline={() =>
                     setSidebarTab((prev) => (prev === "EVENTS" ? "STRUCTURE" : "EVENTS"))
                   }
-                  timelineEventCount={replayEvents.length}
+                  timelineEventCount={revealedEventsCount}
                   externalStep={externalStep}
                   onStepChange={setCurrentReplayStep}
                 />
@@ -259,7 +264,7 @@ export default function App() {
                       </span>
                       {tab === "EVENTS" && replayEvents.length > 0 && (
                         <span className="px-1 py-0.2 text-[10px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-sm font-mono whitespace-nowrap">
-                          {replayEvents.length}
+                          {revealedEventsCount}/{replayEvents.length}
                         </span>
                       )}
                     </button>
@@ -273,6 +278,7 @@ export default function App() {
                   <EventTimeline
                     events={replayEvents}
                     currentStep={currentReplayStep}
+                    totalSteps={replayState?.total_steps}
                     selectedEventId={selectedEventId}
                     onSelectEvent={handleSelectEvent}
                     loading={loadingEvents}
