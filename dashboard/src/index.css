@@ -130,4 +130,13 @@
   .border-t-accent-secondary {
     border-top: 2px solid var(--accent-secondary);
   }
+
+  /* SRE Topology Pulse Animations */
+  @keyframes pulse-stroke {
+    0%, 100% { stroke-opacity: 0.35; stroke-width: 1.5; }
+    50% { stroke-opacity: 0.95; stroke-width: 2.2; }
+  }
+  .animate-pulse-stroke {
+    animation: pulse-stroke 2.5s infinite ease-in-out;
+  }
 }

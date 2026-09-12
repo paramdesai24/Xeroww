@@ -243,7 +243,7 @@ function TopologyMap({
                   stroke={col}
                   strokeWidth="1.5"
                   strokeDasharray="4 3"
-                  opacity="0.6"
+                  className="animate-pulse-stroke"
                 />
                 {/* Protocol badge on edge */}
                 <text
