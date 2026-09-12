@@ -19,7 +19,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Skips docs, openapi.json, health check, and metrics endpoints.
     """
 
-    EXEMPT_PATHS = {"/health", "/docs", "/redoc", "/openapi.json", "/metrics", "/"}
+    EXEMPT_PATHS = {"/health", "/health/system", "/docs", "/redoc", "/openapi.json", "/metrics", "/"}
 
     async def dispatch(self, request: Request, call_next):
         if request.method == "OPTIONS" or request.url.path in self.EXEMPT_PATHS:
