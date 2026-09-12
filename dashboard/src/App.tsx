@@ -295,11 +295,6 @@ export default function App() {
                           ? "Context"
                           : "Anatomy"}
                       </span>
-                      {tab === "CONTEXT" && (
-                        <span className="px-1 py-0.2 text-[9px] bg-[#1E90FF]/15 text-[#60A5FA] border border-[#1E90FF]/30 rounded-xs font-mono">
-                          v0.8
-                        </span>
-                      )}
                       {tab === "EVENTS" && replayEvents.length > 0 && (
                         <span className="px-1 py-0.2 text-[10px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-sm font-mono whitespace-nowrap">
                           {revealedEventsCount}/{replayEvents.length}
