@@ -14,6 +14,12 @@ from api.events.market_events import (
     RegimeChanged,
     SupportResistanceBroken,
 )
+from api.events.portfolio_events import (
+    PortfolioCreated,
+    AssetBought,
+    AssetSold,
+    PortfolioUpdated,
+)
 
 __all__ = [
     "DomainEvent",
@@ -21,5 +27,10 @@ __all__ = [
     "PatternDetected",
     "RegimeChanged",
     "SupportResistanceBroken",
+    "PortfolioCreated",
+    "AssetBought",
+    "AssetSold",
+    "PortfolioUpdated",
 ]
+
 
