@@ -8,5 +8,18 @@ Provides a drop-in replacement seam for Apache Kafka / Redis Streams in distribu
 """
 
 from api.events.base import DomainEvent
+from api.events.market_events import (
+    MarketSnapshotReceived,
+    PatternDetected,
+    RegimeChanged,
+    SupportResistanceBroken,
+)
 
-__all__ = ["DomainEvent"]
+__all__ = [
+    "DomainEvent",
+    "MarketSnapshotReceived",
+    "PatternDetected",
+    "RegimeChanged",
+    "SupportResistanceBroken",
+]
+
