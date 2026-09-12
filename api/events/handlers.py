@@ -23,7 +23,7 @@ def log_event_subscriber(event: DomainEvent) -> None:
     Prints every domain event that transits through the event bus.
     """
     logger.info(
-        f"⚡ [DOMAIN EVENT] {event.event_type} "
+        f"[DOMAIN EVENT] {event.event_type} "
         f"| aggregate={event.aggregate_id} "
         f"| payload={event.payload}"
     )
@@ -38,8 +38,8 @@ def portfolio_trade_notification_handler(event: DomainEvent) -> None:
     quantity = event.payload.get("quantity", 0)
     price = event.payload.get("price", 0)
     logger.info(
-        f"📈 [PORTFOLIO REACTION] Trade executed on {symbol}: "
-        f"{quantity} units @ ₹{price:,.2f}"
+        f"[PORTFOLIO REACTION] Trade executed on {symbol}: "
+        f"{quantity} units @ Rs.{price:,.2f}"
     )
 
 
@@ -51,9 +51,9 @@ def alert_triggered_notification_handler(event: DomainEvent) -> None:
     symbol = event.payload.get("symbol", "")
     reason = event.payload.get("reason", "")
     price = event.payload.get("trigger_price")
-    price_str = f" @ ₹{price:,.2f}" if price else ""
+    price_str = f" @ Rs.{price:,.2f}" if price else ""
     logger.warning(
-        f"🔔 [ALERT TRIGGERED] {symbol}{price_str}: {reason}"
+        f"[ALERT TRIGGERED] {symbol}{price_str}: {reason}"
     )
 
 
@@ -67,7 +67,7 @@ def pattern_detected_handler(event: DomainEvent) -> None:
     direction = event.payload.get("direction", "")
     confidence = event.payload.get("confidence", 0)
     logger.info(
-        f"🔍 [PATTERN REACTION] {symbol} {pattern_name} ({direction}, conf={confidence:.2f})"
+        f"[PATTERN REACTION] {symbol} {pattern_name} ({direction}, conf={confidence:.2f})"
     )
 
 
@@ -85,4 +85,5 @@ def register_default_handlers(bus: EventBus) -> None:
     bus.subscribe("alert.triggered", alert_triggered_notification_handler)
     bus.subscribe("market.pattern_detected", pattern_detected_handler)
 
-    logger.info("✓ Domain event bus default handlers registered successfully.")
+    logger.info("Domain event bus default handlers registered successfully.")
+

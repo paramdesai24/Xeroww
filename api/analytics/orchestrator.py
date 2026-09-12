@@ -269,18 +269,23 @@ class AnalyticsOrchestrator:
                 from api.events import get_event_bus, PatternDetected
                 bus = get_event_bus()
                 for p in patterns:
+                    p_name = getattr(p, "pattern", getattr(p, "pattern_type", "UNKNOWN"))
+                    conf = getattr(p, "confidence", 1.0)
+                    dir_val = getattr(p, "direction", "NEUTRAL")
+                    idx = getattr(p, "candle_index", None)
                     bus.publish(
                         PatternDetected.create(
                             symbol=symbol,
-                            pattern_name=p.pattern_type,
-                            confidence=p.confidence,
-                            direction=p.direction,
-                            candle_index=p.candle_index,
+                            pattern_name=p_name,
+                            confidence=conf,
+                            direction=dir_val,
+                            candle_index=idx,
                         )
                     )
             except Exception:
                 pass
         return patterns
+
 
 
     def run_contextual_pattern(
