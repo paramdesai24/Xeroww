@@ -2,7 +2,7 @@
 // Section 2: Deterministic Pattern Engine display.
 // Primary pattern, deterministic confidence meter, mathematical classification rationale, and conditions checklist.
 
-import { ShieldCheck, Check, X, Compass, Target } from "lucide-react";
+import { Check, X, Compass, Target } from "lucide-react";
 import type { XRayPatternEngineResult } from "../../types/xray";
 
 interface XRayPatternEngineProps {

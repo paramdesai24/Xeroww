@@ -25,6 +25,7 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
           <span className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]" style={{ fontFamily: "var(--font-mono)" }}>
             3. Market Structure Context
           </span>
+          <span className="text-[10px] text-[#6B6B72] font-mono">(₹{currentClose.toFixed(2)})</span>
         </div>
         <span className="text-[10px] font-mono text-[#1E90FF] border border-[rgba(30,144,255,0.3)] bg-[rgba(30,144,255,0.08)] px-2 py-0.5 rounded-sm">
           POINT-IN-TIME

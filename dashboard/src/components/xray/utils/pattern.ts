@@ -5,7 +5,6 @@
 import type { OHLCBar } from "../../../types/market";
 import type {
   CandleAnatomyMetrics,
-  PatternCondition,
   XRayPatternEngineResult,
 } from "../../../types/xray";
 
@@ -13,7 +12,7 @@ import type {
  * Evaluates deterministic mathematical conditions on a candle and its preceding bar.
  */
 export function evaluateCandlePattern(
-  candle: OHLCBar,
+  _candle: OHLCBar,
   anatomy: CandleAnatomyMetrics,
   prevCandle?: OHLCBar | null
 ): XRayPatternEngineResult {

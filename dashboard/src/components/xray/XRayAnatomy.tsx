@@ -39,6 +39,7 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
           <span className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]" style={{ fontFamily: "var(--font-mono)" }}>
             1. Candle Anatomy
           </span>
+          <span className="text-[10px] text-[#6B6B72] font-mono">({timestamp})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
@@ -186,7 +187,7 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
       </div>
 
       {/* Session Momentum Spread */}
-      {spreadToPreviousClose !== null && spreadToPreviousClosePct !== null && (
+      {typeof spreadToPreviousClose === "number" && typeof spreadToPreviousClosePct === "number" && (
         <div className="flex items-center justify-between text-[11px] font-mono px-2 py-1.5 bg-[#05070B] border border-[#1A1A1A]">
           <span className="text-[#6B6B72]">Change vs Prior Close:</span>
           <span

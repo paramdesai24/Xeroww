@@ -110,6 +110,10 @@ export function XRayProvenance({ provenance }: XRayProvenanceProps) {
             </span>
           </div>
           <div className="flex justify-between">
+            <span className="text-[#6B6B72]">Ingestion Timestamp:</span>
+            <span className="text-[#A0A0A8] font-mono">{ingestionTimestamp}</span>
+          </div>
+          <div className="flex justify-between">
             <span className="text-[#6B6B72]">Ingestion Latency:</span>
             <span className="text-[#22C55E] font-semibold">{ingestionLatencyMs} ms</span>
           </div>
