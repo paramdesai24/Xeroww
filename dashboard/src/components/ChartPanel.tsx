@@ -401,12 +401,12 @@ export default function ChartPanel({
               </div>
 
               {/* Intelligence Feature Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3">
+              <div className="flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3 shrink-0">
                 {onOpenReplay && (
                   <button
                     id="trigger-replay-btn"
                     onClick={onOpenReplay}
-                    className="px-2.5 py-1 text-xs font-semibold rounded-sm bg-[var(--accent-subtle)] text-[var(--accent-primary)] border border-[var(--accent-border)] hover:border-[var(--accent-primary)] transition-colors duration-150"
+                    className="px-2.5 py-1 text-xs font-semibold rounded-sm bg-[var(--accent-subtle)] text-[var(--accent-primary)] border border-[var(--accent-border)] hover:border-[var(--accent-primary)] transition-colors duration-150 whitespace-nowrap shrink-0"
                     title="Launch Historical Market Replay Scrubber"
                   >
                     Replay
@@ -416,7 +416,7 @@ export default function ChartPanel({
                   <button
                     id="trigger-diff-btn"
                     onClick={onOpenDiff}
-                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150"
+                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150 whitespace-nowrap shrink-0"
                     title="Inspect What Changed Diff"
                   >
                     Diff
@@ -426,22 +426,22 @@ export default function ChartPanel({
                   <button
                     id="trigger-xray-btn"
                     onClick={onToggleXRay}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-sm border transition-colors duration-150 flex items-center gap-1.5 ${
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-sm border transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                       isXRayOpen
                         ? "bg-[#1E90FF] text-white border-[#1E90FF]"
                         : "bg-[var(--surface-elevated)] text-[var(--accent-primary)] border-[var(--border-default)] hover:border-[var(--accent-primary)]"
                     }`}
                     title="Toggle Flagship X-Ray Inspection Drawer (Click any candlestick)"
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${isXRayOpen ? "bg-white animate-ping" : "bg-[#1E90FF]"}`} />
-                    X-Ray
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isXRayOpen ? "bg-white animate-ping" : "bg-[#1E90FF]"}`} />
+                    <span>X-Ray</span>
                   </button>
                 )}
                 {onOpenForensics && (
                   <button
                     id="trigger-forensics-btn"
                     onClick={onOpenForensics}
-                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150"
+                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150 whitespace-nowrap shrink-0"
                     title="Inspect Candle Forensics & Provenance"
                   >
                     Forensics
