@@ -25,6 +25,8 @@ import SystemView from "./components/SystemView";
 import AuthModal from "./components/AuthModal";
 import { XRayDrawer } from "./components/xray";
 import { EventTimeline } from "./components/replay";
+import { FuzzyExplainCard } from "./components/FuzzyExplainCard";
+import type { FuzzyExplainabilityReport } from "./types/fuzzy";
 
 import { useMarketData } from "./hooks/useMarketData";
 import { useAuth } from "./hooks/useAuth";
@@ -52,6 +54,11 @@ export default function App() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [externalStep, setExternalStep] = useState<number | null>(null);
   const [currentReplayStep, setCurrentReplayStep] = useState<number>(0);
+
+  // V0.8 Mamdani Fuzzy Explainability Engine state
+  const [fuzzyReport, setFuzzyReport] = useState<FuzzyExplainabilityReport | null>(null);
+  const [fuzzyLoading, setFuzzyLoading] = useState<boolean>(false);
+  const [fuzzyError, setFuzzyError] = useState<string | null>(null);
 
   // Chronological point-in-time revealed events count up to currentReplayStep
   const revealedEventsCount = useMemo(() => {
@@ -107,6 +114,28 @@ export default function App() {
       }
     }
   }, [isReplayMode, fetchEvents]);
+
+  // Fetch fuzzy explainability report when symbol changes (non-replay mode)
+  const fetchFuzzyReport = useCallback(() => {
+    if (!activeSymbol || isReplayMode) return;
+    setFuzzyLoading(true);
+    setFuzzyError(null);
+    api.fuzzy
+      .explain(activeSymbol, "1y")
+      .then((report) => {
+        setFuzzyReport(report);
+        setFuzzyLoading(false);
+      })
+      .catch((err) => {
+        setFuzzyError(err?.message ?? "Fuzzy inference failed");
+        setFuzzyLoading(false);
+      });
+  }, [activeSymbol, isReplayMode]);
+
+  useEffect(() => {
+    setFuzzyReport(null);
+    fetchFuzzyReport();
+  }, [activeSymbol, fetchFuzzyReport]);
 
   // Handle clicking a timeline event:
   // - Jump chart to that candle
@@ -288,6 +317,13 @@ export default function App() {
                   <>
                     <MarketRegimeCard regime={structure?.market_regime ?? null} />
                     <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />
+                    {/* V0.8 — Mamdani Fuzzy Explainability Engine */}
+                    <FuzzyExplainCard
+                      report={fuzzyReport}
+                      loading={fuzzyLoading}
+                      error={fuzzyError}
+                      onRefresh={fetchFuzzyReport}
+                    />
                     <PatternCard pattern={structure?.detected_patterns?.[0] ? {
                       symbol: structure.symbol,
                       display_name: structure.symbol.replace(".NS", ""),
