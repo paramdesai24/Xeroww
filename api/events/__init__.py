@@ -37,6 +37,7 @@ from api.events.bus import (
     get_event_bus,
     set_event_bus,
 )
+from api.events.handlers import register_default_handlers
 
 __all__ = [
     "DomainEvent",
@@ -59,7 +60,9 @@ __all__ = [
     "InMemoryEventBus",
     "get_event_bus",
     "set_event_bus",
+    "register_default_handlers",
 ]
+
 
 
 

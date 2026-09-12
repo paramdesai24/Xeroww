@@ -45,6 +45,10 @@ async def lifespan(app: FastAPI):
     # Auto-create all SQLAlchemy tables (idempotent)
     create_all_tables()
 
+    # Initialize Domain Event Bus & register default decoupled subscribers
+    from api.events import get_event_bus, register_default_handlers
+    register_default_handlers(get_event_bus())
+
     print("=" * 60)
     print(f"  Xeroww API v{settings.APP_VERSION} — Financial Intelligence Platform")
     print("  Data Provider: Yahoo Finance (near real-time, delayed)")
@@ -53,6 +57,7 @@ async def lifespan(app: FastAPI):
     print("=" * 60)
     yield
     print("Xeroww API shutting down.")
+
 
 
 # ---------------------------------------------------------------------------
