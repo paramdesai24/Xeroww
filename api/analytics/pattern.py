@@ -8,7 +8,12 @@ Wraps core mathematical pattern scanning logic into isolated services.
 from dataclasses import dataclass, asdict
 from typing import Any, Literal
 
-from api.services.pattern_engine import scan_patterns, extract_metrics, detect_marubozu_candle
+from api.services.pattern_engine import (
+    scan_patterns,
+    extract_metrics,
+    detect_marubozu_candle,
+    PatternDetection,
+)
 from api.services.contextual_pattern_service import enrich_pattern_with_context
 from api.core.config import settings
 
@@ -30,30 +35,55 @@ class CandleSummaryDTO:
 
 @dataclass(frozen=True)
 class PatternDetectionDTO:
-    pattern_id: str
-    pattern_name: str
-    category: str
+    pattern: str
     direction: Literal["bullish", "bearish", "neutral"]
     candle_index: int
-    candle_date: str
-    confidence: float
+    timestamp: str
+    body_ratio: float
+    upper_shadow_ratio: float
+    lower_shadow_ratio: float
+    category: Literal["reversal", "continuation", "indecision"]
     explanation: str
-    stop_loss: float | None
-    target: float | None
     context: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
+    def to_raw_pattern(self) -> PatternDetection:
+        """Convert DTO back to internal PatternDetection object for contextual engines."""
+        return PatternDetection(
+            pattern=self.pattern,
+            direction=self.direction,  # type: ignore[arg-type]
+            candle_index=self.candle_index,
+            timestamp=self.timestamp,
+            body_ratio=self.body_ratio,
+            upper_shadow_ratio=self.upper_shadow_ratio,
+            lower_shadow_ratio=self.lower_shadow_ratio,
+            category=self.category,  # type: ignore[arg-type]
+            explanation=self.explanation,
+            context=dict(self.context),
+        )
+
 
 @dataclass(frozen=True)
 class ContextualPatternDTO:
-    base_pattern: dict[str, Any]
-    trend_context: str
-    volume_confirmation: bool
-    sr_proximity: str
-    composite_confluence_score: float
-    institutional_verdict: str
+    symbol: str
+    pattern: str
+    direction: str
+    category: str
+    timestamp: str
+    current_price: float
+    nearest_support_price: float | None
+    support_distance_pct: float | None
+    nearest_resistance_price: float | None
+    resistance_distance_pct: float | None
+    current_volume: float
+    rvol: float
+    volume_state: str
+    market_regime: str
+    price_vs_ema20: str
+    five_session_change_pct: float
+    context_summary: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -127,16 +157,15 @@ class PatternService:
             d = det.to_dict()
             results.append(
                 PatternDetectionDTO(
-                    pattern_id=d["pattern_id"],
-                    pattern_name=d["pattern_name"],
-                    category=d["category"],
+                    pattern=d["pattern"],
                     direction=d["direction"],
                     candle_index=d["candle_index"],
-                    candle_date=d["candle_date"],
-                    confidence=d["confidence"],
+                    timestamp=d["timestamp"],
+                    body_ratio=d["body_ratio"],
+                    upper_shadow_ratio=d["upper_shadow_ratio"],
+                    lower_shadow_ratio=d["lower_shadow_ratio"],
+                    category=d["category"],
                     explanation=d["explanation"],
-                    stop_loss=d.get("stop_loss"),
-                    target=d.get("target"),
                     context=d.get("context", {}),
                 )
             )
@@ -145,17 +174,17 @@ class PatternService:
     @classmethod
     def enrich_context(
         cls,
-        raw_or_dto_pattern: Any,
+        pattern_item: PatternDetectionDTO | PatternDetection | Any,
         candles: list[dict[str, Any]],
         symbol: str,
     ) -> ContextualPatternDTO | None:
         """
         Cross-reference detected pattern against structural context (S/R, volume, trend).
         """
-        if hasattr(raw_or_dto_pattern, "to_dict"):
-            raw_pattern = raw_or_dto_pattern
+        if isinstance(pattern_item, PatternDetectionDTO):
+            raw_pattern = pattern_item.to_raw_pattern()
         else:
-            raw_pattern = raw_or_dto_pattern
+            raw_pattern = pattern_item
 
         try:
             enriched = enrich_pattern_with_context(raw_pattern, candles, symbol)
@@ -163,12 +192,23 @@ class PatternService:
                 return None
             e_dict = enriched.to_dict()
             return ContextualPatternDTO(
-                base_pattern=e_dict.get("base_pattern", {}),
-                trend_context=e_dict.get("trend_context", ""),
-                volume_confirmation=bool(e_dict.get("volume_confirmation", False)),
-                sr_proximity=e_dict.get("sr_proximity", ""),
-                composite_confluence_score=float(e_dict.get("composite_confluence_score", 0.0)),
-                institutional_verdict=e_dict.get("institutional_verdict", ""),
+                symbol=e_dict.get("symbol", symbol),
+                pattern=e_dict.get("pattern", ""),
+                direction=e_dict.get("direction", ""),
+                category=e_dict.get("category", ""),
+                timestamp=e_dict.get("timestamp", ""),
+                current_price=float(e_dict.get("current_price", 0.0)),
+                nearest_support_price=e_dict.get("nearest_support_price"),
+                support_distance_pct=e_dict.get("support_distance_pct"),
+                nearest_resistance_price=e_dict.get("nearest_resistance_price"),
+                resistance_distance_pct=e_dict.get("resistance_distance_pct"),
+                current_volume=float(e_dict.get("current_volume", 0.0)),
+                rvol=float(e_dict.get("rvol", 1.0)),
+                volume_state=e_dict.get("volume_state", "NORMAL"),
+                market_regime=e_dict.get("market_regime", "MIXED"),
+                price_vs_ema20=e_dict.get("price_vs_ema20", "UNAVAILABLE"),
+                five_session_change_pct=float(e_dict.get("five_session_change_pct", 0.0)),
+                context_summary=e_dict.get("context_summary", ""),
             )
         except Exception:
             return None
