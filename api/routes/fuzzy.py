@@ -71,7 +71,7 @@ def get_fuzzy_explain(
     """
     # Fetch historical OHLCV candles
     try:
-        raw = _provider.get_historical(symbol, period=period)
+        raw = _provider.get_ohlc(symbol, period=period)
     except Exception as exc:
         raise HTTPException(
             status_code=503,
