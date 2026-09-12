@@ -10,7 +10,6 @@ Demonstrates decoupled side-effects:
 """
 
 import logging
-from typing import Any
 from api.events.base import DomainEvent
 from api.events.bus import EventBus
 

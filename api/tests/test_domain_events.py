@@ -10,8 +10,7 @@ Comprehensive unit tests for:
 """
 
 import pytest
-from datetime import datetime, timezone
-from unittest.mock import MagicMock
+from datetime import datetime
 
 from api.events import (
     DomainEvent,
@@ -25,23 +24,15 @@ from api.events import (
     PortfolioUpdated,
     JournalEntryCreated,
     JournalEntryReviewed,
-    JournalEntryUpdated,
     AlertCreated,
     AlertTriggered,
-    AlertEvaluated,
-    AlertDeleted,
     InMemoryEventBus,
     get_event_bus,
-    set_event_bus,
 )
 from api.cqrs import (
-    Command,
     CreatePortfolio,
     BuyAsset,
     SellAsset,
-    CreateAlert,
-    DeleteAlert,
-    Query,
     GetPortfolio,
     GetMarketSnapshot,
     GetReplayState,

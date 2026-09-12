@@ -10,7 +10,6 @@ from typing import Any
 from api.core.metrics import (
     HTTP_REQUESTS_TOTAL,
     HTTP_REQUEST_DURATION_SECONDS,
-    CACHE_OPERATIONS_TOTAL,
     PROVIDER_FAILURES_TOTAL,
     ACTIVE_CONNECTIONS,
 )

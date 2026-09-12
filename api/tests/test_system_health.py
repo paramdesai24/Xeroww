@@ -5,7 +5,6 @@ Unit and integration tests for Xeroww SRE System Health & Topology Console endpo
 Validates schema contracts, quantile estimates, telemetry subsystems, and edge cases.
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 from api.services.health_registry import (
