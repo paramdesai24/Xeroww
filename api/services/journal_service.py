@@ -60,6 +60,21 @@ class JournalService:
         self.db.add(entry)
         self.db.commit()
         self.db.refresh(entry)
+
+        try:
+            from api.events import get_event_bus, JournalEntryCreated
+            get_event_bus().publish(
+                JournalEntryCreated.create(
+                    entry_id=entry.id,
+                    symbol=entry.symbol,
+                    user_id=self.user_id,
+                    thesis=entry.thesis,
+                    entry_type=entry.action,
+                )
+            )
+        except Exception:
+            pass
+
         return entry
 
     def update_entry(self, entry_id: int, data: JournalEntryUpdate) -> DecisionJournalEntry:
@@ -78,8 +93,44 @@ class JournalService:
 
         self.db.commit()
         self.db.refresh(entry)
+
+        try:
+            from api.events import get_event_bus, JournalEntryUpdated
+            updated = []
+            if data.status is not None:
+                updated.append("status")
+            if data.thesis is not None:
+                updated.append("thesis")
+            get_event_bus().publish(
+                JournalEntryUpdated.create(
+                    entry_id=entry.id,
+                    user_id=self.user_id,
+                    updated_fields=updated,
+                )
+            )
+        except Exception:
+            pass
+
         return entry
 
     def review_entry(self, entry_id: int) -> dict:
         entry = self.get_entry_or_404(entry_id)
-        return _thesis_reviewer.review_entry(entry)
+        result = _thesis_reviewer.review_entry(entry)
+
+        try:
+            from api.events import get_event_bus, JournalEntryReviewed
+            get_event_bus().publish(
+                JournalEntryReviewed.create(
+                    entry_id=entry.id,
+                    symbol=entry.symbol,
+                    user_id=self.user_id,
+                    outcome=result.get("outcome", "REVIEWED"),
+                    audit_score=result.get("score") or result.get("accuracy_score"),
+                    review_notes=result.get("summary") or result.get("notes"),
+                )
+            )
+        except Exception:
+            pass
+
+        return result
+
