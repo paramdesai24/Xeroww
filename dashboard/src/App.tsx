@@ -39,7 +39,7 @@ export default function App() {
   const auth = useAuth();
   const [activeModule, setActiveModule] = useState<Module>("MARKET");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "ANATOMY" | "EVENTS">("STRUCTURE");
+  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "FUZZY" | "ANATOMY" | "EVENTS">("STRUCTURE");
 
   // Differentiated intelligence modals state
   const [isReplayMode, setIsReplayMode] = useState<boolean>(false);
@@ -270,8 +270,8 @@ export default function App() {
               {/* Tab selector */}
               <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
                 {(isReplayMode
-                  ? (["EVENTS", "STRUCTURE", "ANATOMY"] as const)
-                  : (["STRUCTURE", "ANATOMY"] as const)
+                  ? (["EVENTS", "STRUCTURE", "FUZZY", "ANATOMY"] as const)
+                  : (["STRUCTURE", "FUZZY", "ANATOMY"] as const)
                 ).map((tab) => {
                   const active = sidebarTab === tab;
                   return (
@@ -288,9 +288,16 @@ export default function App() {
                         {tab === "EVENTS"
                           ? "Events"
                           : tab === "STRUCTURE"
-                          ? "Market Structure"
-                          : "OHLC & Anatomy"}
+                          ? "Structure"
+                          : tab === "FUZZY"
+                          ? "Mamdani FIS"
+                          : "Anatomy"}
                       </span>
+                      {tab === "FUZZY" && (
+                        <span className="px-1 py-0.2 text-[9px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-xs font-mono">
+                          v0.8
+                        </span>
+                      )}
                       {tab === "EVENTS" && replayEvents.length > 0 && (
                         <span className="px-1 py-0.2 text-[10px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-sm font-mono whitespace-nowrap">
                           {revealedEventsCount}/{replayEvents.length}
@@ -313,17 +320,24 @@ export default function App() {
                     loading={loadingEvents}
                     onRefresh={fetchEvents}
                   />
+                ) : sidebarTab === "FUZZY" ? (
+                  <FuzzyExplainCard
+                    report={fuzzyReport}
+                    loading={fuzzyLoading}
+                    error={fuzzyError}
+                    onRefresh={fetchFuzzyReport}
+                  />
                 ) : sidebarTab === "STRUCTURE" ? (
                   <>
-                    <MarketRegimeCard regime={structure?.market_regime ?? null} />
-                    <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />
-                    {/* V0.8 — Mamdani Fuzzy Explainability Engine */}
+                    {/* V0.8 — Mamdani Fuzzy Explainability Engine placed at TOP for immediate visibility */}
                     <FuzzyExplainCard
                       report={fuzzyReport}
                       loading={fuzzyLoading}
                       error={fuzzyError}
                       onRefresh={fetchFuzzyReport}
                     />
+                    <MarketRegimeCard regime={structure?.market_regime ?? null} />
+                    <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />
                     <PatternCard pattern={structure?.detected_patterns?.[0] ? {
                       symbol: structure.symbol,
                       display_name: structure.symbol.replace(".NS", ""),
