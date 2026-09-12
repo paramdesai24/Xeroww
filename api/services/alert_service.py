@@ -63,6 +63,21 @@ class AlertService:
         self.db.add(alert)
         self.db.commit()
         self.db.refresh(alert)
+
+        try:
+            from api.events import get_event_bus, AlertCreated
+            get_event_bus().publish(
+                AlertCreated.create(
+                    alert_id=alert.id,
+                    symbol=alert.symbol,
+                    alert_type=alert.alert_type.value,
+                    condition_payload=alert.condition_payload,
+                    user_id=self.user_id,
+                )
+            )
+        except Exception:
+            pass
+
         return alert
 
     def delete_alert(self, alert_id: int) -> None:
@@ -70,12 +85,50 @@ class AlertService:
         self.db.delete(alert)
         self.db.commit()
 
+        try:
+            from api.events import get_event_bus, AlertDeleted
+            get_event_bus().publish(
+                AlertDeleted.create(
+                    alert_id=alert_id,
+                    user_id=self.user_id,
+                )
+            )
+        except Exception:
+            pass
+
     def evaluate_alert(self, alert_id: int) -> AlertEvaluationResult:
         alert = self.get_alert_or_404(alert_id)
         result = _evaluator.evaluate(alert)
         if result.triggered:
             alert.triggered_at = datetime.utcnow()
             self.db.commit()
+
+        try:
+            from api.events import get_event_bus, AlertEvaluated, AlertTriggered
+            bus = get_event_bus()
+            bus.publish(
+                AlertEvaluated.create(
+                    alert_id=alert.id,
+                    symbol=alert.symbol,
+                    triggered=result.triggered,
+                    current_price=result.current_price,
+                    user_id=self.user_id,
+                )
+            )
+            if result.triggered:
+                bus.publish(
+                    AlertTriggered.create(
+                        alert_id=alert.id,
+                        symbol=alert.symbol,
+                        alert_type=alert.alert_type.value,
+                        trigger_price=result.current_price,
+                        reason=result.message,
+                        user_id=self.user_id,
+                    )
+                )
+        except Exception:
+            pass
+
         return result
 
     def evaluate_all_alerts(self) -> list[AlertEvaluationResult]:
@@ -91,4 +144,33 @@ class AlertService:
                 alert.triggered_at = datetime.utcnow()
             results.append(result)
         self.db.commit()
+
+        try:
+            from api.events import get_event_bus, AlertEvaluated, AlertTriggered
+            bus = get_event_bus()
+            for alert, result in zip(alerts, results):
+                bus.publish(
+                    AlertEvaluated.create(
+                        alert_id=alert.id,
+                        symbol=alert.symbol,
+                        triggered=result.triggered,
+                        current_price=result.current_price,
+                        user_id=self.user_id,
+                    )
+                )
+                if result.triggered:
+                    bus.publish(
+                        AlertTriggered.create(
+                            alert_id=alert.id,
+                            symbol=alert.symbol,
+                            alert_type=alert.alert_type.value,
+                            trigger_price=result.current_price,
+                            reason=result.message,
+                            user_id=self.user_id,
+                        )
+                    )
+        except Exception:
+            pass
+
         return results
+
