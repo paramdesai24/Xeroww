@@ -31,6 +31,12 @@ from api.events.alert_events import (
     AlertEvaluated,
     AlertDeleted,
 )
+from api.events.bus import (
+    EventBus,
+    InMemoryEventBus,
+    get_event_bus,
+    set_event_bus,
+)
 
 __all__ = [
     "DomainEvent",
@@ -49,7 +55,12 @@ __all__ = [
     "AlertTriggered",
     "AlertEvaluated",
     "AlertDeleted",
+    "EventBus",
+    "InMemoryEventBus",
+    "get_event_bus",
+    "set_event_bus",
 ]
+
 
 
 
