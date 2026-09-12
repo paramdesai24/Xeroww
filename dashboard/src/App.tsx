@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -24,17 +24,20 @@ import JournalView from "./components/JournalView";
 import SystemView from "./components/SystemView";
 import AuthModal from "./components/AuthModal";
 import { XRayDrawer } from "./components/xray";
+import { EventTimeline } from "./components/replay";
 
 import { useMarketData } from "./hooks/useMarketData";
 import { useAuth } from "./hooks/useAuth";
 import { useSelectedCandle } from "./hooks/useSelectedCandle";
 import type { ReplayStepResponse } from "./types/structure";
+import type { MarketEvent } from "./types/events";
+import { api } from "./api/client";
 
 export default function App() {
   const auth = useAuth();
   const [activeModule, setActiveModule] = useState<Module>("MARKET");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "ANATOMY">("STRUCTURE");
+  const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "ANATOMY" | "EVENTS">("STRUCTURE");
 
   // Differentiated intelligence modals state
   const [isReplayMode, setIsReplayMode] = useState<boolean>(false);
@@ -42,6 +45,13 @@ export default function App() {
   const [showForensicsModal, setShowForensicsModal] = useState<boolean>(false);
   const [showDiffModal, setShowDiffModal] = useState<boolean>(false);
   const [showBreadthModal, setShowBreadthModal] = useState<boolean>(false);
+
+  // Market Event Timeline & Explainability state
+  const [replayEvents, setReplayEvents] = useState<MarketEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [externalStep, setExternalStep] = useState<number | null>(null);
+  const [currentReplayStep, setCurrentReplayStep] = useState<number>(0);
 
   // V0.5 Market Terminal State (Fully preserved + V0.6 Structure)
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
@@ -69,6 +79,40 @@ export default function App() {
 
   // Active candle displayed in sidebar Candle Anatomy & Modals
   const activeCandle = xray.selectedCandle ?? activeCandles?.at(-1) ?? null;
+
+  // Fetch market domain events when entering replay mode or switching symbol
+  useEffect(() => {
+    if (isReplayMode) {
+      setSidebarTab("EVENTS");
+      setLoadingEvents(true);
+      api.events
+        .getTimeline(activeSymbol, "3mo")
+        .then((res) => {
+          setReplayEvents(res.events || []);
+          setLoadingEvents(false);
+        })
+        .catch(() => setLoadingEvents(false));
+    } else {
+      if (sidebarTab === "EVENTS") {
+        setSidebarTab("STRUCTURE");
+      }
+    }
+  }, [isReplayMode, activeSymbol]);
+
+  // Handle clicking a timeline event:
+  // - Jump chart to that candle
+  // - Highlight candle
+  // - Open X-Ray drawer automatically
+  const handleSelectEvent = (evt: MarketEvent) => {
+    setSelectedEventId(evt.id);
+    setExternalStep(evt.candle_index);
+
+    const candle = ohlc?.candles?.[evt.candle_index] ?? activeCandles?.[evt.candle_index];
+    if (candle) {
+      xray.selectCandle(candle);
+      xray.openDrawer();
+    }
+  };
 
   const handleModuleChange = (mod: Module) => {
     setActiveModule(mod);
@@ -134,7 +178,15 @@ export default function App() {
                   onExitReplay={() => {
                     setIsReplayMode(false);
                     setReplayState(null);
+                    setExternalStep(null);
                   }}
+                  showTimeline={sidebarTab === "EVENTS"}
+                  onToggleTimeline={() =>
+                    setSidebarTab((prev) => (prev === "EVENTS" ? "STRUCTURE" : "EVENTS"))
+                  }
+                  timelineEventCount={replayEvents.length}
+                  externalStep={externalStep}
+                  onStepChange={setCurrentReplayStep}
                 />
               )}
               <ChartPanel
@@ -179,19 +231,33 @@ export default function App() {
             <aside className="w-[360px] xl:w-[380px] shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 h-full overflow-hidden">
               {/* Tab selector */}
               <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
-                {(["STRUCTURE", "ANATOMY"] as const).map((tab) => {
+                {(isReplayMode
+                  ? (["EVENTS", "STRUCTURE", "ANATOMY"] as const)
+                  : (["STRUCTURE", "ANATOMY"] as const)
+                ).map((tab) => {
                   const active = sidebarTab === tab;
                   return (
                     <button
                       key={tab}
                       onClick={() => setSidebarTab(tab)}
-                      className={`flex-1 h-9 text-xs font-medium transition-colors border-b-2 flex items-center justify-center ${
+                      className={`flex-1 h-9 text-xs font-medium transition-colors border-b-2 flex items-center justify-center gap-1.5 whitespace-nowrap ${
                         active
                           ? "text-[#F8FAFC] bg-[#0B0E14] border-b-[#1E90FF] font-semibold"
                           : "text-[#64748B] hover:text-[#94A3B8] border-b-transparent"
                       }`}
                     >
-                      {tab === "STRUCTURE" ? "Market Structure" : "OHLC & Anatomy"}
+                      <span>
+                        {tab === "EVENTS"
+                          ? "Events"
+                          : tab === "STRUCTURE"
+                          ? "Market Structure"
+                          : "OHLC & Anatomy"}
+                      </span>
+                      {tab === "EVENTS" && replayEvents.length > 0 && (
+                        <span className="px-1 py-0.2 text-[10px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-sm font-mono whitespace-nowrap">
+                          {replayEvents.length}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -199,7 +265,15 @@ export default function App() {
 
               {/* Analytics body */}
               <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3 bg-[#000000] overscroll-contain">
-                {sidebarTab === "STRUCTURE" ? (
+                {sidebarTab === "EVENTS" && isReplayMode ? (
+                  <EventTimeline
+                    events={replayEvents}
+                    currentStep={currentReplayStep}
+                    selectedEventId={selectedEventId}
+                    onSelectEvent={handleSelectEvent}
+                    loading={loadingEvents}
+                  />
+                ) : sidebarTab === "STRUCTURE" ? (
                   <>
                     <MarketRegimeCard regime={structure?.market_regime ?? null} />
                     <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} />

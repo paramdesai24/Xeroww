@@ -26,7 +26,7 @@ interface EventTimelineProps {
   loading?: boolean;
 }
 
-function getEventIcon(type: MarketEventType, severity: EventSeverity) {
+function getEventIcon(type: MarketEventType, _severity?: EventSeverity) {
   const iconProps = { size: 12, className: "shrink-0" };
   switch (type) {
     case "PRICE_BREAKOUT":

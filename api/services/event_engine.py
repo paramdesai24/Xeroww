@@ -395,44 +395,48 @@ class EventEngine:
         regime_prev = classify_market_regime(prev_slice, self.symbol)
 
         if regime_curr.regime != regime_prev.regime:
-            curr_reg = regime_curr.regime.value
-            prev_reg = regime_prev.regime.value
+            curr_reg = str(regime_curr.regime)
+            prev_reg = str(regime_prev.regime)
 
-            # If switching between Bullish and Bearish, or from Ranging to Trend
-            is_directional_shift = ("BULLISH" in curr_reg and "BEARISH" in prev_reg) or ("BEARISH" in curr_reg and "BULLISH" in prev_reg)
-            if is_directional_shift or "TRANSITIONAL" in curr_reg or "TRANSITIONAL" in prev_reg:
-                rules = [
-                    f"Market regime flipped from {prev_reg} to {curr_reg}",
-                    f"ADX: {regime_curr.adx:.1f} ({regime_curr.trend_strength.value})",
-                    f"Directional indicators: +DI {regime_curr.plus_di:.1f} vs -DI {regime_curr.minus_di:.1f}",
-                ]
-                confidence = round(min(1.0, 0.65 + (regime_curr.adx / 100.0) * 0.35), 2)
-                severity = EventSeverity.CRITICAL if is_directional_shift else EventSeverity.INFO
+            # If switching between Bullish and Bearish, or into a Trend
+            is_directional_shift = (
+                ("TRENDING_UP" in curr_reg and "TRENDING_DOWN" in prev_reg)
+                or ("TRENDING_DOWN" in curr_reg and "TRENDING_UP" in prev_reg)
+            )
+            rules = [
+                f"Market regime flipped from {prev_reg} to {curr_reg}",
+                f"Swing structure: {regime_curr.swing_structure}",
+                f"EMA trend: {regime_curr.ema_trend}",
+            ]
+            rules.extend(regime_curr.reasons[:2])
 
-                events.append(
-                    MarketEvent(
-                        id=_generate_event_id(self.symbol, timestamp, MarketEventType.TREND_REVERSAL.value, step_index),
-                        timestamp=timestamp,
-                        symbol=self.symbol,
-                        type=MarketEventType.TREND_REVERSAL,
-                        severity=severity,
-                        title=f"Trend Shift: {curr_reg.replace('_', ' ').title()}",
-                        description=f"Regime transition detected: {prev_reg} → {curr_reg} (ADX {regime_curr.adx:.1f}).",
-                        evidence=[
-                            f"New regime: {curr_reg}",
-                            f"Previous regime: {prev_reg}",
-                            f"ADX strength: {regime_curr.adx:.1f}",
-                        ],
-                        candle_index=step_index,
-                        explainability=ExplainabilityPayload(
-                            signal="REGIME_TRANSITION_DETECTED",
-                            confidence=confidence,
-                            evidence=[f"{prev_reg} -> {curr_reg}"],
-                            triggeredRules=rules,
-                        ),
-                        metadata={"from_regime": prev_reg, "to_regime": curr_reg, "adx": regime_curr.adx},
-                    )
+            confidence = 0.85 if is_directional_shift else 0.75
+            severity = EventSeverity.CRITICAL if is_directional_shift else EventSeverity.INFO
+
+            events.append(
+                MarketEvent(
+                    id=_generate_event_id(self.symbol, timestamp, MarketEventType.TREND_REVERSAL.value, step_index),
+                    timestamp=timestamp,
+                    symbol=self.symbol,
+                    type=MarketEventType.TREND_REVERSAL,
+                    severity=severity,
+                    title=f"Trend Shift: {curr_reg.replace('_', ' ').title()}",
+                    description=f"Regime transition detected: {prev_reg} → {curr_reg} ({regime_curr.swing_structure}).",
+                    evidence=[
+                        f"New regime: {curr_reg}",
+                        f"Previous regime: {prev_reg}",
+                        f"Swing structure: {regime_curr.swing_structure}",
+                    ],
+                    candle_index=step_index,
+                    explainability=ExplainabilityPayload(
+                        signal="REGIME_TRANSITION_DETECTED",
+                        confidence=confidence,
+                        evidence=[f"{prev_reg} -> {curr_reg}"],
+                        triggeredRules=rules,
+                    ),
+                    metadata={"from_regime": prev_reg, "to_regime": curr_reg, "swing_structure": regime_curr.swing_structure},
                 )
+            )
 
         return events
 
