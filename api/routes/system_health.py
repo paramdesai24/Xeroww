@@ -144,7 +144,7 @@ def get_system_health() -> SystemHealthResponse:
         total_evaluations=replay_stats["total_evaluations"],
     )
 
-    # 5. WebSocket & Realtime Telemetry
+    # 5. In-process event dispatch telemetry (legacy websocket response key)
     ws_stats = get_ws_stats(fallback_connections=active_connections)
     ws_dto = WebSocketHealthDTO(
         status=ws_stats["status"],

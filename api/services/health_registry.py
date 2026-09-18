@@ -2,7 +2,7 @@
 api/services/health_registry.py
 ───────────────────────────────
 In-memory singleton registry for Xeroww system telemetry and operational health metrics.
-Tracks uptime, active replay sessions, websocket throughput, database query diagnostics,
+Tracks uptime, active replay sessions, in-process event throughput, database query diagnostics,
 and external data provider telemetry.
 """
 
@@ -21,7 +21,7 @@ _replay_sessions: dict[str, dict[str, Any]] = {}
 _total_replay_evaluations: int = 0
 _recent_replay_timestamps: list[float] = []
 
-# WebSocket / Realtime client message tracking
+# In-process event dispatch counters. JSON field names remain stable for compatibility.
 _ws_client_count: int = 0
 _ws_messages_total: int = 0
 _last_ws_heartbeat: float | None = None
@@ -122,11 +122,11 @@ def get_replay_stats() -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# WebSocket / Realtime Gateway Registry
+# In-process Event Dispatch Registry
 # ---------------------------------------------------------------------------
 
 def record_ws_message(count: int = 1) -> None:
-    """Record WebSocket or real-time event distribution."""
+    """Record an in-process domain-event dispatch."""
     global _ws_messages_total, _last_ws_heartbeat
     now = time.time()
     with _registry_lock:

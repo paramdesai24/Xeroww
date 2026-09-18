@@ -45,8 +45,9 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle handler."""
-    # Auto-create all SQLAlchemy tables (idempotent)
-    create_all_tables()
+    # Local development convenience only. Production schemas are managed by Alembic.
+    if settings.AUTO_CREATE_TABLES:
+        create_all_tables()
 
     # Initialize Domain Event Bus & register default decoupled subscribers
     from api.events import get_event_bus, register_default_handlers
@@ -107,6 +108,8 @@ app.add_api_route("/metrics", metrics_endpoint, methods=["GET"], include_in_sche
 # ---------------------------------------------------------------------------
 from fastapi.responses import JSONResponse
 from api.core.exceptions import XerowwException
+from api.core.tracing import get_current_trace_id
+from datetime import datetime, timezone
 
 
 @app.exception_handler(XerowwException)
@@ -124,6 +127,8 @@ async def xeroww_exception_handler(request, exc: XerowwException):
                 "message": exc.message,
                 "details": exc.details,
             },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "request_id": get_current_trace_id(),
         },
     )
 

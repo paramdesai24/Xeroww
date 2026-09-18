@@ -1,7 +1,8 @@
 """routes/health.py — GET /health endpoint."""
 
 from fastapi import APIRouter
-import os
+
+from api.core.config import settings
 
 router = APIRouter(tags=["Health"])
 
@@ -15,7 +16,7 @@ async def health_check() -> dict:
     return {
         "status": "healthy",
         "service": "xeroww-api",
-        "version": os.getenv("APP_VERSION", "0.1.0"),
-        "data_provider": os.getenv("MARKET_DATA_PROVIDER", "yahoo"),
+        "version": settings.APP_VERSION,
+        "data_provider": settings.MARKET_DATA_PROVIDER,
         "data_note": "Near real-time data — Yahoo Finance delayed feed",
     }

@@ -17,7 +17,10 @@ class ErrorDetail(BaseModel):
 
 
 class StandardErrorResponse(BaseModel):
+    detail: str | None = None
     error: ErrorDetail
+    timestamp: str | None = None
+    request_id: str | None = None
 
 
 class PaginationParams(BaseModel):
