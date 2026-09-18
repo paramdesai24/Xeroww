@@ -5,10 +5,13 @@ Integration tests for the /market-structure endpoints.
 """
 
 import pytest
-from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from api.main import app
+from api.core.dependencies import get_market_data_service
+from api.services.cache_service import InMemoryCacheService
+from api.services.market_data_service import MarketDataService
+from api.tests.conftest import MockMarketProvider
 
 client = TestClient(app)
 
@@ -27,9 +30,12 @@ MOCK_CANDLES = [
 
 @pytest.fixture
 def mock_provider():
-    with patch("api.routes.market_structure.provider.get_ohlc", return_value=MOCK_CANDLES), \
-         patch("api.routes.patterns.provider.get_ohlc", return_value=MOCK_CANDLES):
-        yield
+    provider = MockMarketProvider()
+    provider.get_ohlc = lambda symbol, period="1mo", interval="1d": MOCK_CANDLES
+    service = MarketDataService(provider, InMemoryCacheService())
+    app.dependency_overrides[get_market_data_service] = lambda: service
+    yield
+    app.dependency_overrides.pop(get_market_data_service, None)
 
 
 def test_support_resistance_endpoint(mock_provider):

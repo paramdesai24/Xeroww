@@ -5,12 +5,15 @@ Unit tests for the Market Event Timeline and Explainability Engine.
 Verifies all 8 domain event types, deterministic rule coverage, and anti-lookahead guarantees.
 """
 
-from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 from api.services.event_engine import EventEngine
 from api.schemas.events import MarketEventType, EventSeverity
+from api.core.dependencies import get_market_data_service
+from api.services.cache_service import InMemoryCacheService
+from api.services.market_data_service import MarketDataService
+from api.tests.conftest import MockMarketProvider
 
 test_client = TestClient(app)
 
@@ -85,7 +88,11 @@ def test_event_engine_volume_spike_detection(mock_candles):
 
 
 def test_events_api_timeline(mock_candles):
-    with patch("api.routes.events._provider.get_ohlc", return_value=mock_candles):
+    provider = MockMarketProvider()
+    provider.get_ohlc = lambda symbol, period="1mo", interval="1d": mock_candles
+    service = MarketDataService(provider, InMemoryCacheService())
+    app.dependency_overrides[get_market_data_service] = lambda: service
+    try:
         res = test_client.get("/events/timeline/RELIANCE.NS?period=1mo")
         assert res.status_code == 200
         data = res.json()
@@ -93,12 +100,20 @@ def test_events_api_timeline(mock_candles):
         assert "total_events" in data
         assert "events" in data
         assert isinstance(data["events"], list)
+    finally:
+        app.dependency_overrides.pop(get_market_data_service, None)
 
 
 def test_events_api_at_step(mock_candles):
-    with patch("api.routes.events._provider.get_ohlc", return_value=mock_candles):
+    provider = MockMarketProvider()
+    provider.get_ohlc = lambda symbol, period="1mo", interval="1d": mock_candles
+    service = MarketDataService(provider, InMemoryCacheService())
+    app.dependency_overrides[get_market_data_service] = lambda: service
+    try:
         res = test_client.get("/events/at/RELIANCE.NS?step=20&period=1mo")
         assert res.status_code == 200
         data = res.json()
         assert isinstance(data, list)
         assert any(e["type"] == "HIGH_RVOL" for e in data)
+    finally:
+        app.dependency_overrides.pop(get_market_data_service, None)
