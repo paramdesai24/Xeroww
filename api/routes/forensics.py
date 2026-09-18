@@ -4,12 +4,12 @@ routes/forensics.py
 REST API endpoints for Candle Forensics & Data Provenance metadata.
 """
 
-from fastapi import APIRouter, HTTPException, Query, status
-from api.services.yahoo_provider import YahooFinanceProvider
+from fastapi import APIRouter, Query, Depends
+from api.core.dependencies import get_market_data_service
+from api.services.market_data_service import MarketDataService
 from api.services.forensic_service import CandleForensicsService
 
 router = APIRouter(prefix="/forensics", tags=["Candle Forensics & Provenance"])
-_provider = YahooFinanceProvider()
 
 
 @router.get(
@@ -20,13 +20,12 @@ def inspect_candle(
     symbol: str,
     timestamp: str = Query(..., description="Timestamp of the candle to inspect (YYYY-MM-DD)"),
     period: str = Query("6mo", description="Historical period for context"),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    sym = _provider.normalize_symbol(symbol)
-    try:
-        candles = _provider.get_ohlc(sym, period=period, interval="1d")
-        service = CandleForensicsService(sym, candles)
-        return service.inspect_candle(timestamp)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Market data error: {e}")
+    sym, candles = market_data.get_candles(symbol, period=period, interval="1d")
+    service = CandleForensicsService(
+        sym,
+        candles,
+        provider_name=market_data.provider.__class__.__name__,
+    )
+    return service.inspect_candle(timestamp)

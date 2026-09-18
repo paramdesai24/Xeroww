@@ -23,16 +23,14 @@ All results are deterministic on the input candle data.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 from fastapi.responses import JSONResponse
 
-from api.services.yahoo_provider import YahooFinanceProvider
+from api.core.dependencies import get_market_data_service
+from api.services.market_data_service import MarketDataService
 from api.fuzzy.orchestrator import default_fuzzy_orchestrator, FuzzyExplainabilityReport
 
 router = APIRouter(prefix="/fuzzy", tags=["Fuzzy Explainability Engine"])
-
-_provider = YahooFinanceProvider()
-
 
 @router.get(
     "/explain",
@@ -58,6 +56,7 @@ def get_fuzzy_explain(
         "1y",
         description="Historical data period (e.g., '6mo', '1y', '2y'). Longer = richer SR zones.",
     ),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ) -> JSONResponse:
     """
     Evaluate the Mamdani Fuzzy Inference System for the requested symbol.
@@ -69,16 +68,11 @@ def get_fuzzy_explain(
     - Composite overall label and activation score
     - Methodology note emphasising non-predictive nature
     """
-    # Fetch historical OHLCV candles
-    try:
-        raw = _provider.get_ohlc(symbol, period=period)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=f"Failed to fetch market data for '{symbol}': {exc}",
-        ) from exc
-
-    candles: list[dict] = raw if isinstance(raw, list) else raw.get("candles", [])
+    normalized_symbol, candles = market_data.get_candles(
+        symbol,
+        period=period,
+        interval="1d",
+    )
 
     if not candles:
         raise HTTPException(
@@ -90,7 +84,7 @@ def get_fuzzy_explain(
     try:
         report: FuzzyExplainabilityReport = default_fuzzy_orchestrator.explain(
             candles=candles,
-            symbol=symbol,
+            symbol=normalized_symbol,
         )
     except Exception as exc:
         raise HTTPException(
