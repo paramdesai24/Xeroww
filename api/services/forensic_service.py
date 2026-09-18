@@ -19,7 +19,7 @@ Exposes metadata:
 Ready to map to Kafka topic, Spark job, or Iceberg snapshot in V1.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from api.services.replay_service import ReplayEngine
 from api.services.pattern_engine import extract_metrics, scan_patterns
@@ -45,8 +45,10 @@ class ProvenanceMetadata:
             "timeframe": timeframe,
             "input_interval": "1d",
             "calculation_window": calculation_window,
-            "calculation_timestamp": datetime.utcnow().isoformat() + "Z",
+            "calculation_timestamp": datetime.now(timezone.utc).isoformat(),
             "algorithm_version": algorithm_version,
+            "transport": "HTTP REST",
+            "data_freshness_note": "Historical or delayed provider data; not a live exchange feed.",
             "source_candle_range": {
                 "start": start_time,
                 "end": end_time,
@@ -58,11 +60,17 @@ class ProvenanceMetadata:
 class CandleForensicsService:
     """Dissects a single historical candle down to its deterministic components."""
 
-    def __init__(self, symbol: str, all_candles: list[dict[str, Any]]):
+    def __init__(
+        self,
+        symbol: str,
+        all_candles: list[dict[str, Any]],
+        provider_name: str = "ConfiguredMarketDataProvider",
+    ):
         self.symbol = symbol
         self.all_candles = all_candles
         self.engine = ReplayEngine(symbol, all_candles)
         self.total_bars = len(all_candles)
+        self.provider_name = provider_name
 
     def inspect_candle(self, timestamp: str) -> dict[str, Any]:
         """
@@ -127,6 +135,7 @@ class CandleForensicsService:
             algorithm_version="CANDLE-FORENSICS-V1",
             calculation_window=f"{len(slice_candles)} historical sessions",
             candles_used=slice_candles,
+            provider=self.provider_name,
         )
 
         return {
