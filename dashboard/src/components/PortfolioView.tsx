@@ -45,7 +45,9 @@ export default function PortfolioView() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { loadPortfolios(); }, [loadPortfolios]);
+  useEffect(() => {
+    queueMicrotask(() => void loadPortfolios());
+  }, [loadPortfolios]);
 
   useEffect(() => {
     if (tab === "contributions" && active) {

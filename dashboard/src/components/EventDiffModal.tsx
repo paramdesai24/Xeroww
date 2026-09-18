@@ -18,7 +18,6 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     api.eventDiff
       .getLatest(symbol)
       .then((res) => {

@@ -18,17 +18,17 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const activeWatchlistId = activeWl?.id;
 
   const load = useCallback(async () => {
     try {
-      setLoading(true);
       const lists = await api.watchlists.list();
       setWatchlists(lists);
-      if (lists.length > 0 && !activeWl) {
+      if (lists.length > 0 && !activeWatchlistId) {
         const detail = await api.watchlists.get(lists[0].id);
         setActiveWl(detail);
-      } else if (activeWl) {
-        const detail = await api.watchlists.get(activeWl.id);
+      } else if (activeWatchlistId) {
+        const detail = await api.watchlists.get(activeWatchlistId);
         setActiveWl(detail);
       }
     } catch (e) {
@@ -36,9 +36,11 @@ export default function WatchlistManager({ onSelectSymbol }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [activeWl?.id]);
+  }, [activeWatchlistId]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    queueMicrotask(() => void load());
+  }, [load]);
 
   const selectWatchlist = async (id: number) => {
     try {

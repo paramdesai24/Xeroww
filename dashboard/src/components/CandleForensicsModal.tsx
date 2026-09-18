@@ -19,7 +19,6 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     api.forensics
       .inspect(symbol, timestamp)
       .then((res) => {

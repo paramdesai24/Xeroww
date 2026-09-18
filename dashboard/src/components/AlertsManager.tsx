@@ -31,7 +31,9 @@ export default function AlertsManager() {
     } catch {}
   }, []);
 
-  useEffect(() => { loadAlerts(); }, [loadAlerts]);
+  useEffect(() => {
+    queueMicrotask(() => void loadAlerts());
+  }, [loadAlerts]);
 
   const handleAlertTypeChange = (t: string) => {
     setAlertType(t);

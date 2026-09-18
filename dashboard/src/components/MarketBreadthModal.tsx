@@ -18,7 +18,6 @@ export default function MarketBreadthModal({ onClose }: Props) {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     Promise.all([
       api.intelligence.getBreadth().catch(() => null),
       api.intelligence.getCorrelationMatrix(20).catch(() => null),

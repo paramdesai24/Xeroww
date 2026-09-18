@@ -29,7 +29,6 @@ function QuoteRow({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     api
       .getQuote(stock.symbol)
       .then(setQuote)
