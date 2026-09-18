@@ -12,28 +12,17 @@ Routes delegate event detection and explainability directly to AnalyticsOrchestr
 
 import time
 from typing import Dict, Tuple, List
-from fastapi import APIRouter, HTTPException, Query, Depends, status
-from api.services.yahoo_provider import YahooFinanceProvider
+from fastapi import APIRouter, Query, Depends
+from api.core.dependencies import get_market_data_service
+from api.services.market_data_service import MarketDataService
 from api.analytics import default_orchestrator, AnalyticsOrchestrator
 from api.schemas.events import MarketEventsTimelineResponse, MarketEvent
 
 router = APIRouter(prefix="/events", tags=["Market Event Timeline"])
-_provider = YahooFinanceProvider()
 
 # In-memory cache: (normalized_symbol, period) -> (timestamp, List[MarketEvent])
 _TIMELINE_CACHE: Dict[Tuple[str, str], Tuple[float, List[MarketEvent]]] = {}
 _CACHE_TTL_SECONDS = 300.0  # 5 minutes cache for market events timeline
-
-
-def _get_candles(symbol: str, period: str = "3mo") -> tuple[str, list[dict]]:
-    try:
-        norm_sym = _provider.normalize_symbol(symbol)
-        candles = _provider.get_ohlc(symbol, period=period, interval="1d")
-        return norm_sym, candles
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Market data error: {e}")
 
 
 def _get_orchestrator() -> AnalyticsOrchestrator:
@@ -48,9 +37,10 @@ def _get_orchestrator() -> AnalyticsOrchestrator:
 def get_events_timeline(
     symbol: str,
     period: str = Query("3mo", description="Historical period: 1mo, 3mo, 6mo, 1y"),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ):
-    norm_symbol, candles = _get_candles(symbol, period=period)
+    norm_symbol, candles = market_data.get_candles(symbol, period=period, interval="1d")
     cache_key = (norm_symbol, period)
     now = time.time()
 
@@ -84,7 +74,8 @@ def get_events_at_step(
     symbol: str,
     step: int = Query(..., ge=0, description="Step index (0 to total_bars-1)"),
     period: str = Query("3mo", description="Historical period"),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ):
-    norm_symbol, candles = _get_candles(symbol, period=period)
+    norm_symbol, candles = market_data.get_candles(symbol, period=period, interval="1d")
     return orchestrator.run_events_at_step(norm_symbol, candles, step)

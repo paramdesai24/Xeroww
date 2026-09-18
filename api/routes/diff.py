@@ -4,30 +4,31 @@ routes/diff.py
 REST API endpoints for the Deterministic Event-Diff ("What Changed?").
 """
 
-from fastapi import APIRouter, HTTPException, Query, status
-from api.services.yahoo_provider import YahooFinanceProvider
+from fastapi import APIRouter, Query, Depends
+from api.core.dependencies import get_market_data_service
+from api.services.market_data_service import MarketDataService
 from api.services.event_diff_service import EventDiffService
 
 router = APIRouter(prefix="/event-diff", tags=["Event Diff Engine"])
-_provider = YahooFinanceProvider()
-
-
-def _get_service(symbol: str, period: str = "1mo") -> EventDiffService:
-    try:
-        candles = _provider.get_ohlc(symbol, period=period, interval="1d")
-        return EventDiffService(symbol=_provider.normalize_symbol(symbol), all_candles=candles)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Market data error: {e}")
+def _get_service(
+    symbol: str,
+    period: str,
+    market_data: MarketDataService,
+) -> EventDiffService:
+    normalized, candles = market_data.get_candles(symbol, period=period, interval="1d")
+    return EventDiffService(symbol=normalized, all_candles=candles)
 
 
 @router.get(
     "/latest/{symbol}",
     summary="Get 'What Changed?' diff between previous and latest session",
 )
-def get_latest_diff(symbol: str, period: str = Query("1mo", description="Historical period")):
-    service = _get_service(symbol, period=period)
+def get_latest_diff(
+    symbol: str,
+    period: str = Query("1mo", description="Historical period"),
+    market_data: MarketDataService = Depends(get_market_data_service),
+):
+    service = _get_service(symbol, period, market_data)
     return service.diff_latest()
 
 
@@ -40,6 +41,7 @@ def compare_steps(
     from_step: int = Query(..., ge=0, description="Starting step index"),
     to_step: int = Query(..., ge=1, description="Ending step index"),
     period: str = Query("1mo", description="Historical period"),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    service = _get_service(symbol, period=period)
+    service = _get_service(symbol, period, market_data)
     return service.diff_steps(from_step, to_step)
