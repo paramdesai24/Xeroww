@@ -16,7 +16,7 @@ No routes directly touch internal analytical services.
 
 from fastapi import APIRouter, Depends, Path
 
-from api.core.dependencies import get_market_provider
+from api.core.dependencies import get_market_data_service
 from api.services.market_data_service import MarketDataService
 from api.analytics import default_orchestrator, AnalyticsOrchestrator
 
@@ -32,11 +32,6 @@ from api.schemas.market_structure import (
 )
 
 router = APIRouter(tags=["Market Structure Engine"])
-provider = get_market_provider()
-
-
-def _get_service() -> MarketDataService:
-    return MarketDataService(provider)
 
 
 def _get_orchestrator() -> AnalyticsOrchestrator:
@@ -50,7 +45,7 @@ def _get_orchestrator() -> AnalyticsOrchestrator:
 )
 def get_support_resistance(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> SupportResistanceResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
@@ -65,7 +60,7 @@ def get_support_resistance(
 )
 def get_volume_analytics(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> VolumeAnalyticsResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
@@ -80,7 +75,7 @@ def get_volume_analytics(
 )
 def get_moving_averages(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MovingAveragesResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
@@ -95,7 +90,7 @@ def get_moving_averages(
 )
 def get_trend_alias(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MovingAveragesResponse:
     return get_moving_averages(symbol, market_data=market_data, orchestrator=orchestrator)
@@ -108,7 +103,7 @@ def get_trend_alias(
 )
 def get_market_regime(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MarketRegimeResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
@@ -123,7 +118,7 @@ def get_market_regime(
 )
 def get_signal_alignment(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> SignalAlignmentResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
@@ -138,7 +133,7 @@ def get_signal_alignment(
 )
 def get_market_structure_summary(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> MarketStructureSummaryResponse:
     sym, candles = market_data.get_candles(symbol, period="1y", interval="1d")
