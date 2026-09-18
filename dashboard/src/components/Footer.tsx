@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
+import config from "../config";
 import type { HealthStatus } from "../types/market";
 
 export default function Footer() {
@@ -56,7 +57,7 @@ export default function Footer() {
         <span className="text-[#334155]">·</span>
         <span>DB: <span className={operational ? "text-[#94A3B8]" : "text-[#EF4444]"}>{operational ? "Connected" : "Unreachable"}</span></span>
         <span className="text-[#334155]">·</span>
-        <span className="text-[#64748B]">v0.6</span>
+        <span className="text-[#64748B]">v{config.app.version}</span>
       </div>
 
       <div className="hidden md:flex items-center gap-2 text-[#475569]">

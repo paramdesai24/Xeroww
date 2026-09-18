@@ -1,5 +1,5 @@
 // src/components/SystemView.tsx
-// Xeroww SRE Operations & System Health Console — v0.7
+// Xeroww SRE Operations & System Health Console v0.8
 // Design Inspiration: Grafana + Bloomberg Operations Terminal.
 // Institutional pitch-black canvas, high-density telemetry, live canvas sparklines,
 // and real-time architectural topology graph.
@@ -381,7 +381,7 @@ export default function SystemView({ user }: Props) {
 
   // Initial fetch on mount
   useEffect(() => {
-    pollHealth();
+    queueMicrotask(() => void pollHealth());
   }, [pollHealth]);
 
   // 5-second countdown timer for auto-refresh
@@ -438,7 +438,7 @@ export default function SystemView({ user }: Props) {
           </div>
           <span className="text-[var(--border-strong)]">|</span>
           <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-[#161616] border border-[#232323] text-[#A0A0A8]">
-            SRE CONSOLE v0.7
+            SRE CONSOLE v0.8
           </span>
           {snapshot && statusBadge(snapshot.overall_status)}
         </div>
@@ -844,13 +844,13 @@ export default function SystemView({ user }: Props) {
           </div>
         </div>
 
-        {/* CARD 5: WEBSOCKET & STREAMING GATEWAY */}
+        {/* CARD 5: IN-PROCESS EVENT DISPATCH */}
         <div className="p-4 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-3 rounded-sm">
           <div className="flex items-center justify-between border-b border-[#1E1E1E] pb-2">
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-[#10B981]" />
               <span className="text-xs font-bold text-[var(--text-primary)]">
-                REALTIME STREAM / WEBSOCKET
+                EVENT DISPATCH GATEWAY
               </span>
             </div>
             {snapshot && statusBadge(snapshot.websocket.status)}
@@ -859,7 +859,7 @@ export default function SystemView({ user }: Props) {
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
               <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
-                Connected Clients
+                Network Clients
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
                 {snapshot?.websocket.connected_clients ?? 0}
@@ -889,12 +889,12 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div>
-              <span className="text-[var(--text-tertiary)]">Protocol: </span>
-              <span className="text-[var(--text-primary)]">HTTP / EventBus</span>
+              <span className="text-[var(--text-tertiary)]">Runtime: </span>
+              <span className="text-[var(--text-primary)]">InMemory EventBus</span>
             </div>
             <div>
-              <span className="text-[var(--text-tertiary)]">Kafka Phase: </span>
-              <span className="text-[#1E90FF]">v0.7 Prep</span>
+              <span className="text-[var(--text-tertiary)]">Network stream: </span>
+              <span className="text-[#64748B]">Not deployed</span>
             </div>
           </div>
 
@@ -1044,7 +1044,7 @@ export default function SystemView({ user }: Props) {
             )}
             {selectedNodeId === "frontend" && (
               <p className="m-0 leading-relaxed">
-                React 18 / TypeScript SPA. Client session:{" "}
+                React 19 / TypeScript 6 SPA. Client session:{" "}
                 {user ? `User #${user.id} (${user.role})` : "Anonymous guest"}.
                 High-performance Canvas rendering for institutional terminal
                 charts and sparklines.

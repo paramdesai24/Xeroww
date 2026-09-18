@@ -2,6 +2,7 @@
 // Xeroww workspace navigation — v2 natural typography & vivid amber active indicator.
 
 import type { UserProfile } from "../types/auth";
+import config from "../config";
 
 export type Module = "MARKET" | "WATCHLISTS" | "PORTFOLIO" | "ALERTS" | "JOURNAL" | "SYSTEM";
 
@@ -50,7 +51,7 @@ export default function ModuleNav({
           Xeroww
         </span>
         <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
-          v0.6
+          v{config.app.version}
         </span>
       </div>
 

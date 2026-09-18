@@ -35,7 +35,7 @@ export default function JournalView() {
   }, []);
 
   useEffect(() => {
-    fetchEntries();
+    queueMicrotask(() => void fetchEntries());
   }, [fetchEntries]);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -54,7 +54,7 @@ export default function JournalView() {
       setCreateError(null);
       await api.journal.create(symbol.trim().toUpperCase(), action, thesis.trim(), {
         timestamp: new Date().toISOString(),
-        client: "xeroww-terminal-v0.6",
+        client: "xeroww-terminal-v0.8",
       });
       setSymbol("");
       setThesis("");
