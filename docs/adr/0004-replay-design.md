@@ -12,7 +12,7 @@ We implement an isolated, point-in-time Historical Replay Engine:
 - The engine fetches the raw historical candle series and steps through one candle interval at a time.
 - At each step index `t`, analytics functions consume strictly the slice `candles[0...t]`. Future candles `candles[t+1...]` are completely hidden from pattern detection, moving average calculation, support/resistance evaluation, and alert triggers.
 - Decision journals and annotations recorded at or before replay timestamp `t` are rendered in context.
-- The engine exposes both REST snapshot stepping and persistent WebSocket event streaming for real-time tick-by-tick simulation playback.
+- The engine exposes REST timeline, step, and jump endpoints. The dashboard schedules playback locally and requests one deterministic snapshot per step. Network streaming is future work.
 
 ## Consequences
 ### Positive

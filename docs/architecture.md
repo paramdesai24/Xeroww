@@ -1,15 +1,14 @@
-# Xeroww Architecture — V0
+# Xeroww Architecture V0.8
 
 ## Overview
 
-Xeroww V0 is built around a strict **provider abstraction** pattern.
+Xeroww V0.8 is built around a strict **provider abstraction** pattern.
 No route, service, or frontend component directly imports `yfinance`.
-This single decision enables the evolution from Yahoo Finance to Kafka + Spark + Snowflake
-without rewriting any upstream code.
+This boundary allows a future provider implementation to be introduced without changing route contracts. Kafka, Spark, and Snowflake are roadmap concepts, not active runtime components.
 
 ---
 
-## V0 Data Flow
+## V0.8 Data Flow
 
 ```text
                     ┌─────────────────────────┐
@@ -62,8 +61,7 @@ Yahoo Finance → Kafka Producer → Kafka Topic (market.ohlc)
                                       ▼
                                   FastAPI  →  React
 ```
-**Only `api/services/yahoo_provider.py` is replaced.**
-Routes, schemas, and frontend are **unchanged**.
+This is a target design. A production migration would also require transport configuration, operational telemetry, failure handling, and integration tests.
 
 ### V2 — Spark Processing
 ```text
@@ -74,9 +72,9 @@ Kafka Topic → Spark Streaming → Processed OHLC + Signals
                               (implements MarketDataProvider)
 ```
 
-### V3 — Snowflake Analytics
+### V3 - Lakehouse Analytics
 ```text
-Spark → Snowflake → SnowflakeMarketProvider → FastAPI → React
+Spark -> Iceberg/Parquet -> AnalyticalMarketProvider -> FastAPI -> React
 ```
 
 ---
@@ -86,8 +84,8 @@ Spark → Snowflake → SnowflakeMarketProvider → FastAPI → React
 | Layer | Module | V0 Implementation | V1+ Replacement |
 |---|---|---|---|
 | Data Fetch | `yahoo_provider.py` | yfinance | KafkaMarketProvider |
-| API Contract | `market_provider.py` | ABC — unchanged | ABC — unchanged |
+| API Contract | `market_provider.py` | ABC, unchanged | ABC, unchanged |
 | Business Logic | `pattern_service.py` | Marubozu engine | Unchanged |
 | HTTP Layer | `routes/` | FastAPI routers | Unchanged |
-| Persistence | `models/` + `database/` | Schema only | SQLAlchemy + PostgreSQL |
+| Persistence | `models/` + `database/` | SQLAlchemy with SQLite or PostgreSQL and Alembic migrations | Scale and retention work as required |
 | Frontend | `dashboard/src/` | React + TV Charts | Unchanged |

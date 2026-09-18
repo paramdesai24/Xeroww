@@ -1,4 +1,6 @@
-# Event-Driven Architecture & CQRS Specification
+# Domain Events and CQRS Preparation
+
+> Current-state boundary: V0.8 uses a synchronous in-memory domain event bus. Routes call services directly. The CQRS package contains preparation interfaces and is not the active request dispatch path. There is no event store, Kafka transport, or Spark runtime. Sections describing those systems are target-state proposals.
 
 ## 1. Architectural Vision & Purpose
 
@@ -7,7 +9,7 @@ Xeroww is designed around a **clean, decoupled, event-driven foundation**.
 Today, services communicate through local in-memory invocations and synchronous bus dispatch.  
 Tomorrow, as institutional volume scales, Kafka and Apache Spark will become drop-in replacements for the event transport and streaming analytics layers.
 
-By introducing **Domain Events** and **Command-Query Responsibility Segregation (CQRS)** today, the application code is structured identically to a high-scale distributed system, ensuring zero architectural rework when introducing external messaging infrastructure.
+Domain events and CQRS interfaces establish useful seams, but a distributed migration will still require transport, delivery, idempotency, schema, operations, and integration work.
 
 ---
 

@@ -6,8 +6,8 @@
 
 [![CI Pipeline](https://github.com/paramdesai24/Xeroww/actions/workflows/ci.yml/badge.svg)](https://github.com/paramdesai24/Xeroww/actions/workflows/ci.yml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg?style=flat&logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB.svg?style=flat&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg?style=flat&logo=postgresql)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D.svg?style=flat&logo=redis)](https://redis.io)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?style=flat&logo=docker)](https://www.docker.com)
@@ -42,7 +42,7 @@ Xeroww is an institutional-grade financial analytics and market structure intell
 ### Core Philosophy
 - **Deterministic Analytics Only**: Zero machine learning hallucinations, zero black-box "confidence scores", and zero automated trade recommendations. Financial decisions belong to human intelligence; mathematical market conditions belong to Xeroww.
 - **Auditable & Point-in-Time Accurate**: Replay simulations and analytics strictly prevent look-ahead bias. Historical states are mathematically reproducible.
-- **V1.0 Distributed Readiness**: The codebase is architected with strict domain boundaries and service decoupling so that in-process services can transition seamlessly to Kafka producers, Spark streaming aggregators, and Apache Iceberg sinks in V1.0 without breaking frontend or API contracts.
+- **V1.0 Extension Seams**: Provider and event-bus interfaces identify future integration points. Kafka, Spark, Iceberg, and network streaming are not part of the current runtime.
 
 ---
 
@@ -54,7 +54,7 @@ Xeroww enforces a unidirectional layered design:
 ```mermaid
 graph TD
     subgraph Clients ["Client Layer"]
-        UI["React 18 + TS Dashboard<br/>(TradingView Lightweight Charts)"]
+        UI["React 19 + TypeScript 6 Dashboard<br/>(Lightweight Charts)"]
         CLI["API Clients / cURL"]
     end
 
@@ -121,10 +121,10 @@ graph TD
 
 | Layer | Component | Version / Library | Purpose |
 |---|---|---|---|
-| **Frontend** | React & TypeScript | React 18.2, TypeScript 5.2 | High-performance SPA with institutional black terminal aesthetic |
+| **Frontend** | React & TypeScript | React 19.2, TypeScript 6.0, Vite 8.2 | High-performance SPA with institutional black terminal aesthetic |
 | | Charting Engine | TradingView Lightweight Charts 4.1 | Hardware-accelerated financial candlestick and line charts |
 | | Styling | Vanilla CSS + Tailwind | Zero-runtime CSS design tokens and dark institutional themes |
-| **Backend** | API Framework | FastAPI 0.110 (ASGI / Uvicorn) | High-throughput asynchronous HTTP and WebSocket endpoints |
+| **Backend** | API Framework | FastAPI (ASGI / Uvicorn) | Asynchronous HTTP endpoints |
 | | Validation | Pydantic v2 | Strict schema validation, serialisation, and OpenAPI specs |
 | | Security | PyJWT, Passlib (Bcrypt) | Cryptographic bearer tokens, Argon2/Bcrypt password hashing |
 | **Persistence** | Relational Store | PostgreSQL 16 / SQLAlchemy 2.0 | ACID-compliant storage for users, portfolios, journals, and alerts |
@@ -133,7 +133,7 @@ graph TD
 | | Visualization | Grafana 10.3 | Provisioned dashboards monitoring throughput, errors, and P95 latency |
 | | Tracing | Custom W3C Trace Middleware | `X-Trace-ID` and `X-Span-ID` request journey propagation |
 | **DevOps** | Containerization | Docker Engine, Compose v2 | Multi-stage production container builds with automated healthchecks |
-| | Web Server | Nginx Alpine | Reverse proxy, static asset delivery, and WebSocket connection upgrades |
+| | Web Server | Nginx Alpine | Reverse proxy and static asset delivery |
 | | CI Pipeline | GitHub Actions | Automated linting, type-checking, matrix testing, and build validation |
 
 ---
@@ -152,7 +152,7 @@ graph TD
 
 ### 5.1 Historical Market Replay Engine
 - **Point-in-Time Stepping**: Step forward or backward through historical trading sessions bar by bar.
-- **Streaming Playback**: WebSocket endpoint (`/ws/replay`) streams historical events at configurable speeds (1x, 5x, 10x).
+- **Client-Timed Playback**: The dashboard advances through REST replay snapshots at configurable speeds (1x, 5x, 10x). No WebSocket replay endpoint is currently deployed.
 - **Synchronized Context**: At every tick, indicators, volume profiles, detected patterns, and alert conditions recalculate strictly up to that point.
 
 ### 5.2 Pattern Engine V2 (Zerodha Varsity Standards)
@@ -167,9 +167,9 @@ Detects classic Japanese candlestick formations with strict mathematical thresho
 - **Support & Resistance Clusters**: Density-based clustering of historical swing levels with strength weighting.
 - **Breakout & Breakdown Detection**: Close-confirmed violations of validated structural levels.
 
-### 5.4 Multi-Timeframe Alignment
-- Computes trend confluence across intraday (5m, 15m), intermediate (1h), and swing (1d) timeframes.
-- Exposes directional alignment matrix (Bullish Confluence, Bearish Confluence, or Divergent).
+### 5.4 Signal Alignment
+- Computes deterministic alignment from the configured daily candle series.
+- Multi-timeframe confluence is a future capability and is not calculated by the current runtime.
 
 ### 5.5 Portfolio & Decision Tracking
 - **Holdings & P&L**: Average price calculation, realized/unrealized profit calculation, and asset allocation breakdown.
@@ -181,7 +181,7 @@ Detects classic Japanese candlestick formations with strict mathematical thresho
 
 ## 6. API Design & Error Contracts
 
-All API endpoints follow RESTful standards under the `/api/v1` namespace, complemented by WebSocket channels for real-time streaming.
+The API exposes HTTP routes at the application root. Deployment proxies may add an `/api` prefix. There are no deployed WebSocket channels in the current release.
 
 ### Standardized Error Envelope
 Xeroww guarantees consistent error envelopes across all HTTP 4xx/5xx responses:
@@ -204,19 +204,18 @@ Xeroww guarantees consistent error envelopes across all HTTP 4xx/5xx responses:
 ### Key API Routes
 | Method | Path | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/api/v1/auth/register` | Create user account | No |
-| `POST` | `/api/v1/auth/login` | Obtain JWT access token | No |
-| `POST` | `/api/v1/auth/logout` | Revoke active JWT token | Yes |
-| `GET` | `/api/v1/market/quote/{symbol}` | Near real-time market quote | No |
-| `GET` | `/api/v1/market/ohlc/{symbol}` | Historical OHLCV candle series | No |
-| `GET` | `/api/v1/patterns/{symbol}` | Pattern Engine V2 scan | No |
-| `GET` | `/api/v1/structure/{symbol}` | Swings, Trends, and Support/Resistance | No |
-| `POST` | `/api/v1/replay/session` | Initialize historical replay session | Yes |
-| `GET` | `/api/v1/replay/{id}/step` | Advance replay session one bar | Yes |
-| `WS` | `/api/v1/replay/{id}/stream` | WebSocket real-time playback stream | Yes |
-| `GET` | `/api/v1/portfolio` | User portfolio summary and holdings | Yes |
-| `GET` | `/api/v1/journal` | List trade decision journal entries | Yes |
-| `POST` | `/api/v1/alerts` | Create price or pattern alert | Yes |
+| `POST` | `/auth/register` | Create user account | No |
+| `POST` | `/auth/login` | Obtain JWT access token | No |
+| `POST` | `/auth/logout` | Revoke active JWT token | Yes |
+| `GET` | `/quote/{symbol}` | Near real-time market quote | No |
+| `GET` | `/ohlc/{symbol}` | Historical OHLCV candle series | No |
+| `GET` | `/patterns/{symbol}` | Pattern Engine V2 scan | No |
+| `GET` | `/market-structure/{symbol}` | Swings, trends, and support/resistance | No |
+| `GET` | `/replay/{symbol}/timeline` | Load a historical replay timeline | No |
+| `GET` | `/replay/{symbol}/step/{step}` | Retrieve a point-in-time replay snapshot | No |
+| `GET` | `/portfolios` | List user portfolios | Yes |
+| `GET` | `/journal` | List trade decision journal entries | Yes |
+| `POST` | `/alerts` | Create price or pattern alert | Yes |
 | `GET` | `/metrics` | Prometheus metrics scrape endpoint | No |
 | `GET` | `/health` | Deep healthcheck (DB, Cache, Provider) | No |
 
@@ -347,6 +346,7 @@ cd Xeroww
 
 # 2. Configure environment variables
 cp .env.example .env
+# Replace all development passwords and JWT secrets before any shared deployment.
 
 # 3. Build and run containers
 make docker-up
@@ -370,24 +370,24 @@ make docker-down
 
 #### 1. Backend Setup
 ```bash
-# Navigate to backend directory
-cd api
-
 # Setup Python virtual environment
-python -m venv venv
+python -m venv api/venv
 # On Windows:
-.\venv\Scripts\activate
+.\api\venv\Scripts\activate
 # On Linux/macOS:
-# source venv/bin/activate
+# source api/venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r api/requirements.txt
+
+# Apply the current schema. SQLite is used unless DATABASE_URL is set.
+alembic upgrade head
 
 # Run deterministic demo data seed
-python scripts/seed_demo_data.py
+python api/scripts/seed_demo_data.py
 
 # Start FastAPI development server
-uvicorn main:app --reload --port 8000
+uvicorn api.main:app --reload --port 8000
 ```
 
 #### 2. Frontend Setup
@@ -459,10 +459,10 @@ Key architectural decisions are documented under [`docs/adr/`](docs/adr/):
 
 ## 15. Roadmap: The Path to Xeroww V1.0
 
-Xeroww V0.6 represents the feature-complete and architecture-stabilized modular monolith. The upcoming V1.0 release will scale the data tier horizontally into a distributed streaming architecture without modifying user-facing contracts.
+Xeroww V0.8 is a modular monolith. Distributed streaming remains a proposed V1.0 direction and is not deployed today.
 
 ```text
-Current (V0.6):
+Current (V0.8):
 Market Provider ──> CacheService / In-Memory ──> Service Calculators ──> FastAPI ──> Client
 
 V1.0 Distributed Target:
