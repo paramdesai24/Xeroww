@@ -25,6 +25,7 @@ RUN useradd -m -u 10001 xeroww
 
 # Copy application source code
 COPY api /app/api
+COPY alembic.ini /app/alembic.ini
 RUN chown -R xeroww:xeroww /app
 
 USER xeroww
