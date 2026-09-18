@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { lazy, Suspense, useState, useEffect, useCallback, useMemo } from "react";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -11,18 +11,9 @@ import SignalAlignmentCard from "./components/SignalAlignmentCard";
 import SupportResistancePanel from "./components/SupportResistancePanel";
 import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
 import ReplayControlBar from "./components/ReplayControlBar";
-import CandleForensicsModal from "./components/CandleForensicsModal";
-import EventDiffModal from "./components/EventDiffModal";
-import MarketBreadthModal from "./components/MarketBreadthModal";
 import Footer from "./components/Footer";
 
 // V0.6 Domain Components
-import WatchlistManager from "./components/WatchlistManager";
-import PortfolioView from "./components/PortfolioView";
-import AlertsManager from "./components/AlertsManager";
-import JournalView from "./components/JournalView";
-import SystemView from "./components/SystemView";
-import AuthModal from "./components/AuthModal";
 import { XRayDrawer } from "./components/xray";
 import { EventTimeline } from "./components/replay";
 import { FuzzyExplainCard } from "./components/FuzzyExplainCard";
@@ -35,6 +26,22 @@ import { useSelectedCandle } from "./hooks/useSelectedCandle";
 import type { ReplayStepResponse } from "./types/structure";
 import type { MarketEvent } from "./types/events";
 import { api } from "./api/client";
+
+const WatchlistManager = lazy(() => import("./components/WatchlistManager"));
+const PortfolioView = lazy(() => import("./components/PortfolioView"));
+const AlertsManager = lazy(() => import("./components/AlertsManager"));
+const JournalView = lazy(() => import("./components/JournalView"));
+const SystemView = lazy(() => import("./components/SystemView"));
+const AuthModal = lazy(() => import("./components/AuthModal"));
+const CandleForensicsModal = lazy(() => import("./components/CandleForensicsModal"));
+const EventDiffModal = lazy(() => import("./components/EventDiffModal"));
+const MarketBreadthModal = lazy(() => import("./components/MarketBreadthModal"));
+
+const lazyFallback = (
+  <div className="flex-1 flex items-center justify-center bg-[#000000] text-xs text-[#64748B]">
+    Loading module...
+  </div>
+);
 
 export default function App() {
   const auth = useAuth();
@@ -73,7 +80,7 @@ export default function App() {
   // Active candles slice (either historical slice from Replay or live OHLC bars)
   const activeCandles = isReplayMode && replayState ? (replayState.candles_slice as any) : ohlc?.candles;
 
-  // Flagship X-Ray Mode Hook (memoized deep forensics, deterministic pattern evaluation, Kafka lineage)
+  // Flagship X-Ray Mode Hook with deterministic analysis and factual source provenance
   const xray = useSelectedCandle({
     symbol: activeSymbol,
     candles: activeCandles,
@@ -88,6 +95,7 @@ export default function App() {
       detected_patterns: replayState.pattern ? [replayState.pattern as any] : [],
       contextual_pattern: null,
     } : structure,
+    mode: isReplayMode ? "replay" : "live",
   });
 
   // Active candle displayed in sidebar Candle Anatomy & Modals
@@ -107,12 +115,12 @@ export default function App() {
 
   useEffect(() => {
     if (isReplayMode) {
-      setSidebarTab("EVENTS");
-      fetchEvents();
+      queueMicrotask(() => {
+        setSidebarTab("EVENTS");
+        fetchEvents();
+      });
     } else {
-      if (sidebarTab === "EVENTS") {
-        setSidebarTab("STRUCTURE");
-      }
+      queueMicrotask(() => setSidebarTab((current) => current === "EVENTS" ? "STRUCTURE" : current));
     }
   }, [isReplayMode, fetchEvents]);
 
@@ -134,8 +142,10 @@ export default function App() {
   }, [activeSymbol, isReplayMode]);
 
   useEffect(() => {
-    setFuzzyReport(null);
-    fetchFuzzyReport();
+    queueMicrotask(() => {
+      setFuzzyReport(null);
+      fetchFuzzyReport();
+    });
   }, [activeSymbol, fetchFuzzyReport]);
 
   // Handle clicking a timeline event:
@@ -422,39 +432,41 @@ export default function App() {
 
         {activeModule === "WATCHLISTS" &&
           (auth.isAuthenticated ? (
-            <WatchlistManager
-              onSelectSymbol={(sym) => {
-                setActiveSymbol(sym);
-                setActiveModule("MARKET");
-              }}
-            />
+            <Suspense fallback={lazyFallback}>
+              <WatchlistManager
+                onSelectSymbol={(sym) => {
+                  setActiveSymbol(sym);
+                  setActiveModule("MARKET");
+                }}
+              />
+            </Suspense>
           ) : (
             renderAuthGate("Watchlist Manager")
           ))}
 
         {activeModule === "PORTFOLIO" &&
           (auth.isAuthenticated ? (
-            <PortfolioView />
+            <Suspense fallback={lazyFallback}><PortfolioView /></Suspense>
           ) : (
             renderAuthGate("Portfolio Valuation Engine")
           ))}
 
         {activeModule === "ALERTS" &&
           (auth.isAuthenticated ? (
-            <AlertsManager />
+            <Suspense fallback={lazyFallback}><AlertsManager /></Suspense>
           ) : (
             renderAuthGate("Real-Time Alert Engine")
           ))}
 
         {activeModule === "JOURNAL" &&
           (auth.isAuthenticated ? (
-            <JournalView />
+            <Suspense fallback={lazyFallback}><JournalView /></Suspense>
           ) : (
             renderAuthGate("Decision Audit Journal")
           ))}
 
         {activeModule === "SYSTEM" && (
-          <SystemView user={auth.user} />
+          <Suspense fallback={lazyFallback}><SystemView user={auth.user} /></Suspense>
         )}
       </div>
 
@@ -463,25 +475,31 @@ export default function App() {
 
       {/* Modals */}
       {showAuthModal && (
-        <AuthModal auth={auth} onClose={() => setShowAuthModal(false)} />
+        <Suspense fallback={null}><AuthModal auth={auth} onClose={() => setShowAuthModal(false)} /></Suspense>
       )}
       {showForensicsModal && (
-        <CandleForensicsModal
-          symbol={activeSymbol}
-          timestamp={activeCandle?.time ?? new Date().toISOString().split("T")[0]}
-          onClose={() => setShowForensicsModal(false)}
-        />
+        <Suspense fallback={null}>
+          <CandleForensicsModal
+            symbol={activeSymbol}
+            timestamp={activeCandle?.time ?? new Date().toISOString().split("T")[0]}
+            onClose={() => setShowForensicsModal(false)}
+          />
+        </Suspense>
       )}
       {showDiffModal && (
-        <EventDiffModal
-          symbol={activeSymbol}
-          onClose={() => setShowDiffModal(false)}
-        />
+        <Suspense fallback={null}>
+          <EventDiffModal
+            symbol={activeSymbol}
+            onClose={() => setShowDiffModal(false)}
+          />
+        </Suspense>
       )}
       {showBreadthModal && (
-        <MarketBreadthModal
-          onClose={() => setShowBreadthModal(false)}
-        />
+        <Suspense fallback={null}>
+          <MarketBreadthModal
+            onClose={() => setShowBreadthModal(false)}
+          />
+        </Suspense>
       )}
 
       {/* Flagship X-Ray Mode Right-Side Inspection Drawer */}

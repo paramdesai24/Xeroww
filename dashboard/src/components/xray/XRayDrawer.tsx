@@ -2,7 +2,7 @@
 // Flagship X-Ray Mode: Institutional right-side inspection drawer.
 // 250ms smooth slide animation, Bloomberg-grade forensic analysis, and zero-flicker candle updates.
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { X, ChevronLeft, ChevronRight, ShieldCheck, Layers, Compass, Database, Activity } from "lucide-react";
 import type { XRayInspectionData } from "../../types/xray";
 import { XRayAnatomy } from "./XRayAnatomy";
@@ -26,13 +26,6 @@ export function XRayDrawer({
   onNextCandle,
 }: XRayDrawerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // When switching candles, retain smooth scrolling position or reset gently
-  useEffect(() => {
-    if (data) {
-      // Keep drawer smoothly alive without tearing or remounting
-    }
-  }, [data?.timestamp]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);

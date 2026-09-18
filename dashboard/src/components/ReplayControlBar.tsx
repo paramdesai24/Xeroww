@@ -59,6 +59,16 @@ export default function ReplayControlBar({
   const [loading, setLoading] = useState<boolean>(true);
   const timerRef = useRef<number | null>(null);
 
+  const fetchStep = useCallback(
+    async (step: number) => {
+      try {
+        const state = await api.replay.getStep(symbol, step, "3mo");
+        onStateUpdate(state);
+      } catch { /* graceful handle */ }
+    },
+    [symbol, onStateUpdate]
+  );
+
   // Notify parent of step changes
   useEffect(() => {
     onStepChange?.(currentStep);
@@ -68,14 +78,15 @@ export default function ReplayControlBar({
   useEffect(() => {
     if (externalStep !== null && externalStep !== undefined && externalStep !== currentStep && timeline) {
       const clamped = Math.max(0, Math.min(externalStep, timeline.total_bars - 1));
-      setCurrentStep(clamped);
-      fetchStep(clamped);
+      queueMicrotask(() => {
+        setCurrentStep(clamped);
+        void fetchStep(clamped);
+      });
     }
-  }, [externalStep, timeline]);
+  }, [externalStep, currentStep, timeline, fetchStep]);
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     api.replay
       .getTimeline(symbol, "3mo")
       .then((res) => {
@@ -93,16 +104,6 @@ export default function ReplayControlBar({
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [symbol, onStateUpdate]);
-
-  const fetchStep = useCallback(
-    async (step: number) => {
-      try {
-        const state = await api.replay.getStep(symbol, step, "3mo");
-        onStateUpdate(state);
-      } catch { /* graceful handle */ }
-    },
-    [symbol, onStateUpdate]
-  );
 
   const handleSeek = (step: number) => { setCurrentStep(step); fetchStep(step); };
   const handleStepForward = () => {

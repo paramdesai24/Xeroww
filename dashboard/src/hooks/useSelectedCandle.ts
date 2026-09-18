@@ -9,13 +9,14 @@ import type { XRayInspectionData } from "../types/xray";
 import { calculateCandleAnatomy } from "../components/xray/utils/anatomy";
 import { evaluateCandlePattern } from "../components/xray/utils/pattern";
 import { calculateMarketStructureContext } from "../components/xray/utils/structure";
-import { generateKafkaProvenance } from "../components/xray/utils/provenance";
+import { generateDataProvenance } from "../components/xray/utils/provenance";
 
 interface UseSelectedCandleOptions {
   symbol: string;
   candles: OHLCBar[] | undefined;
   structure?: MarketStructureSummaryResponse | null;
   onCandleChanged?: (candle: OHLCBar | null) => void;
+  mode?: "live" | "replay";
 }
 
 export interface UseSelectedCandleReturn {
@@ -37,13 +38,14 @@ export function useSelectedCandle({
   candles = [],
   structure = null,
   onCandleChanged,
+  mode = "live",
 }: UseSelectedCandleOptions): UseSelectedCandleReturn {
   const [selectedCandle, setSelectedCandle] = useState<OHLCBar | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   // Close drawer or update selection when active symbol switches
   useEffect(() => {
-    setSelectedCandle(null);
+    queueMicrotask(() => setSelectedCandle(null));
   }, [symbol]);
 
   // Global Escape key listener to close X-Ray inspection drawer
@@ -98,10 +100,11 @@ export function useSelectedCandle({
       activeCandleIndex >= 0 ? activeCandleIndex : candles.length - 1,
       structure
     );
-    const provenance = generateKafkaProvenance(
+    const provenance = generateDataProvenance(
       symbol,
       activeBar,
-      activeCandleIndex >= 0 ? activeCandleIndex : candles.length - 1
+      activeCandleIndex >= 0 ? activeCandleIndex : candles.length - 1,
+      mode,
     );
 
     return {
@@ -117,7 +120,7 @@ export function useSelectedCandle({
       rawSRZoneSupport: rawSupport,
       rawSRZoneResistance: rawResistance,
     };
-  }, [activeBar, priorBar, candles, activeCandleIndex, structure, symbol]);
+  }, [activeBar, priorBar, candles, activeCandleIndex, structure, symbol, mode]);
 
   const selectCandle = useCallback(
     (candle: OHLCBar) => {
