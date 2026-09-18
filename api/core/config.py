@@ -17,7 +17,7 @@ load_dotenv()
 class Settings:
     # App metadata
     APP_NAME: str = "Xeroww API"
-    APP_VERSION: str = os.getenv("APP_VERSION", "0.6.0")
+    APP_VERSION: str = os.getenv("APP_VERSION", "0.8.0")
     APP_ENV: str = os.getenv("APP_ENV", "development")
 
     # CORS
@@ -31,6 +31,10 @@ class Settings:
 
     # Database — defaults to SQLite for zero-config local dev; set DATABASE_URL for PostgreSQL
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./xeroww.db")
+    AUTO_CREATE_TABLES: bool = os.getenv(
+        "AUTO_CREATE_TABLES",
+        "true" if os.getenv("APP_ENV", "development") == "development" else "false",
+    ).strip().lower() in {"1", "true", "yes", "on"}
 
     # Market data provider selection
     # Future values: "kafka", "spark", "snowflake"
