@@ -21,6 +21,8 @@ from api.schemas.portfolio import (
     TradeOrderRequest,
     TransactionResponse,
 )
+from api.core.dependencies import get_market_data_service
+from api.services.market_data_service import MarketDataService
 
 router = APIRouter(prefix="/portfolios", tags=["Portfolios"])
 
@@ -58,8 +60,9 @@ def get_portfolio(
     portfolio_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    svc = PortfolioService(db, current_user.id)
+    svc = PortfolioService(db, current_user.id, market_data)
     return svc.get_summary(portfolio_id)
 
 
@@ -74,8 +77,9 @@ def execute_trade(
     body: TradeOrderRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    svc = PortfolioService(db, current_user.id)
+    svc = PortfolioService(db, current_user.id, market_data)
     return svc.execute_trade(
         portfolio_id=portfolio_id,
         symbol=body.symbol,
@@ -107,7 +111,7 @@ def get_contributions(
     portfolio_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    svc = PortfolioService(db, current_user.id)
+    svc = PortfolioService(db, current_user.id, market_data)
     return svc.get_contribution_analysis(portfolio_id)
-

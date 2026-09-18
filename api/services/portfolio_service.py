@@ -39,8 +39,8 @@ class PortfolioService:
 
     def _get_provider(self):
         if self._provider is None:
-            from api.services.yahoo_provider import YahooFinanceProvider
-            self._provider = YahooFinanceProvider()
+            from api.core.dependencies import get_market_data_service
+            self._provider = get_market_data_service()
         return self._provider
 
     # -----------------------------------------------------------------------
