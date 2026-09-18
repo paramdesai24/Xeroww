@@ -9,18 +9,12 @@ Routes delegate pattern recognition and contextual analysis to AnalyticsOrchestr
 
 from fastapi import APIRouter, Depends, Path
 
-from api.core.dependencies import get_market_provider
+from api.core.dependencies import get_market_data_service
 from api.schemas.pattern import PatternResponse
-from api.services.yahoo_provider import SYMBOL_META
 from api.services.market_data_service import MarketDataService
 from api.analytics import default_orchestrator, AnalyticsOrchestrator
 
 router = APIRouter(tags=["Pattern Detection"])
-provider = get_market_provider()
-
-
-def _get_service() -> MarketDataService:
-    return MarketDataService(provider)
 
 
 def _get_orchestrator() -> AnalyticsOrchestrator:
@@ -34,7 +28,7 @@ def _get_orchestrator() -> AnalyticsOrchestrator:
 )
 async def get_patterns(
     symbol: str = Path(..., description="NSE ticker symbol, e.g., RELIANCE.NS"),
-    market_data: MarketDataService = Depends(_get_service),
+    market_data: MarketDataService = Depends(get_market_data_service),
     orchestrator: AnalyticsOrchestrator = Depends(_get_orchestrator),
 ) -> PatternResponse:
     """
@@ -43,7 +37,7 @@ async def get_patterns(
     and contextual support/resistance & volume analysis.
     """
     sym, candles = market_data.get_candles(symbol, period="1mo", interval="1d")
-    meta = SYMBOL_META.get(sym, {})
+    meta = next((item for item in market_data.get_stocks() if item["symbol"] == sym), {})
     marubozu_dto = orchestrator.run_marubozu(
         candles=candles,
         symbol=sym,
