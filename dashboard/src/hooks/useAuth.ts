@@ -25,7 +25,7 @@ export function useAuth(): AuthHook {
   useEffect(() => {
     const token = getStoredToken();
     if (!token) {
-      setIsLoading(false);
+      queueMicrotask(() => setIsLoading(false));
       return;
     }
     api.auth

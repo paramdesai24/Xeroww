@@ -57,7 +57,7 @@ export function useMarketData(): MarketState {
 
   // Fetch whenever the active symbol changes
   useEffect(() => {
-    fetchStockData(activeSymbol);
+    queueMicrotask(() => void fetchStockData(activeSymbol));
   }, [activeSymbol, fetchStockData]);
 
   return {
