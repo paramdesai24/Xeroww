@@ -5,7 +5,7 @@
 const config = {
   // Backend API base URL
   // Override with VITE_API_URL env variable in .env
-  apiBaseUrl: import.meta.env.VITE_API_URL ?? "http://localhost:8000",
+  apiBaseUrl: import.meta.env.VITE_API_URL ?? "/api",
 
   // Default chart settings
   chart: {
@@ -37,7 +37,7 @@ const config = {
   // App metadata
   app: {
     name: "Xeroww",
-    version: "0.1.0",
+    version: import.meta.env.VITE_APP_VERSION ?? "0.8.0",
     dataNote: "Near real-time data — Yahoo Finance delayed feed",
   },
 } as const;
