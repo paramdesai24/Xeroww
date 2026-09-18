@@ -1,6 +1,6 @@
 // src/types/xray.ts
 // Institutional TypeScript types for Xeroww Flagship X-Ray Mode.
-// High-precision geometric anatomy, deterministic pattern evaluation, market structure, and Kafka lineage.
+// High-precision geometric anatomy, deterministic pattern evaluation, market structure, and truthful data lineage.
 
 import type { OHLCBar } from "./market";
 import type { SRZone } from "./structure";
@@ -99,19 +99,18 @@ export interface XRayMarketStructure {
   };
 }
 
-/** Distributed data provenance schema (Kafka-ready architecture) */
-export interface KafkaProvenance {
-  eventId: string;             // Deterministic UUID e.g. evt_RELIANCE_20240315_153000_8921a4f
-  producer: string;            // e.g. xeroww-engine.market-feed.nse-equity.v1
-  topic: string;               // e.g. xeroww.market.ohlc.ticks.v1
-  partition: number;           // Deterministic partition 0 - 15
-  offset: number;              // Deterministic monotonic offset
-  traceId: string;             // W3C Trace Context traceparent
-  schemaVersion: string;       // v1.2.0-avro-proto
-  ingestionTimestamp: string;  // ISO UTC string
-  ingestionLatencyMs: number;  // Simulated deterministic ingestion latency
-  sourceProvider: string;      // e.g. YahooFinanceProvider / NSE Feed
-  kafkaReady: boolean;         // Flag indicating message contract readiness
+/** Facts available for the candle and the local X-Ray calculation. */
+export interface DataProvenance {
+  sourceProvider: string;
+  sourceKind: "delayed_market_data" | "historical_market_data";
+  transport: "HTTP REST";
+  symbol: string;
+  candleTimestamp: string;
+  candleIndex: number;
+  calculationLocation: "browser";
+  algorithms: string[];
+  mode: "live" | "replay";
+  limitations: string[];
 }
 
 /** Complete aggregate forensic dataset for the X-Ray Drawer */
@@ -124,7 +123,7 @@ export interface XRayInspectionData {
   anatomy: CandleAnatomyMetrics;
   pattern: XRayPatternEngineResult;
   marketStructure: XRayMarketStructure;
-  provenance: KafkaProvenance;
+  provenance: DataProvenance;
   rawSRZoneSupport: SRZone | null;
   rawSRZoneResistance: SRZone | null;
 }
