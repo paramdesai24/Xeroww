@@ -1,55 +1,46 @@
-# Database — Xeroww
+# Xeroww Database
 
-## V0 Status: No Database Required
+## Current state
 
-Xeroww V0 uses **Option B** — all data is fetched live from Yahoo Finance.  
-No PostgreSQL instance is required to run the backend.
+Xeroww persists users, watchlists, portfolios, alerts, journal entries, annotations, and optional market records through SQLAlchemy. Local development defaults to SQLite. Docker Compose uses PostgreSQL 16 with Psycopg 3.
 
-SQLAlchemy ORM models are defined in `api/models/stock.py` as a **schema contract** for V1.
+Alembic is the schema authority. `database/schema.sql` is an incomplete historical reference and must not be used to initialize the application database.
 
----
+## Local development
 
-## V0.5 / V1 — Enabling PostgreSQL
+The default development configuration uses `sqlite:///./xeroww.db` and may create tables automatically when `AUTO_CREATE_TABLES=true`.
 
-When you are ready to introduce persistence:
-
-### 1. Create the database
+To exercise the migration path explicitly:
 
 ```bash
-psql -U postgres
-CREATE DATABASE xeroww;
-\q
+alembic upgrade head
+alembic downgrade base
+alembic upgrade head
 ```
 
-### 2. Apply the schema
+## PostgreSQL
+
+Set a Psycopg URL and disable runtime schema creation:
+
+```text
+DATABASE_URL=postgresql+psycopg://xeroww:password@localhost:5432/xeroww
+AUTO_CREATE_TABLES=false
+```
+
+Then apply migrations before starting the API:
 
 ```bash
-psql -U postgres -d xeroww -f database/schema.sql
+alembic upgrade head
 ```
 
-### 3. Configure the connection
+Docker Compose performs this sequence through its one-shot `migrate` service. The backend starts only after that service succeeds.
 
-Copy `.env.example` to `.env` and set:
+## Adopting an existing database
 
-```
-DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/xeroww
-```
+If an existing database was created from the same SQLAlchemy metadata and already matches the baseline schema, back it up, verify the schema, and mark the baseline as applied:
 
-### 4. In `api/main.py`, add to the lifespan startup block:
-
-```python
-from api.database.session import engine, Base
-if engine:
-    Base.metadata.create_all(engine)
+```bash
+alembic stamp head
 ```
 
----
-
-## Migration Path
-
-| Version | Database Layer |
-|---------|---------------|
-| V0      | None — yfinance live fetch |
-| V0.5    | PostgreSQL — store fetched candles |
-| V1      | PostgreSQL + Kafka consumer writes candles |
-| V2+     | Snowflake (analytical queries) |
+Do not stamp a database whose schema has not been verified against the baseline migration.

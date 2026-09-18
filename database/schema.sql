@@ -1,9 +1,9 @@
 -- =============================================================================
 -- Xeroww — PostgreSQL Schema DDL
--- Version: 0.1.0
--- Status:  Reference only — not applied in V0 (Option B: no runtime DB)
+-- Version: legacy reference
+-- Status: Partial historical reference only. Do not use this file to initialize Xeroww.
 -- =============================================================================
--- Run this script in V0.5 or V1 after configuring DATABASE_URL in .env
+-- Alembic migrations under api/database/migrations are the schema authority.
 -- =============================================================================
 
 -- Enable extensions
