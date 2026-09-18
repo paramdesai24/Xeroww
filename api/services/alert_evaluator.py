@@ -61,8 +61,8 @@ class StandardAlertEvaluator(AlertEvaluator):
 
     def _get_provider(self):
         if self._provider is None:
-            from api.services.yahoo_provider import YahooFinanceProvider
-            self._provider = YahooFinanceProvider()
+            from api.core.dependencies import get_market_data_service
+            self._provider = get_market_data_service()
         return self._provider
 
     def evaluate(self, alert: Alert) -> AlertEvaluationResult:
@@ -105,7 +105,11 @@ class StandardAlertEvaluator(AlertEvaluator):
         return self._get_provider().get_quote(symbol)
 
     def _get_candles(self, symbol: str, period: str = "1mo") -> list[dict[str, Any]]:
-        return self._get_provider().get_ohlc(symbol, period=period, interval="1d")
+        provider = self._get_provider()
+        if hasattr(provider, "get_candles"):
+            _, candles = provider.get_candles(symbol, period=period, interval="1d")
+            return candles
+        return provider.get_ohlc(symbol, period=period, interval="1d")
 
     # -----------------------------------------------------------------------
     # Type-specific evaluators

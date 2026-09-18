@@ -13,13 +13,11 @@ from api.models.alert import Alert, AlertType
 from api.schemas.alert import AlertCreate, AlertEvaluationResult
 from api.services.alert_evaluator import StandardAlertEvaluator
 
-_evaluator = StandardAlertEvaluator()
-
-
 class AlertService:
-    def __init__(self, db: Session, user_id: int):
+    def __init__(self, db: Session, user_id: int, evaluator=None):
         self.db = db
         self.user_id = user_id
+        self.evaluator = evaluator or StandardAlertEvaluator()
 
     def list_alerts(self, skip: int = 0, limit: int = 50) -> list[Alert]:
         return (
@@ -98,7 +96,7 @@ class AlertService:
 
     def evaluate_alert(self, alert_id: int) -> AlertEvaluationResult:
         alert = self.get_alert_or_404(alert_id)
-        result = _evaluator.evaluate(alert)
+        result = self.evaluator.evaluate(alert)
         if result.triggered:
             alert.triggered_at = datetime.utcnow()
             self.db.commit()
@@ -139,7 +137,7 @@ class AlertService:
         )
         results = []
         for alert in alerts:
-            result = _evaluator.evaluate(alert)
+            result = self.evaluator.evaluate(alert)
             if result.triggered:
                 alert.triggered_at = datetime.utcnow()
             results.append(result)

@@ -12,6 +12,9 @@ from api.core.dependencies import get_current_user
 from api.models.user import User
 from api.schemas.alert import AlertCreate, AlertResponse, AlertEvaluationResult
 from api.services.alert_service import AlertService
+from api.services.alert_evaluator import StandardAlertEvaluator
+from api.services.market_data_service import MarketDataService
+from api.core.dependencies import get_market_data_service
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
 
@@ -57,8 +60,9 @@ def evaluate_alert(
     alert_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    svc = AlertService(db, current_user.id)
+    svc = AlertService(db, current_user.id, StandardAlertEvaluator(market_data))
     return svc.evaluate_alert(alert_id)
 
 
@@ -66,6 +70,7 @@ def evaluate_alert(
 def evaluate_all_alerts(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    svc = AlertService(db, current_user.id)
+    svc = AlertService(db, current_user.id, StandardAlertEvaluator(market_data))
     return svc.evaluate_all_alerts()
