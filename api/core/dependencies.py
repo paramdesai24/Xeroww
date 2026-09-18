@@ -19,6 +19,8 @@ import jwt
 from api.database.session import get_db
 from api.core.security import decode_token
 from api.models.user import User, UserRole
+from api.core.config import settings
+from api.services.market_provider import MarketDataProvider
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -108,12 +110,19 @@ _default_provider = None
 _default_market_service = None
 
 
-def get_market_provider():
+def get_market_provider() -> MarketDataProvider:
     """Return singleton or configured MarketDataProvider."""
     global _default_provider
     if _default_provider is None:
-        from api.services.yahoo_provider import YahooFinanceProvider
-        _default_provider = YahooFinanceProvider()
+        provider_name = settings.MARKET_DATA_PROVIDER.strip().lower()
+        if provider_name == "yahoo":
+            from api.services.yahoo_provider import YahooFinanceProvider
+            _default_provider = YahooFinanceProvider()
+        else:
+            raise RuntimeError(
+                f"Unsupported MARKET_DATA_PROVIDER '{settings.MARKET_DATA_PROVIDER}'. "
+                "This release supports only 'yahoo'."
+            )
     return _default_provider
 
 
@@ -125,3 +134,9 @@ def get_market_data_service():
         _default_market_service = MarketDataService(get_market_provider())
     return _default_market_service
 
+
+def reset_market_dependencies() -> None:
+    """Reset singleton dependencies for deterministic tests and reconfiguration."""
+    global _default_provider, _default_market_service
+    _default_provider = None
+    _default_market_service = None
