@@ -13,13 +13,12 @@ from api.models.intelligence import DecisionJournalEntry, JournalStatus
 from api.schemas.intelligence import JournalEntryCreate, JournalEntryUpdate
 from api.services.thesis_review_service import ThesisReviewService
 
-_thesis_reviewer = ThesisReviewService()
-
 
 class JournalService:
-    def __init__(self, db: Session, user_id: int):
+    def __init__(self, db: Session, user_id: int, market_data=None):
         self.db = db
         self.user_id = user_id
+        self.market_data = market_data
 
     def list_entries(self, skip: int = 0, limit: int = 50) -> list[DecisionJournalEntry]:
         return (
@@ -115,7 +114,10 @@ class JournalService:
 
     def review_entry(self, entry_id: int) -> dict:
         entry = self.get_entry_or_404(entry_id)
-        result = _thesis_reviewer.review_entry(entry)
+        if self.market_data is None:
+            from api.core.dependencies import get_market_data_service
+            self.market_data = get_market_data_service()
+        result = ThesisReviewService(self.market_data).review_entry(entry)
 
         try:
             from api.events import get_event_bus, JournalEntryReviewed

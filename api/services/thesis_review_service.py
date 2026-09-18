@@ -14,24 +14,31 @@ Do not judge the user. Do not provide financial advice."
 
 from typing import Any
 from api.models.intelligence import DecisionJournalEntry
-from api.services.yahoo_provider import YahooFinanceProvider
 from api.services.replay_service import ReplayEngine
 
 
 class ThesisReviewService:
     """Performs objective audit of past trade theses against subsequent market data."""
 
-    def __init__(self, provider: YahooFinanceProvider | None = None):
-        self.provider = provider or YahooFinanceProvider()
+    def __init__(self, market_data):
+        self.market_data = market_data
+
+    def _get_candles(self, symbol: str) -> tuple[str, list[dict[str, Any]]]:
+        if hasattr(self.market_data, "get_candles"):
+            return self.market_data.get_candles(symbol, period="1y", interval="1d")
+        normalized = self.market_data.normalize_symbol(symbol)
+        candles = self.market_data.get_ohlc(normalized, period="1y", interval="1d")
+        return normalized, candles
 
     def review_entry(self, entry: DecisionJournalEntry) -> dict[str, Any]:
         """
         Compare snapshot context of entry at creation time against subsequent data.
         """
-        symbol = self.provider.normalize_symbol(entry.symbol)
         try:
-            candles = self.provider.get_ohlc(symbol, period="1y", interval="1d")
+            symbol, candles = self._get_candles(entry.symbol)
         except Exception:
+            provider = getattr(self.market_data, "provider", self.market_data)
+            symbol = provider.normalize_symbol(entry.symbol)
             candles = []
 
         if not candles:

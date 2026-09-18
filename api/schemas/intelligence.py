@@ -16,7 +16,7 @@ class JournalEntryCreate(BaseModel):
 
 
 class JournalEntryUpdate(BaseModel):
-    status: str = Field(..., pattern="^(OPEN|CLOSED|CANCELLED)$", examples=["CLOSED"])
+    status: str | None = Field(None, pattern="^(OPEN|CLOSED|CANCELLED)$", examples=["CLOSED"])
     thesis: str | None = Field(None)
 
 

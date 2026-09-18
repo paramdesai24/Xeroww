@@ -12,6 +12,8 @@ from api.core.dependencies import get_current_user
 from api.models.user import User
 from api.schemas.intelligence import JournalEntryCreate, JournalEntryUpdate, JournalEntryResponse
 from api.services.journal_service import JournalService
+from api.services.market_data_service import MarketDataService
+from api.core.dependencies import get_market_data_service
 
 router = APIRouter(prefix="/journal", tags=["Decision Journal"])
 
@@ -21,8 +23,9 @@ def review_journal_entry(
     entry_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    market_data: MarketDataService = Depends(get_market_data_service),
 ):
-    svc = JournalService(db, current_user.id)
+    svc = JournalService(db, current_user.id, market_data)
     return svc.review_entry(entry_id)
 
 
@@ -62,7 +65,12 @@ def get_entry(
     return svc.get_entry_or_404(entry_id)
 
 
-@router.put("/{entry_id}", response_model=JournalEntryResponse, summary="Update post-trade review/outcome")
+@router.patch("/{entry_id}", response_model=JournalEntryResponse, summary="Partially update post-trade review/outcome")
+@router.put(
+    "/{entry_id}",
+    response_model=JournalEntryResponse,
+    summary="Update post-trade review/outcome (compatibility alias)",
+)
 def update_entry(
     entry_id: int,
     body: JournalEntryUpdate,
