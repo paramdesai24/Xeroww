@@ -12,7 +12,6 @@ Be explicit: Correlation is not causation."
 
 import math
 from typing import Any
-from api.services.market_provider import MarketDataProvider
 
 
 def compute_pearson_correlation(series_a: list[float], series_b: list[float]) -> float:
@@ -41,11 +40,21 @@ def compute_pearson_correlation(series_a: list[float], series_b: list[float]) ->
 class CorrelationService:
     """Calculates cross-asset correlations across daily returns."""
 
-    def __init__(self, provider: MarketDataProvider):
-        self.provider = provider
+    def __init__(self, market_data):
+        self.market_data = market_data
+
+    def _normalize_symbol(self, symbol: str) -> str:
+        provider = getattr(self.market_data, "provider", self.market_data)
+        return provider.normalize_symbol(symbol)
+
+    def _get_candles(self, symbol: str, period: str) -> tuple[str, list[dict[str, Any]]]:
+        if hasattr(self.market_data, "get_candles"):
+            return self.market_data.get_candles(symbol, period=period, interval="1d")
+        normalized = self.market_data.normalize_symbol(symbol)
+        return normalized, self.market_data.get_ohlc(normalized, period=period, interval="1d")
 
     def _get_return_series(self, symbol: str, period: str = "6mo") -> tuple[list[str], list[float]]:
-        candles = self.provider.get_ohlc(symbol, period=period, interval="1d")
+        _, candles = self._get_candles(symbol, period)
         if len(candles) < 2:
             return [], []
 
@@ -58,8 +67,8 @@ class CorrelationService:
         return times, returns
 
     def compute_pairwise(self, symbol_a: str, symbol_b: str, window: int = 20) -> dict[str, Any]:
-        sym_a = self.provider.normalize_symbol(symbol_a)
-        sym_b = self.provider.normalize_symbol(symbol_b)
+        sym_a = self._normalize_symbol(symbol_a)
+        sym_b = self._normalize_symbol(symbol_b)
 
         times_a, returns_a = self._get_return_series(sym_a, period="1y")
         times_b, returns_b = self._get_return_series(sym_b, period="1y")
@@ -104,7 +113,7 @@ class CorrelationService:
         }
 
     def compute_matrix(self, symbols: list[str], window: int = 20) -> dict[str, Any]:
-        norm_symbols = [self.provider.normalize_symbol(s) for s in symbols]
+        norm_symbols = [self._normalize_symbol(s) for s in symbols]
         matrix: dict[str, dict[str, float]] = {}
 
         # Cache returns

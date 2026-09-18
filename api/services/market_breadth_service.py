@@ -12,22 +12,27 @@ Principle:
 """
 
 from typing import Any
-from api.services.market_provider import MarketDataProvider
+from typing import Protocol
+
+
+class MarketQuoteReader(Protocol):
+    def get_stocks(self) -> list[dict[str, Any]]: ...
+    def get_quote(self, symbol: str) -> dict[str, Any]: ...
 
 
 class MarketBreadthService:
     """Computes deterministic market breadth metrics across the tracked universe."""
 
-    def __init__(self, provider: MarketDataProvider):
-        self.provider = provider
+    def __init__(self, market_data: MarketQuoteReader):
+        self.market_data = market_data
 
     def compute_breadth(self) -> dict[str, Any]:
-        stocks = self.provider.get_stocks()
+        stocks = self.market_data.get_stocks()
         quotes: list[dict[str, Any]] = []
 
         for s in stocks:
             try:
-                q = self.provider.get_quote(s["symbol"])
+                q = self.market_data.get_quote(s["symbol"])
                 q.setdefault("symbol", s["symbol"])
                 quotes.append(q)
             except Exception:
