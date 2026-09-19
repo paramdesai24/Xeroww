@@ -1,7 +1,7 @@
 """
 api/main.py
 ───────────
-Xeroww FastAPI application entry point — V0.6 Multi-Tenant Financial Intelligence Platform.
+Xeroww FastAPI application entry point - V0.9 Financial Intelligence Platform.
 
 Run with:
   uvicorn main:app --reload --port 8000
@@ -30,8 +30,9 @@ from api.routes import health, stocks, quote, ohlc, patterns
 # V0.6 routes (new)
 from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay, diff, forensics, annotations, intelligence, events, system_health
 
-# V0.8 routes (Fuzzy Explainability Engine)
+# V0.8 and V0.9 routes
 from api.routes import fuzzy
+from api.routes import decisions
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
@@ -40,7 +41,7 @@ load_dotenv()
 
 
 # ---------------------------------------------------------------------------
-# Lifespan — startup / shutdown events
+# Lifespan: startup / shutdown events
 # ---------------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,7 +55,7 @@ async def lifespan(app: FastAPI):
     register_default_handlers(get_event_bus())
 
     print("=" * 60)
-    print(f"  Xeroww API v{settings.APP_VERSION} — Financial Intelligence Platform")
+    print(f"  Xeroww API v{settings.APP_VERSION} - Financial Intelligence Platform")
     print("  Data Provider: Yahoo Finance (near real-time, delayed)")
     print(f"  Database: {settings.DATABASE_URL.split('//')[0]}//...")
     print("  Docs: http://localhost:8000/docs")
@@ -161,9 +162,10 @@ app.include_router(events.router)
 app.include_router(system_health.router)
 
 # ---------------------------------------------------------------------------
-# Register V0.8 routers (Fuzzy Explainability Engine)
+# Register V0.8 and V0.9 routers
 # ---------------------------------------------------------------------------
 app.include_router(fuzzy.router)
+app.include_router(decisions.router)
 
 
 # ---------------------------------------------------------------------------
@@ -201,5 +203,11 @@ async def root():
         ],
         "v08_endpoints": [
             "GET  /fuzzy/explain",
+        ],
+        "v09_endpoints": [
+            "POST /decisions/preview",
+            "POST /decisions",
+            "GET  /decisions",
+            "GET  /decisions/{id}",
         ],
     }
