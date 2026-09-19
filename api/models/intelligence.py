@@ -13,7 +13,8 @@ Live market data is NEVER re-fetched from these tables.
 
 import enum
 from datetime import datetime
-from sqlalchemy import String, Integer, Text, DateTime, ForeignKey, Enum as SAEnum, JSON, func
+from decimal import Decimal
+from sqlalchemy import String, Integer, Text, DateTime, ForeignKey, Enum as SAEnum, JSON, Numeric, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from api.database.session import Base
 
@@ -30,6 +31,36 @@ class JournalStatus(str, enum.Enum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
+
+
+class DecisionDirection(str, enum.Enum):
+    BULLISH = "BULLISH"
+    BEARISH = "BEARISH"
+    NEUTRAL = "NEUTRAL"
+
+
+class DecisionIntent(str, enum.Enum):
+    ENTER = "ENTER"
+    ADD = "ADD"
+    HOLD = "HOLD"
+    REDUCE = "REDUCE"
+    EXIT = "EXIT"
+    WATCH = "WATCH"
+    AVOID = "AVOID"
+
+
+class DecisionSource(str, enum.Enum):
+    MANUAL = "MANUAL"
+    MARKET = "MARKET"
+    REPLAY = "REPLAY"
+    PORTFOLIO = "PORTFOLIO"
+
+
+class AmendmentType(str, enum.Enum):
+    OBSERVATION = "OBSERVATION"
+    THESIS_REVISION = "THESIS_REVISION"
+    RISK_REVISION = "RISK_REVISION"
+    STATUS_CHANGE = "STATUS_CHANGE"
 
 
 class ChartAnnotation(Base):
@@ -87,10 +118,72 @@ class DecisionJournalEntry(Base):
         DateTime, nullable=False, default=datetime.utcnow, server_default=func.now()
     )
 
+    ticket_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    direction: Mapped[DecisionDirection | None] = mapped_column(SAEnum(DecisionDirection), nullable=True)
+    intent: Mapped[DecisionIntent | None] = mapped_column(SAEnum(DecisionIntent), nullable=True)
+    holding_period: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    setup_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    entry_trigger: Mapped[str | None] = mapped_column(Text, nullable=True)
+    entry_zone_low: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    entry_zone_high: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    invalidation_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    target_zone_low: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    target_zone_high: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    max_risk_pct: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
+    max_allocation_pct: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
+    confidence: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    change_mind_condition: Mapped[str | None] = mapped_column(Text, nullable=True)
+    portfolio_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("portfolios.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    source_context: Mapped[DecisionSource | None] = mapped_column(SAEnum(DecisionSource), nullable=True)
+    source_as_of: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    source_period: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    snapshot_schema_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    snapshot_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    supporting_evidence_keys: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    conflicting_evidence_keys: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    risk_snapshot: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+
     owner: Mapped["User"] = relationship("User", back_populates="journal_entries")  # noqa: F821
+    amendments: Mapped[list["DecisionTicketAmendment"]] = relationship(
+        "DecisionTicketAmendment",
+        back_populates="decision",
+        cascade="all, delete-orphan",
+        order_by="DecisionTicketAmendment.created_at",
+    )
 
     def __repr__(self) -> str:
         return (
             f"<DecisionJournalEntry(symbol={self.symbol!r}, action={self.action!r}, "
             f"status={self.status})>"
         )
+
+
+class DecisionTicketAmendment(Base):
+    """Append-only observation or lifecycle record for a submitted decision."""
+
+    __tablename__ = "decision_ticket_amendments"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    decision_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("decision_journal_entries.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    amendment_type: Mapped[AmendmentType] = mapped_column(SAEnum(AmendmentType), nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    from_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    to_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, server_default=func.now()
+    )
+
+    decision: Mapped[DecisionJournalEntry] = relationship(
+        "DecisionJournalEntry", back_populates="amendments"
+    )

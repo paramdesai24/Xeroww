@@ -10,7 +10,7 @@ from api.models.user import User, UserRole
 from api.models.watchlist import Watchlist, WatchlistItem
 from api.models.portfolio import Portfolio, Holding, PortfolioTransaction
 from api.models.alert import Alert
-from api.models.intelligence import ChartAnnotation, DecisionJournalEntry
+from api.models.intelligence import ChartAnnotation, DecisionJournalEntry, DecisionTicketAmendment
 
 __all__ = [
     "Stock",
@@ -25,4 +25,5 @@ __all__ = [
     "Alert",
     "ChartAnnotation",
     "DecisionJournalEntry",
+    "DecisionTicketAmendment",
 ]
