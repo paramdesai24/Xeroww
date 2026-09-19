@@ -2,7 +2,9 @@
 
 ## Current state
 
-Xeroww persists users, watchlists, portfolios, alerts, journal entries, annotations, and optional market records through SQLAlchemy. Local development defaults to SQLite. Docker Compose uses PostgreSQL 16 with Psycopg 3.
+Xeroww persists users, watchlists, portfolios, alerts, decision tickets, decision amendments, annotations, and optional market records through SQLAlchemy. Local development defaults to SQLite. Docker Compose uses PostgreSQL 16 with Psycopg 3.
+
+V0.9 evolves the existing `decision_journal_entries` table into the canonical decision-ticket store and adds `decision_ticket_amendments`. Ticket fields and captured evidence are immutable after submission. Notes, target changes, invalidation changes, and lifecycle transitions are appended as separate amendment rows.
 
 Alembic is the schema authority. `database/schema.sql` is an incomplete historical reference and must not be used to initialize the application database.
 
@@ -37,10 +39,11 @@ Docker Compose performs this sequence through its one-shot `migrate` service. Th
 
 ## Adopting an existing database
 
-If an existing database was created from the same SQLAlchemy metadata and already matches the baseline schema, back it up, verify the schema, and mark the baseline as applied:
+If an existing pre-Alembic database already matches the baseline schema, back it up, verify it, stamp the baseline revision, and then run the remaining migrations:
 
 ```bash
-alembic stamp head
+alembic stamp 9e47b354fec1
+alembic upgrade head
 ```
 
 Do not stamp a database whose schema has not been verified against the baseline migration.
