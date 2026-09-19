@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -30,7 +31,10 @@ import { api } from "./api/client";
 const WatchlistManager = lazy(() => import("./components/WatchlistManager"));
 const PortfolioView = lazy(() => import("./components/PortfolioView"));
 const AlertsManager = lazy(() => import("./components/AlertsManager"));
-const JournalView = lazy(() => import("./components/JournalView"));
+const DecisionsPage = lazy(() => import("./pages/DecisionsPage"));
+const DecisionCreatePage = lazy(() => import("./pages/DecisionCreatePage"));
+const DecisionDetailPage = lazy(() => import("./pages/DecisionDetailPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 const SystemView = lazy(() => import("./components/SystemView"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
 const CandleForensicsModal = lazy(() => import("./components/CandleForensicsModal"));
@@ -45,7 +49,15 @@ const lazyFallback = (
 
 export default function App() {
   const auth = useAuth();
-  const [activeModule, setActiveModule] = useState<Module>("MARKET");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const path = location.pathname;
+  const activeModule: Module = path.startsWith("/watchlists") ? "WATCHLISTS"
+    : path.startsWith("/portfolio") ? "PORTFOLIO"
+    : path.startsWith("/alerts") ? "ALERTS"
+    : path.startsWith("/decisions") ? "JOURNAL"
+    : path.startsWith("/system") ? "SYSTEM"
+    : "MARKET";
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "CONTEXT" | "ANATOMY" | "EVENTS">("STRUCTURE");
 
@@ -76,6 +88,17 @@ export default function App() {
   // V0.5 Market Terminal State (Fully preserved + V0.6 Structure)
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
     useMarketData();
+
+  useEffect(() => {
+    if (path === "/") {
+      navigate("/market/RELIANCE.NS", { replace: true });
+      return;
+    }
+    if (path.startsWith("/market/")) {
+      const routedSymbol = decodeURIComponent(path.slice("/market/".length)).toUpperCase();
+      if (routedSymbol && routedSymbol !== activeSymbol) setActiveSymbol(routedSymbol);
+    }
+  }, [path, navigate, activeSymbol, setActiveSymbol]);
 
   // Active candles slice (either historical slice from Replay or live OHLC bars)
   const activeCandles = isReplayMode && replayState ? (replayState.candles_slice as any) : ohlc?.candles;
@@ -164,11 +187,19 @@ export default function App() {
   };
 
   const handleModuleChange = (mod: Module) => {
-    setActiveModule(mod);
     const protectedModules: Module[] = ["WATCHLISTS", "PORTFOLIO", "ALERTS", "JOURNAL"];
     if (protectedModules.includes(mod) && !auth.isAuthenticated) {
       setShowAuthModal(true);
     }
+    const routes: Record<Module, string> = {
+      MARKET: `/market/${encodeURIComponent(activeSymbol)}`,
+      WATCHLISTS: "/watchlists",
+      PORTFOLIO: "/portfolio",
+      ALERTS: "/alerts",
+      JOURNAL: "/decisions",
+      SYSTEM: "/system",
+    };
+    navigate(routes[mod]);
   };
 
   // Auth gate — refined quant gate
@@ -209,7 +240,7 @@ export default function App() {
 
       {/* Main Terminal Body */}
       <div className="app-body flex flex-1 min-h-0 overflow-hidden">
-        {activeModule === "MARKET" && (
+        {activeModule === "MARKET" && (path.startsWith("/market") || path === "/") && (
           <div className="market-workspace flex-1 min-h-0 overflow-hidden">
             {/* Left: Watchlist */}
             <Sidebar
@@ -264,6 +295,17 @@ export default function App() {
                 error={error}
                 onSelectCandle={xray.selectCandle}
                 onOpenReplay={() => setIsReplayMode(true)}
+                onPlanDecision={() => {
+                  const query = new URLSearchParams({
+                    symbol: activeSymbol,
+                    source: isReplayMode ? "replay" : "market",
+                  });
+                  if (isReplayMode && replayState?.current_candle?.time) {
+                    query.set("asOf", replayState.current_candle.time);
+                    query.set("period", "1mo");
+                  }
+                  navigate(`/decisions/new?${query.toString()}`);
+                }}
                 onOpenDiff={() => setShowDiffModal(true)}
                 onOpenForensics={() => setShowForensicsModal(true)}
                 isXRayOpen={xray.isDrawerOpen}
@@ -436,7 +478,7 @@ export default function App() {
               <WatchlistManager
                 onSelectSymbol={(sym) => {
                   setActiveSymbol(sym);
-                  setActiveModule("MARKET");
+                  navigate(`/market/${encodeURIComponent(sym)}`);
                 }}
               />
             </Suspense>
@@ -458,15 +500,19 @@ export default function App() {
             renderAuthGate("Real-Time Alert Engine")
           ))}
 
-        {activeModule === "JOURNAL" &&
-          (auth.isAuthenticated ? (
-            <Suspense fallback={lazyFallback}><JournalView /></Suspense>
-          ) : (
-            renderAuthGate("Decision Audit Journal")
-          ))}
+        {activeModule === "JOURNAL" && (auth.isAuthenticated ? (
+          <Suspense fallback={lazyFallback}>
+            {path === "/decisions/new" ? <DecisionCreatePage />
+              : /^\/decisions\/\d+$/.test(path) ? <DecisionDetailPage />
+              : <DecisionsPage />}
+          </Suspense>
+        ) : renderAuthGate("Decision Workbench"))}
 
         {activeModule === "SYSTEM" && (
           <Suspense fallback={lazyFallback}><SystemView user={auth.user} /></Suspense>
+        )}
+        {!path.startsWith("/market") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/system") && path !== "/" && (
+          <Suspense fallback={lazyFallback}><NotFoundPage /></Suspense>
         )}
       </div>
 
