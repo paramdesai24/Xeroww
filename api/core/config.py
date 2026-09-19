@@ -9,6 +9,8 @@ Loaded once at startup from environment variables / .env file.
 
 import os
 import secrets
+import tempfile
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,6 +45,10 @@ class Settings:
     # Yahoo Finance defaults
     OHLC_DEFAULT_PERIOD: str = os.getenv("OHLC_DEFAULT_PERIOD", "1mo")
     OHLC_DEFAULT_INTERVAL: str = os.getenv("OHLC_DEFAULT_INTERVAL", "1d")
+    YFINANCE_CACHE_DIR: str = os.getenv(
+        "YFINANCE_CACHE_DIR",
+        str(Path(tempfile.gettempdir()) / "xeroww-yfinance"),
+    )
 
     # Pattern detection thresholds (tunable without code changes)
     MARUBOZU_SHADOW_THRESHOLD: float = float(

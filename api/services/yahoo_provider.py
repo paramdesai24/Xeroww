@@ -8,11 +8,40 @@ Replacing this file (with a KafkaMarketProvider, for example) upgrades the entir
 """
 
 from datetime import datetime
+from pathlib import Path
+import threading
 from typing import Any
 
 import yfinance as yf
 
+from api.core.config import settings
 from api.services.market_provider import MarketDataProvider
+
+
+_cache_setup_lock = threading.Lock()
+_cache_is_configured = False
+
+
+def _configure_yfinance_cache() -> None:
+    """Configure yfinance to use a known writable cache directory once."""
+    global _cache_is_configured
+    if _cache_is_configured:
+        return
+
+    with _cache_setup_lock:
+        if _cache_is_configured:
+            return
+
+        cache_dir = Path(settings.YFINANCE_CACHE_DIR).expanduser()
+        try:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            yf.set_tz_cache_location(str(cache_dir.resolve()))
+        except (OSError, RuntimeError) as exc:
+            raise RuntimeError(
+                f"Unable to initialize Yahoo Finance cache at '{cache_dir}': {exc}"
+            ) from exc
+
+        _cache_is_configured = True
 
 
 # ---------------------------------------------------------------------------
@@ -37,6 +66,9 @@ class YahooFinanceProvider(MarketDataProvider):
     Data note: Yahoo Finance provides delayed data (typically 15–20 minutes for NSE).
                This is NOT live tick data.
     """
+
+    def __init__(self) -> None:
+        _configure_yfinance_cache()
 
     def get_stocks(self) -> list[dict[str, Any]]:
         """Return the predefined Xeroww watchlist."""
