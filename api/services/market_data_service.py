@@ -25,7 +25,7 @@ class MarketDataService:
         self.cache = cache or get_cache_service()
 
     def get_stocks(self) -> list[dict[str, Any]]:
-        cache_key = "stocks:watchlist"
+        cache_key = "stocks:nifty50:v1"
         cached = self.cache.get(cache_key)
         if cached:
             return cached
