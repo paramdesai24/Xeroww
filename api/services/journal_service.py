@@ -79,6 +79,15 @@ class JournalService:
     def update_entry(self, entry_id: int, data: JournalEntryUpdate) -> DecisionJournalEntry:
         entry = self.get_entry_or_404(entry_id)
 
+        if entry.ticket_version >= 1:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "code": "IMMUTABLE_DECISION",
+                    "message": "Submitted V0.9 decisions are immutable. Use the decisions amendment or status endpoint.",
+                },
+            )
+
         if data.status is not None:
             try:
                 entry.status = JournalStatus(data.status)
