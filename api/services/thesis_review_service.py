@@ -53,7 +53,8 @@ class ThesisReviewService:
             }
 
         engine = ReplayEngine(symbol, candles)
-        entry_time = entry.timestamp.strftime("%Y-%m-%d")
+        source_time = getattr(entry, "source_as_of", None)
+        entry_time = (source_time or entry.timestamp).strftime("%Y-%m-%d")
 
         # Initial context state (at or before entry date)
         initial_state = engine.evaluate_at_timestamp(entry_time)
