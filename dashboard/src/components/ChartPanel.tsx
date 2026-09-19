@@ -65,7 +65,7 @@ export default function ChartPanel({
       layout: {
         background: { type: ColorType.Solid, color: "#000000" }, // pitch black canvas
         textColor: "#A0A0A8", // bright legible axis labels
-        fontFamily: "'JetBrains Mono', 'Public Sans', monospace",
+        fontFamily: "'IBM Plex Mono', 'Inter', monospace",
         fontSize: 11,
       },
       grid: {
@@ -324,12 +324,12 @@ export default function ChartPanel({
     <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden" style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
       <div
-        className="px-5 py-2.5 flex items-center justify-between shrink-0 select-none flex-wrap gap-2 border-b border-[var(--border-default)]"
+        className="quote-bar px-5 py-2.5 flex items-center justify-between shrink-0 select-none gap-2 border-b border-[var(--border-default)]"
         style={{ backgroundColor: "var(--surface)" }}
       >
         {quote ? (
           <>
-            <div className="flex items-center gap-4">
+            <div className="quote-bar__identity flex items-center gap-4">
               <div className="flex items-baseline gap-2">
                 <span
                   className="text-lg font-bold tracking-tight text-[var(--text-primary)]"
@@ -373,8 +373,8 @@ export default function ChartPanel({
             </div>
 
             {/* Quick Session Stats & Overlay Controls */}
-            <div className="flex items-center gap-4 text-xs">
-              <div className="hidden lg:flex items-center gap-4 text-xs text-[var(--text-secondary)]">
+            <div className="quote-bar__controls flex items-center gap-4 text-xs">
+              <div className="quote-bar__stats hidden lg:flex items-center gap-4 text-xs text-[var(--text-secondary)]">
                 <div>
                   <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Prev</span>
                   <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
@@ -396,7 +396,7 @@ export default function ChartPanel({
               </div>
 
               {/* Overlays Toggle Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3">
+              <div className="quote-bar__layers flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3">
                 <span className="text-[11px] text-[var(--text-tertiary)] mr-1 font-medium">Layers:</span>
                 <button
                   onClick={() => setShowSR(!showSR)}
@@ -434,7 +434,7 @@ export default function ChartPanel({
               </div>
 
               {/* Intelligence Feature Buttons */}
-              <div className="flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3 shrink-0">
+              <div className="quote-bar__actions flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3 shrink-0">
                 {onOpenReplay && (
                   <button
                     id="trigger-replay-btn"
@@ -517,7 +517,7 @@ export default function ChartPanel({
         {ohlc && ohlc.candles && ohlc.candles.length > 0 && !loading && (
           <div
             id="chart-zoom-controls"
-            className="absolute bottom-9 right-[72px] z-20 flex items-center bg-[#12141A]/95 backdrop-blur-md border border-[#232734] rounded-md p-0.5 shadow-lg shadow-black/60 gap-0.5 select-none"
+            className="absolute bottom-9 left-1/2 -translate-x-1/2 z-20 flex items-center bg-[#12141A]/95 backdrop-blur-md border border-[#232734] rounded-md p-0.5 shadow-lg shadow-black/60 gap-0.5 select-none"
             title="Chart Scale & Zoom Controls"
           >
             <button
