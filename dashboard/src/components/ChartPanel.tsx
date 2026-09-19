@@ -29,6 +29,7 @@ interface ChartPanelProps {
   onOpenReplay?: () => void;
   onOpenDiff?: () => void;
   onOpenForensics?: () => void;
+  onPlanDecision?: () => void;
   isXRayOpen?: boolean;
   onToggleXRay?: () => void;
 }
@@ -43,6 +44,7 @@ export default function ChartPanel({
   onOpenReplay,
   onOpenDiff,
   onOpenForensics,
+  onPlanDecision,
   isXRayOpen,
   onToggleXRay,
 }: ChartPanelProps) {
@@ -436,6 +438,16 @@ export default function ChartPanel({
               {/* Intelligence Feature Buttons */}
               <div className="quote-bar__actions flex items-center gap-2 shrink-0">
                 <span className="quote-bar__group-label">Workspace</span>
+                {onPlanDecision && (
+                  <button
+                    id="plan-decision-btn"
+                    onClick={onPlanDecision}
+                    className="quote-bar__control"
+                    title="Create an evidence-backed decision ticket"
+                  >
+                    Plan Decision
+                  </button>
+                )}
                 {onOpenReplay && (
                   <button
                     id="trigger-replay-btn"
