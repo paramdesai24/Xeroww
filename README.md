@@ -1,4 +1,4 @@
-# Xeroww (V0.6)
+# Xeroww (V0.9)
 
 > **Deterministic Financial Intelligence & Market Structure Platform**
 >
@@ -37,7 +37,7 @@
 
 ## 1. Executive Summary & Philosophy
 
-Xeroww is an institutional-grade financial analytics and market structure intelligence platform. Engineered as a deterministic, modular monolith in V0.6, it provides retail and institutional traders with uncompromising clarity into price action, volume distribution, multi-candle patterns, and historical trade evaluation.
+Xeroww is a deterministic financial intelligence and decision-support platform. V0.9 adds a multi-page Decision Workbench that turns market evidence into immutable, auditable decision tickets without issuing predictions or trade recommendations.
 
 ### Core Philosophy
 - **Deterministic Analytics Only**: Zero machine learning hallucinations, zero black-box "confidence scores", and zero automated trade recommendations. Financial decisions belong to human intelligence; mathematical market conditions belong to Xeroww.
@@ -71,7 +71,7 @@ graph TD
             R_Patterns["/api/v1/patterns"]
             R_Structure["/api/v1/structure"]
             R_Replay["/api/v1/replay (REST & WS)"]
-            R_User["/api/v1/portfolio /journal /alerts"]
+            R_User["/api/v1/portfolio /decisions /alerts"]
         end
 
         subgraph Services ["Service & Engine Layer"]
@@ -80,7 +80,7 @@ graph TD
             S_Struct["MarketStructureEngine"]
             S_Replay["HistoricalReplayEngine"]
             S_Portfolio["PortfolioService"]
-            S_Journal["JournalService"]
+            S_Journal["DecisionService"]
             S_Alert["AlertService"]
             S_Cache["CacheService (Redis / Fallback)"]
         end
@@ -93,7 +93,7 @@ graph TD
     end
 
     subgraph DataStorage ["Data & Cache Tier"]
-        PG[("PostgreSQL 16<br/>(User State & Journals)")]
+        PG[("PostgreSQL 16<br/>(User State & Decisions)")]
         REDIS[("Redis 7<br/>(Market Quotes & OHLC Caches)")]
     end
 
@@ -127,7 +127,7 @@ graph TD
 | **Backend** | API Framework | FastAPI (ASGI / Uvicorn) | Asynchronous HTTP endpoints |
 | | Validation | Pydantic v2 | Strict schema validation, serialisation, and OpenAPI specs |
 | | Security | PyJWT, Passlib (Bcrypt) | Cryptographic bearer tokens, Argon2/Bcrypt password hashing |
-| **Persistence** | Relational Store | PostgreSQL 16 / SQLAlchemy 2.0 | ACID-compliant storage for users, portfolios, journals, and alerts |
+| **Persistence** | Relational Store | PostgreSQL 16 / SQLAlchemy 2.0 | ACID-compliant storage for users, portfolios, decisions, and alerts |
 | | Distributed Cache | Redis 7 (`redis-py`) | Multi-tier TTL caching for high-frequency market quotes and OHLC |
 | **Observability**| Metrics | Prometheus Client 0.20 | Custom counters, latency histograms, and cache hit/miss gauges |
 | | Visualization | Grafana 10.3 | Provisioned dashboards monitoring throughput, errors, and P95 latency |
@@ -142,7 +142,7 @@ graph TD
 
 1. **Deterministic Analytics**: Every calculation (Marubozu, Swing Pivots, VWAP, EMA) is a pure mathematical function of input OHLCV bars. No random seeds, stochastic approximations, or opaque scoring.
 2. **Strict Provider Abstraction**: Upstream data vendor libraries (e.g., `yfinance`) are restricted solely to `api/services/yahoo_provider.py`. The rest of the platform interacts exclusively with the abstract `MarketDataProvider`.
-3. **Separation of Market & User Data**: Public time-series market data is transiently cached and never mixed with private, tenant-isolated relational records (portfolios, journals, watchlists).
+3. **Separation of Market & User Data**: Public time-series market data is transiently cached and never mixed with private, tenant-isolated relational records (portfolios, decisions, watchlists).
 4. **Zero Look-Ahead Bias**: Historical simulation strictly isolates time `t`. At candle index `k`, all calculators only have visibility over indices `0` through `k`.
 5. **Fail-Safe Graceful Degradation**: If external caches (Redis) or metric collectors encounter failures, the core application falls back to local in-process mechanisms without service interruption.
 
@@ -171,9 +171,14 @@ Detects classic Japanese candlestick formations with strict mathematical thresho
 - Computes deterministic alignment from the configured daily candle series.
 - Multi-timeframe confluence is a future capability and is not calculated by the current runtime.
 
-### 5.5 Portfolio & Decision Tracking
+### 5.5 Decision Workbench and Portfolio Tracking
 - **Holdings & P&L**: Average price calculation, realized/unrealized profit calculation, and asset allocation breakdown.
-- **Decision Journal**: Log entry rationale, emotional state, setup type, trade thesis, and exit execution notes.
+- **Immutable Decision Tickets**: Capture direction, intent, holding period, setup, invalidation, targets, confidence, and rationale as a structured record.
+- **Server-Authoritative Evidence Snapshot**: Freeze point-in-time analytics, market structure, patterns, provenance, and data-quality context when a ticket is submitted.
+- **Transparent Risk Preview**: Show cash-risk, allocation, and quantity constraints with the exact limiting formula before submission.
+- **Append-Only Amendments**: Preserve the original thesis while recording notes, invalidation changes, target changes, and status transitions.
+- **Cross-Page Workflow**: Move from market or replay context into `/decisions/new`, then review the saved record at `/decisions/{id}`.
+- **NIFTY 50 Symbol Search**: Search the supported company universe by ticker or company name, with prefix matches ranked before contains matches.
 - **Chart Annotations**: Anchor analytical notes, horizontal price levels, and trade tags directly to price coordinates.
 - **Structural Alerts**: Price-threshold and pattern-formation triggers evaluated against live or replayed market events.
 
@@ -214,7 +219,12 @@ Xeroww guarantees consistent error envelopes across all HTTP 4xx/5xx responses:
 | `GET` | `/replay/{symbol}/timeline` | Load a historical replay timeline | No |
 | `GET` | `/replay/{symbol}/step/{step}` | Retrieve a point-in-time replay snapshot | No |
 | `GET` | `/portfolios` | List user portfolios | Yes |
-| `GET` | `/journal` | List trade decision journal entries | Yes |
+| `POST` | `/decisions/preview` | Preview evidence and risk for a draft ticket | Yes |
+| `POST` | `/decisions` | Submit an immutable decision ticket | Yes |
+| `GET` | `/decisions` | List the current user's decision tickets | Yes |
+| `GET` | `/decisions/{id}` | Read a ticket, snapshot, and amendment history | Yes |
+| `POST` | `/decisions/{id}/amendments` | Append a ticket amendment | Yes |
+| `POST` | `/decisions/{id}/status` | Append a status transition | Yes |
 | `POST` | `/alerts` | Create price or pattern alert | Yes |
 | `GET` | `/metrics` | Prometheus metrics scrape endpoint | No |
 | `GET` | `/health` | Deep healthcheck (DB, Cache, Provider) | No |
