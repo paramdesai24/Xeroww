@@ -20,14 +20,25 @@ export default function Navbar() {
       className="h-11 border-b border-[var(--border-default)] flex items-center px-4 justify-between shrink-0 z-20"
       style={{ backgroundColor: "var(--canvas)", fontFamily: "var(--font-sans)" }}
     >
-      {/* Brand & Market Terminal Identifier */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
-            Xeroww
-          </span>
-          <span className="text-[var(--border-strong)]">/</span>
-          <span className="text-xs text-[var(--text-secondary)]">
+      {/* Responsive brand lockup */}
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <img
+            src="/xeroww-logo.png"
+            alt="Xeroww"
+            className="block h-8 w-8 shrink-0 object-contain sm:hidden"
+            width="1254"
+            height="1254"
+          />
+          <img
+            src="/xeroww-logo-long.png"
+            alt="Xeroww"
+            className="hidden h-9 w-auto max-w-[38vw] shrink-0 object-contain object-left sm:block"
+            width="2172"
+            height="724"
+          />
+          <span className="hidden text-[var(--border-strong)] md:inline">/</span>
+          <span className="hidden whitespace-nowrap text-xs text-[var(--text-secondary)] md:inline">
             Market Terminal
           </span>
         </div>
