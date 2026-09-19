@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Public Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        mono: ["JetBrains Mono", "Fira Code", "Cascadia Code", "monospace"],
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", "monospace"],
       },
       colors: {
         canvas: "var(--canvas)",

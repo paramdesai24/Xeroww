@@ -42,7 +42,7 @@ function QuoteRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left px-4 h-14 flex items-center justify-between transition-colors duration-150 border-b border-[var(--border-subtle)] select-none outline-none ${
+      className={`watchlist-row w-full text-left px-4 h-14 flex items-center justify-between transition-colors duration-150 border-b border-[var(--border-subtle)] select-none outline-none ${
         isActive
           ? "bg-[var(--surface-elevated)] border-l-2 border-l-[var(--accent-primary)]"
           : "bg-transparent hover:bg-[var(--surface)] border-l-2 border-l-transparent"
@@ -113,7 +113,7 @@ function QuoteRow({
 export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: SidebarProps) {
   return (
     <aside
-      className="w-56 shrink-0 flex flex-col min-h-0 h-full overflow-hidden select-none border-r border-[var(--border-default)]"
+      className="market-watchlist shrink-0 flex flex-col min-h-0 overflow-hidden select-none border-r border-[var(--border-default)]"
       style={{
         backgroundColor: "var(--canvas)",
         fontFamily: "var(--font-sans)",
@@ -121,7 +121,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
     >
       {/* Watchlist Header */}
       <div
-        className="px-4 py-2.5 flex items-center justify-between border-b border-[var(--border-default)]"
+        className="watchlist-header px-4 py-2.5 flex items-center justify-between border-b border-[var(--border-default)]"
         style={{ backgroundColor: "var(--surface)" }}
       >
         <h2 className="text-xs font-semibold text-[var(--text-primary)] tracking-normal m-0">
@@ -133,7 +133,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
       </div>
 
       {/* Stock list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="watchlist-list flex-1 overflow-y-auto">
         {stocks.map((stock) => (
           <QuoteRow
             key={stock.symbol}
@@ -146,7 +146,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
 
       {/* Footer status strip */}
       <div
-        className="px-4 py-2 flex items-center justify-between border-t border-[var(--border-default)] text-[10px] text-[var(--text-tertiary)]"
+        className="watchlist-footer px-4 py-2 flex items-center justify-between border-t border-[var(--border-default)] text-[10px] text-[var(--text-tertiary)]"
         style={{ backgroundColor: "var(--surface)" }}
       >
         <span>Yahoo feed</span>

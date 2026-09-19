@@ -251,7 +251,7 @@ function TopologyMap({
                   y={(y1 + y2) / 2 - 4}
                   fill="#888899"
                   fontSize="8"
-                  fontFamily="JetBrains Mono, monospace"
+                  fontFamily="IBM Plex Mono, monospace"
                   textAnchor="middle"
                 >
                   {edge.protocol}
@@ -299,7 +299,7 @@ function TopologyMap({
                   fill="#FAFAFA"
                   fontSize="11"
                   fontWeight="600"
-                  fontFamily="Public Sans, sans-serif"
+                  fontFamily="Inter, sans-serif"
                 >
                   {node.label}
                 </text>
@@ -310,7 +310,7 @@ function TopologyMap({
                   y="36"
                   fill="#888899"
                   fontSize="9"
-                  fontFamily="JetBrains Mono, monospace"
+                  fontFamily="IBM Plex Mono, monospace"
                 >
                   {node.sublabel.length > 24
                     ? node.sublabel.slice(0, 24) + "…"

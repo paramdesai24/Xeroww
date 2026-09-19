@@ -4,7 +4,7 @@
     confident color fills on pure pitch-black canvas."
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -63,8 +63,8 @@
   --neutral-subtle:   rgba(107, 107, 114, 0.12);
 
   /* Typography Families */
-  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
 
   /* Deterministic Motion — max 180ms, snappy, no bounce */
   --ease-default:     cubic-bezier(0.16, 1, 0.3, 1);
@@ -88,6 +88,8 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
     background-color: var(--canvas);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
@@ -113,6 +115,360 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: var(--border-strong);
+  }
+}
+
+/* Application shell and responsive market workspace */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.module-nav {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  min-width: 0;
+}
+
+.module-nav__brand,
+.module-nav__session {
+  height: 48px;
+}
+
+.module-nav__brand {
+  padding-inline: 14px;
+}
+
+.module-nav__logo {
+  display: block;
+  object-fit: contain;
+  object-position: left center;
+  flex: none;
+}
+
+.module-nav__logo--full {
+  width: auto;
+  height: 34px;
+}
+
+.module-nav__logo--compact {
+  display: none;
+  width: 32px;
+  height: 32px;
+}
+
+.module-nav__tabs {
+  height: 100%;
+  min-width: 0;
+  scrollbar-width: none;
+}
+
+.module-nav__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.module-nav__tab {
+  flex: none;
+  white-space: nowrap;
+}
+
+.market-workspace {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr) minmax(22.5rem, 24vw);
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+}
+
+.market-watchlist {
+  width: 100%;
+  height: 100%;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.market-center {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.analytics-panel {
+  grid-column: 3;
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.quote-bar {
+  min-width: 0;
+}
+
+.quote-bar__identity,
+.quote-bar__controls {
+  min-width: 0;
+}
+
+.quote-bar__controls {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.quote-bar__controls::-webkit-scrollbar {
+  display: none;
+}
+
+.recent-sessions-table table {
+  min-width: 590px;
+}
+
+.status-footer {
+  height: 30px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.status-footer__primary,
+.status-footer__secondary {
+  min-width: 0;
+}
+
+@media (max-width: 1279px) {
+  .module-nav__logo--full {
+    display: none;
+  }
+
+  .module-nav__logo--compact {
+    display: block;
+  }
+
+  .market-workspace {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 34vw, 340px);
+    grid-template-rows: 72px minmax(0, 1fr);
+  }
+
+  .market-watchlist {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    height: 72px;
+    flex-direction: row;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .watchlist-header {
+    width: 132px;
+    flex: none;
+    border-right: 1px solid var(--border-default);
+    border-bottom: 0;
+  }
+
+  .watchlist-list {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-width: 0;
+  }
+
+  .watchlist-row {
+    width: 190px;
+    min-width: 190px;
+    height: 71px;
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 0;
+  }
+
+  .watchlist-footer {
+    display: none;
+  }
+
+  .market-center {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .analytics-panel {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .quote-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-inline: 14px;
+  }
+
+  .quote-bar__controls {
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .quote-bar__layers {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .quote-bar__stats {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .module-nav {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 44px 42px;
+    height: 86px;
+  }
+
+  .module-nav__brand,
+  .module-nav__session {
+    height: 44px;
+  }
+
+  .module-nav__brand {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: 0;
+  }
+
+  .module-nav__tabs {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-top: 1px solid var(--border-default);
+  }
+
+  .module-nav__breadth {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    margin-left: 0;
+  }
+
+  .module-nav > .flex-1 {
+    display: none;
+  }
+
+  .module-nav__session {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .status-footer {
+    padding-inline: 10px;
+  }
+
+  .status-footer__primary {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .status-footer__provider,
+  .status-footer__database,
+  .status-footer__separator,
+  .status-footer__secondary {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  html,
+  body,
+  #root {
+    min-width: 320px;
+  }
+
+  .app-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .market-workspace {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    min-height: 0;
+  }
+
+  .market-watchlist {
+    width: 100%;
+    height: 72px;
+    min-height: 72px;
+  }
+
+  .watchlist-header {
+    width: 106px;
+    padding-inline: 12px;
+  }
+
+  .watchlist-header span {
+    display: none;
+  }
+
+  .watchlist-row {
+    width: 172px;
+    min-width: 172px;
+    padding-inline: 12px;
+  }
+
+  .market-center {
+    flex: none;
+    width: 100%;
+    height: min(64dvh, 570px);
+    min-height: 460px;
+  }
+
+  .analytics-panel {
+    flex: none;
+    width: 100%;
+    height: auto;
+    min-height: 560px;
+    border-left: 0;
+    border-top: 1px solid var(--border-default);
+  }
+
+  .quote-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: 8px;
+  }
+
+  .quote-bar__controls {
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .quote-bar__layers {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .recent-sessions-note {
+    display: none;
+  }
+
+}
+
+@media (max-width: 520px) {
+  .module-nav__breadth {
+    display: none;
+  }
+
+  .module-nav__session {
+    grid-column: 3;
+  }
+
+  .module-nav__session {
+    padding-inline: 10px;
+  }
+
+  .module-nav__session [role="status"] {
+    display: none;
+  }
+
+  .module-nav__tab {
+    padding-inline: 14px;
   }
 }
 

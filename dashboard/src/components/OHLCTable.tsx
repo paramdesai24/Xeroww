@@ -30,7 +30,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
           <span className="text-xs font-semibold text-[var(--text-primary)]">
             Recent Sessions
           </span>
-          <span className="text-[11px] text-[var(--text-tertiary)]">
+          <span className="recent-sessions-note text-[11px] text-[var(--text-tertiary)]">
             (Last 10 sessions · Click row for candle forensics)
           </span>
         </div>
@@ -48,7 +48,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
       </div>
 
       {/* Table Container */}
-      <div className="overflow-y-auto overflow-x-hidden min-h-0 flex-1">
+      <div className="recent-sessions-table overflow-y-auto overflow-x-auto min-h-0 flex-1">
         <Table>
           <TableHeader>
             <tr>
