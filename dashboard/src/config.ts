@@ -37,7 +37,7 @@ const config = {
   // App metadata
   app: {
     name: "Xeroww",
-    version: import.meta.env.VITE_APP_VERSION ?? "0.8.0",
+    version: import.meta.env.VITE_APP_VERSION ?? "0.9.0",
     dataNote: "Near real-time data — Yahoo Finance delayed feed",
   },
 } as const;
