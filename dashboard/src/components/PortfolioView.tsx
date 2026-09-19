@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../api/client";
 import type { Portfolio, PortfolioSummary, Transaction } from "../types/platform";
+import { useNavigate } from "react-router-dom";
 
 function pnlColor(v: number | null): string {
   if (v === null) return "text-[#64748B]";
@@ -17,6 +18,7 @@ function fmt(v: number | null, prefix = "₹"): string {
 }
 
 export default function PortfolioView() {
+  const navigate = useNavigate();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [active, setActive] = useState<PortfolioSummary | null>(null);
   const [txns, setTxns] = useState<Transaction[]>([]);
@@ -204,7 +206,7 @@ export default function PortfolioView() {
                 <table className="w-full text-xs font-mono">
                   <thead>
                     <tr className="border-b border-[#1E2538] bg-[#05070B] text-[#64748B] font-sans">
-                      {["Symbol", "Qty", "Avg Price", "Current Price", "Value", "P&L", "Allocation"].map((h) => (
+                      {["Symbol", "Qty", "Avg Price", "Current Price", "Value", "P&L", "Allocation", "Decision"].map((h) => (
                         <th key={h} className="px-4 py-2.5 text-left font-medium">{h}</th>
                       ))}
                     </tr>
@@ -221,6 +223,14 @@ export default function PortfolioView() {
                           {fmt(h.unrealized_pnl)} ({h.unrealized_pnl_pct?.toFixed(1)}%)
                         </td>
                         <td className="px-4 py-2.5 text-[#64748B] tabular-nums">{h.allocation_pct?.toFixed(1)}%</td>
+                        <td className="px-4 py-2.5">
+                          <button
+                            onClick={() => navigate(`/decisions/new?symbol=${encodeURIComponent(h.symbol)}&source=portfolio&portfolioId=${active.id}`)}
+                            className="text-[#60A5FA] hover:text-[#93C5FD] font-sans"
+                          >
+                            Review Decision
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -332,6 +342,14 @@ export default function PortfolioView() {
           {/* Trade form */}
           {tab === "trade" && (
             <div className="p-6 max-w-sm space-y-4">
+              {active && tradeSymbol.trim() && (
+                <button
+                  onClick={() => navigate(`/decisions/new?symbol=${encodeURIComponent(tradeSymbol.trim().toUpperCase())}&source=portfolio&portfolioId=${active.id}`)}
+                  className="w-full py-2 text-xs font-semibold border border-[#1E90FF] text-[#60A5FA] hover:bg-[#1E90FF]/10 transition-colors"
+                >
+                  Plan Evidence and Risk First
+                </button>
+              )}
               <div className="text-xs text-[#64748B] mb-2">
                 Simulated paper execution — no real capital risked.
               </div>
