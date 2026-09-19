@@ -15,6 +15,7 @@ from typing import Any
 import yfinance as yf
 
 from api.core.config import settings
+from api.data.nifty50 import NIFTY50
 from api.services.market_provider import MarketDataProvider
 
 
@@ -45,15 +46,9 @@ def _configure_yfinance_cache() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Watchlist — The Xeroww V0 predefined Indian stock universe
+# Supported NIFTY 50 universe
 # ---------------------------------------------------------------------------
-WATCHLIST: list[dict[str, str]] = [
-    {"symbol": "RELIANCE.NS", "display_name": "Reliance Industries",   "exchange": "NSE", "sector": "Energy / Conglomerates"},
-    {"symbol": "TCS.NS",      "display_name": "Tata Consultancy Services", "exchange": "NSE", "sector": "Information Technology"},
-    {"symbol": "INFY.NS",     "display_name": "Infosys",               "exchange": "NSE", "sector": "Information Technology"},
-    {"symbol": "HDFCBANK.NS", "display_name": "HDFC Bank",             "exchange": "NSE", "sector": "Banking & Financial Services"},
-    {"symbol": "ICICIBANK.NS","display_name": "ICICI Bank",            "exchange": "NSE", "sector": "Banking & Financial Services"},
-]
+WATCHLIST: list[dict[str, str]] = NIFTY50
 
 # Build a quick lookup map
 SYMBOL_META: dict[str, dict[str, str]] = {s["symbol"]: s for s in WATCHLIST}
@@ -71,7 +66,7 @@ class YahooFinanceProvider(MarketDataProvider):
         _configure_yfinance_cache()
 
     def get_stocks(self) -> list[dict[str, Any]]:
-        """Return the predefined Xeroww watchlist."""
+        """Return the supported NIFTY 50 constituent universe."""
         return WATCHLIST
 
     def get_quote(self, symbol: str) -> dict[str, Any]:

@@ -16,7 +16,7 @@ async def get_stocks(
     """
     Returns the predefined Xeroww Indian stock watchlist.
 
-    Includes: RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS, ICICIBANK.NS
+    Returns the supported NIFTY 50 constituent universe.
     with human-readable names, exchange, and sector metadata.
     """
     return market_data.get_stocks()
