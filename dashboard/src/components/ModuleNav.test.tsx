@@ -36,4 +36,16 @@ describe("ModuleNav", () => {
     fireEvent.click(screen.getByRole("button", { name: "Portfolio" }));
     expect(onModuleChange).toHaveBeenCalledWith("PORTFOLIO");
   });
+
+  it("labels the decision workspace clearly", () => {
+    render(
+      <ModuleNav
+        activeModule="JOURNAL"
+        onModuleChange={vi.fn()}
+        user={null}
+        onLogout={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Decisions" })).toBeInTheDocument();
+  });
 });

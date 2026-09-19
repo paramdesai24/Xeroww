@@ -20,7 +20,7 @@ const MODULE_CONFIG: { id: Module; label: string }[] = [
   { id: "WATCHLISTS", label: "Watchlists" },
   { id: "PORTFOLIO", label: "Portfolio" },
   { id: "ALERTS", label: "Alerts" },
-  { id: "JOURNAL", label: "Journal" },
+  { id: "JOURNAL", label: "Decisions" },
   { id: "SYSTEM", label: "System" },
 ];
 
