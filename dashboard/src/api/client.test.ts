@@ -29,4 +29,33 @@ describe("API client contracts", () => {
       expect.objectContaining({ method: "PATCH" }),
     );
   });
+
+  it("uses the canonical decisions endpoint for previews", async () => {
+    storeTokens("access-token", "refresh-token");
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ resolved_as_of: "2026-01-20" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.decisions.preview({
+      symbol: "RELIANCE.NS",
+      direction: "BULLISH",
+      intent: "WATCH",
+      holding_period: "SWING",
+      setup_type: "Structure review",
+      confidence: 3,
+      thesis: "Evidence warrants continued observation.",
+      change_mind_condition: "Structure becomes decisively bearish.",
+      source_context: "MARKET",
+      source_period: "1y",
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/decisions/preview",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
 });

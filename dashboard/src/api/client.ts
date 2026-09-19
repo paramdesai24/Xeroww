@@ -12,6 +12,7 @@ import type {
   AlertEvaluationResult,
   JournalEntry,
 } from "../types/platform";
+import type { DecisionDetail, DecisionList, DecisionPlan, DecisionPreview } from "../types/decision";
 import type { TokenResponse, UserProfile } from "../types/auth";
 import type {
   SupportResistanceResponse,
@@ -254,6 +255,42 @@ export const api = {
 
     review: (id: number): Promise<any> =>
       authFetch<any>(`/journal/${id}/review`),
+  },
+
+  decisions: {
+    preview: (plan: DecisionPlan): Promise<DecisionPreview> =>
+      authFetch<DecisionPreview>("/decisions/preview", { method: "POST", body: JSON.stringify(plan) }),
+
+    create: (
+      plan: DecisionPlan & {
+        expected_as_of: string;
+        supporting_evidence_keys: string[];
+        conflicting_evidence_keys: string[];
+        conflicts_reviewed: boolean;
+      },
+    ): Promise<DecisionDetail> =>
+      authFetch<DecisionDetail>("/decisions", { method: "POST", body: JSON.stringify(plan) }),
+
+    list: (query = ""): Promise<DecisionList> =>
+      authFetch<DecisionList>(`/decisions${query ? `?${query}` : ""}`),
+
+    get: (id: number): Promise<DecisionDetail> =>
+      authFetch<DecisionDetail>(`/decisions/${id}`),
+
+    addAmendment: (id: number, amendmentType: string, reason: string, payload: Record<string, unknown>, expectedVersion: number): Promise<DecisionDetail> =>
+      authFetch<DecisionDetail>(`/decisions/${id}/amendments`, {
+        method: "POST",
+        body: JSON.stringify({ amendment_type: amendmentType, reason, payload, expected_version: expectedVersion }),
+      }),
+
+    transitionStatus: (id: number, nextStatus: "CLOSED" | "CANCELLED", reason: string, expectedVersion: number): Promise<DecisionDetail> =>
+      authFetch<DecisionDetail>(`/decisions/${id}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status: nextStatus, reason, expected_version: expectedVersion }),
+      }),
+
+    review: (id: number): Promise<Record<string, unknown>> =>
+      authFetch<Record<string, unknown>>(`/decisions/${id}/review`),
   },
 
 
