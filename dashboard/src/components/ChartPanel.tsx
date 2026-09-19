@@ -324,13 +324,13 @@ export default function ChartPanel({
     <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden" style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
       <div
-        className="quote-bar px-5 py-2.5 flex items-center justify-between shrink-0 select-none gap-2 border-b border-[var(--border-default)]"
+        className="quote-bar flex shrink-0 select-none border-b border-[var(--border-default)]"
         style={{ backgroundColor: "var(--surface)" }}
       >
         {quote ? (
           <>
-            <div className="quote-bar__identity flex items-center gap-4">
-              <div className="flex items-baseline gap-2">
+            <div className="quote-bar__identity flex items-center">
+              <div className="quote-bar__asset flex items-baseline gap-2">
                 <span
                   className="text-lg font-bold tracking-tight text-[var(--text-primary)]"
                   style={{ fontFamily: "var(--font-sans)" }}
@@ -345,9 +345,9 @@ export default function ChartPanel({
                 </span>
               </div>
 
-              <div style={{ height: 16, width: 1, backgroundColor: "var(--border-default)" }} />
+              <div className="quote-bar__divider" />
 
-              <div className="flex items-baseline gap-2">
+              <div className="quote-bar__price flex items-baseline gap-2">
                 <span
                   className="text-xl font-bold text-[var(--text-primary)] tabular-nums"
                   style={{ fontFamily: "var(--font-mono)" }}
@@ -370,34 +370,34 @@ export default function ChartPanel({
                   {quote.change_pct.toFixed(2)}%)
                 </span>
               </div>
-            </div>
 
-            {/* Quick Session Stats & Overlay Controls */}
-            <div className="quote-bar__controls flex items-center gap-4 text-xs">
-              <div className="quote-bar__stats hidden lg:flex items-center gap-4 text-xs text-[var(--text-secondary)]">
-                <div>
-                  <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Prev</span>
-                  <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
+              <div className="quote-bar__stats hidden lg:grid text-xs text-[var(--text-secondary)]">
+                <div className="quote-bar__stat">
+                  <span className="quote-bar__stat-label">Previous close</span>
+                  <span className="quote-bar__stat-value">
                     ₹{quote.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Range</span>
-                  <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
+                <div className="quote-bar__stat">
+                  <span className="quote-bar__stat-label">Day range</span>
+                  <span className="quote-bar__stat-value">
                     ₹{quote.day_low.toFixed(1)} – ₹{quote.day_high.toFixed(1)}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[var(--text-tertiary)] mr-1.5 font-normal">Vol</span>
-                  <span className="text-[var(--text-primary)] font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>
+                <div className="quote-bar__stat">
+                  <span className="quote-bar__stat-label">Volume</span>
+                  <span className="quote-bar__stat-value">
                     {(quote.volume / 1e5).toFixed(2)}L
                   </span>
                 </div>
               </div>
+            </div>
 
+            {/* Overlay and intelligence controls */}
+            <div className="quote-bar__controls flex items-center text-xs">
               {/* Overlays Toggle Buttons */}
-              <div className="quote-bar__layers flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3">
-                <span className="text-[11px] text-[var(--text-tertiary)] mr-1 font-medium">Layers:</span>
+              <div className="quote-bar__layers flex items-center gap-2">
+                <span className="quote-bar__group-label">Chart layers</span>
                 <button
                   onClick={() => setShowSR(!showSR)}
                   className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
@@ -434,7 +434,8 @@ export default function ChartPanel({
               </div>
 
               {/* Intelligence Feature Buttons */}
-              <div className="quote-bar__actions flex items-center gap-1.5 border-l border-[var(--border-default)] pl-3 shrink-0">
+              <div className="quote-bar__actions flex items-center gap-2 shrink-0">
+                <span className="quote-bar__group-label">Workspace</span>
                 {onOpenReplay && (
                   <button
                     id="trigger-replay-btn"

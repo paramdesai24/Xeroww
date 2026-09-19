@@ -201,6 +201,8 @@
 
 .quote-bar {
   min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .quote-bar__identity,
@@ -208,13 +210,97 @@
   min-width: 0;
 }
 
+.quote-bar__identity {
+  min-height: 58px;
+  padding: 9px 20px;
+  gap: 22px;
+}
+
+.quote-bar__asset {
+  flex: none;
+  min-width: 185px;
+}
+
+.quote-bar__asset > span:last-child {
+  max-width: 150px;
+  line-height: 1.25;
+}
+
+.quote-bar__divider {
+  width: 1px;
+  height: 28px;
+  flex: none;
+  background: var(--border-default);
+}
+
+.quote-bar__price {
+  flex: none;
+  min-width: 245px;
+  white-space: nowrap;
+}
+
+.quote-bar__stats {
+  grid-template-columns: repeat(3, minmax(max-content, 1fr));
+  gap: 28px;
+  margin-left: auto;
+}
+
+.quote-bar__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quote-bar__stat-label {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.quote-bar__stat-value {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .quote-bar__controls {
+  min-height: 42px;
+  padding: 7px 20px;
+  gap: 24px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-inset);
   overflow-x: auto;
   scrollbar-width: none;
 }
 
 .quote-bar__controls::-webkit-scrollbar {
   display: none;
+}
+
+.quote-bar__layers,
+.quote-bar__actions {
+  flex: none;
+}
+
+.quote-bar__actions {
+  padding-left: 24px;
+  border-left: 1px solid var(--border-default);
+}
+
+.quote-bar__group-label {
+  margin-right: 2px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .recent-sessions-table table {
@@ -293,23 +379,29 @@
   }
 
   .quote-bar {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quote-bar__identity {
     padding-inline: 14px;
+    gap: 16px;
+  }
+
+  .quote-bar__asset {
+    min-width: 150px;
+  }
+
+  .quote-bar__price {
+    min-width: 0;
   }
 
   .quote-bar__controls {
     width: 100%;
-    padding-bottom: 2px;
-  }
-
-  .quote-bar__layers {
-    padding-left: 0;
-    border-left: 0;
+    padding-inline: 14px;
   }
 
   .quote-bar__stats {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -429,19 +521,34 @@
   }
 
   .quote-bar {
-    align-items: flex-start;
-    flex-direction: column;
-    padding-block: 8px;
+    align-items: stretch;
+  }
+
+  .quote-bar__identity {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    min-height: 0;
+    padding-block: 10px;
+  }
+
+  .quote-bar__asset {
+    min-width: 0;
+  }
+
+  .quote-bar__divider {
+    height: 24px;
+  }
+
+  .quote-bar__price {
+    min-width: max-content;
   }
 
   .quote-bar__controls {
-    width: 100%;
-    padding-bottom: 2px;
+    gap: 18px;
   }
 
-  .quote-bar__layers {
-    padding-left: 0;
-    border-left: 0;
+  .quote-bar__actions {
+    padding-left: 18px;
   }
 
   .recent-sessions-note {
