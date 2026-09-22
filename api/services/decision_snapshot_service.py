@@ -62,13 +62,69 @@ class DecisionSnapshotService:
                 detail={"code": "MARKET_DATA_UNAVAILABLE", "message": "No market candles are available for this decision."},
             )
 
+        return self._assemble(
+            normalized=normalized,
+            eligible=eligible,
+            direction=direction,
+            source_context=source_context,
+            requested_as_of=requested_as_of,
+            period=period,
+            timeframe="1d",
+            include_quote=source_context.upper() != "REPLAY",
+        )
+
+    def build_from_candles(
+        self,
+        *,
+        symbol: str,
+        candles: list[dict[str, Any]],
+        direction: str,
+        as_of: str,
+        timeframe: str,
+        period: str,
+    ) -> dict[str, Any]:
+        """Build a replay snapshot from a server-owned, already-truncated candle slice."""
+        if not candles:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={"code": "INSUFFICIENT_MARKET_DATA", "message": "The replay session has no visible candles."},
+            )
+        resolved_as_of = self._date_key(candles[-1].get("time"))
+        if resolved_as_of != self._date_key(as_of):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"code": "REPLAY_VERSION_CONFLICT", "message": "The replay cursor changed. Reload the session."},
+            )
+        return self._assemble(
+            normalized=symbol,
+            eligible=candles,
+            direction=direction,
+            source_context="REPLAY",
+            requested_as_of=resolved_as_of,
+            period=period,
+            timeframe=timeframe,
+            include_quote=False,
+        )
+
+    def _assemble(
+        self,
+        *,
+        normalized: str,
+        eligible: list[dict[str, Any]],
+        direction: str,
+        source_context: str,
+        requested_as_of: str | None,
+        period: str,
+        timeframe: str,
+        include_quote: bool,
+    ) -> dict[str, Any]:
         summary = self.analytics.run_market_structure_summary(eligible, normalized).to_dict()
         fuzzy_report = self.fuzzy.explain(candles=eligible, symbol=normalized).to_dict()
         resolved_as_of = self._date_key(eligible[-1].get("time"))
         quote_context = None
         quality_state = "delayed"
         quality_note = "Historical or delayed provider data; not a live exchange feed."
-        if source_context.upper() != "REPLAY":
+        if include_quote:
             try:
                 quote_context = self.market_data.get_quote(normalized)
             except Exception:
@@ -86,7 +142,7 @@ class DecisionSnapshotService:
                 "requested_source": source_context.upper(),
                 "requested_as_of": requested_as_of,
                 "resolved_as_of": resolved_as_of,
-                "timeframe": "1d",
+                "timeframe": timeframe,
                 "period": period,
                 "provider": provider,
                 "transport": "HTTP REST",
