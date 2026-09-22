@@ -71,5 +71,14 @@ def create_all_tables() -> None:
     Idempotent — safe to call multiple times (CREATE IF NOT EXISTS semantics).
     """
     # Import all models so their metadata is registered with Base before create_all
-    from api.models import user, watchlist, portfolio, alert, intelligence, stock  # noqa: F401
+    from api.models import (  # noqa: F401
+        alert,
+        intelligence,
+        portfolio,
+        portfolio_intelligence,
+        replay_lab,
+        stock,
+        user,
+        watchlist,
+    )
     Base.metadata.create_all(bind=engine)
