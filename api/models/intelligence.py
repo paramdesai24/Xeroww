@@ -136,6 +136,11 @@ class DecisionJournalEntry(Base):
     portfolio_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("portfolios.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    replay_session_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("replay_sessions.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    replay_event_sequence: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    replay_index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source_context: Mapped[DecisionSource | None] = mapped_column(SAEnum(DecisionSource), nullable=True)
     source_as_of: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     source_period: Mapped[str | None] = mapped_column(String(10), nullable=True)
