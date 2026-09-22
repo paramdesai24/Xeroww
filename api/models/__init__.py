@@ -11,6 +11,8 @@ from api.models.watchlist import Watchlist, WatchlistItem
 from api.models.portfolio import Portfolio, Holding, PortfolioTransaction
 from api.models.alert import Alert
 from api.models.intelligence import ChartAnnotation, DecisionJournalEntry, DecisionTicketAmendment
+from api.models.portfolio_intelligence import PortfolioRiskPolicy, PortfolioSnapshot, PortfolioSnapshotHolding
+from api.models.replay_lab import ReplayExecution, ReplaySession, ReplaySessionEvent, ReplaySessionResult
 
 __all__ = [
     "Stock",
@@ -26,4 +28,11 @@ __all__ = [
     "ChartAnnotation",
     "DecisionJournalEntry",
     "DecisionTicketAmendment",
+    "ReplaySession",
+    "ReplaySessionEvent",
+    "ReplayExecution",
+    "ReplaySessionResult",
+    "PortfolioSnapshot",
+    "PortfolioSnapshotHolding",
+    "PortfolioRiskPolicy",
 ]
