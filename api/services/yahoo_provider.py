@@ -185,6 +185,30 @@ class YahooFinanceProvider(MarketDataProvider):
 
         return candles  # Already sorted oldest → newest by yfinance
 
+    def get_benchmark_ohlc(
+        self,
+        symbol: str = "^NSEI",
+        period: str = "1y",
+        interval: str = "1d",
+    ) -> list[dict[str, Any]]:
+        """Fetch adjusted benchmark history without treating it as a tradable stock."""
+        if symbol != "^NSEI":
+            raise ValueError("Only the configured NIFTY 50 benchmark is supported.")
+        df = yf.Ticker(symbol).history(period=period, interval=interval, auto_adjust=True)
+        if df.empty:
+            raise RuntimeError(f"No benchmark data returned for {symbol}.")
+        return [
+            {
+                "time": ts.strftime("%Y-%m-%d"),
+                "open": round(float(row["Open"]), 2),
+                "high": round(float(row["High"]), 2),
+                "low": round(float(row["Low"]), 2),
+                "close": round(float(row["Close"]), 2),
+                "volume": int(row["Volume"]),
+            }
+            for ts, row in df.iterrows()
+        ]
+
     # ---------------------------------------------------------------------------
     # Private helpers
     # ---------------------------------------------------------------------------

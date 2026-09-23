@@ -73,3 +73,12 @@ class MarketDataProvider(ABC):
             Sorted oldest → newest.
         """
         ...
+
+    def get_benchmark_ohlc(
+        self,
+        symbol: str = "^NSEI",
+        period: str = "1y",
+        interval: str = "1d",
+    ) -> list[dict[str, Any]]:
+        """Return benchmark candles when supported by the provider."""
+        raise NotImplementedError("This provider does not expose benchmark history.")

@@ -82,3 +82,23 @@ class MarketDataService:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error fetching OHLC: {exc}")
+
+    def get_benchmark_candles(
+        self,
+        symbol: str = "^NSEI",
+        period: str = "1y",
+        interval: str = "1d",
+    ) -> list[dict[str, Any]]:
+        cache_key = f"benchmark:{symbol}:{period}:{interval}"
+        cached = self.cache.get(cache_key)
+        if cached:
+            return cached
+        try:
+            candles = self.provider.get_benchmark_ohlc(symbol, period=period, interval=interval)
+            self.cache.set(cache_key, candles, ttl_seconds=settings.CACHE_OHLC_TTL)
+            return candles
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Benchmark data unavailable: {exc}",
+            ) from exc
