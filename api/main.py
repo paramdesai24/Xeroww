@@ -1,7 +1,7 @@
 """
 api/main.py
 ───────────
-Xeroww FastAPI application entry point - V0.10 Financial Intelligence Platform.
+Xeroww FastAPI application entry point - V0.11 Financial Intelligence Platform.
 
 Run with:
   uvicorn main:app --reload --port 8000
@@ -30,10 +30,11 @@ from api.routes import health, stocks, quote, ohlc, patterns
 # V0.6 routes (new)
 from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay, diff, forensics, annotations, intelligence, events, system_health
 
-# V0.8 through V0.10 routes
+# V0.8 through V0.11 routes
 from api.routes import fuzzy
 from api.routes import decisions
 from api.routes import replay_sessions
+from api.routes import portfolio_intelligence
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
@@ -163,11 +164,12 @@ app.include_router(events.router)
 app.include_router(system_health.router)
 
 # ---------------------------------------------------------------------------
-# Register V0.8 and V0.9 routers
+# Register V0.8 through V0.11 routers
 # ---------------------------------------------------------------------------
 app.include_router(fuzzy.router)
 app.include_router(decisions.router)
 app.include_router(replay_sessions.router)
+app.include_router(portfolio_intelligence.router)
 
 
 # ---------------------------------------------------------------------------
