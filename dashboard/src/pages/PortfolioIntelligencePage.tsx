@@ -3,6 +3,8 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import MiniSeriesChart from "../components/MiniSeriesChart";
 import type { PortfolioAnalytics, PortfolioSnapshot } from "../types/portfolioIntelligence";
+import { PageErrorState } from "../components/ui";
+import { parsePositiveIntParam } from "../lib/routeParams";
 
 type View = "overview" | "performance" | "attribution" | "risk";
 type Metric = { result?: unknown; data_quality?: string; limitations?: string[]; unit?: string };
@@ -11,7 +13,7 @@ const pct = (value: unknown) => typeof value === "number" ? `${(value * 100).toF
 const money = (value: number) => `INR ${value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
 export default function PortfolioIntelligencePage() {
-  const id = Number(useParams().portfolioId);
+  const id = parsePositiveIntParam(useParams().portfolioId);
   const path = useLocation().pathname;
   const view = (path.split("/").at(-1) || "overview") as View;
   const activeView: View = ["performance", "attribution", "risk"].includes(view) ? view : "overview";
@@ -20,13 +22,14 @@ export default function PortfolioIntelligencePage() {
   const [attribution, setAttribution] = useState<PortfolioAnalytics | null>(null);
   const [risk, setRisk] = useState<PortfolioAnalytics | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const load = useCallback(async () => { try { const snap = await api.portfolioIntelligence.capture(id); setSnapshot(snap); const [p, a, r] = await Promise.all([api.portfolioIntelligence.performance(id), api.portfolioIntelligence.attribution(id), api.portfolioIntelligence.risk(id)]); setPerformance(p); setAttribution(a); setRisk(r); } catch (reason) { setError(reason instanceof Error ? reason.message : "Portfolio intelligence failed"); } }, [id]);
+  const load = useCallback(async () => { if (id === null) return; try { const snap = await api.portfolioIntelligence.capture(id); setSnapshot(snap); const [p, a, r] = await Promise.all([api.portfolioIntelligence.performance(id), api.portfolioIntelligence.attribution(id), api.portfolioIntelligence.risk(id)]); setPerformance(p); setAttribution(a); setRisk(r); } catch (reason) { setError(reason instanceof Error ? reason.message : "Portfolio intelligence failed"); } }, [id]);
   useEffect(() => { queueMicrotask(() => void load()); }, [load]);
   const values = (performance?.series.portfolio_values || []) as number[];
   const benchmark = (performance?.series.benchmark_values || []) as Array<number | null>;
   const holdings = useMemo(() => snapshot?.holdings.slice().sort((a, b) => b.market_value - a.market_value) || [], [snapshot]);
   const attributionMetrics = attribution?.metrics as Record<string, unknown> | undefined;
   const riskMetrics = risk?.metrics as Record<string, unknown> | undefined;
+  if (id === null) return <PageErrorState title="Invalid portfolio" message="This portfolio intelligence link is invalid." actionHref="/portfolio" actionLabel="Back to Portfolio" />;
   return <main className="decision-page intelligence-page">
     <header className="decision-page__header"><div><p className="decision-eyebrow">Portfolio intelligence</p><h1>Portfolio {id}</h1><p>Observed performance, attribution, concentration, and advisory risk checks.</p></div><Link className="decision-secondary-action" to="/portfolio">Back to Portfolio</Link></header>
     {error && <div className="decision-error">{error}</div>}

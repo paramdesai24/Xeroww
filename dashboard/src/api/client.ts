@@ -23,6 +23,7 @@ import type {
   MarketStructureSummaryResponse,
 } from "../types/structure";
 import config from "../config";
+import { errorFromResponse, normalizeError } from "./errors";
 import { fetchSystemHealth } from "./systemHealth";
 import type { SystemHealthSnapshot } from "../types/health";
 import type {
@@ -76,15 +77,15 @@ async function apiFetch<T>(
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  } catch (reason) {
+    throw normalizeError(reason);
+  }
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(
-      typeof error.detail === "string"
-        ? error.detail
-        : JSON.stringify(error.detail) ?? `API error ${res.status}`,
-    );
+    throw await errorFromResponse(res);
   }
 
   if (res.status === 204) return undefined as T;

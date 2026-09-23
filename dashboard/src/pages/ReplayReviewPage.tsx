@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { ReplayReview } from "../types/replayLab";
+import { PageErrorState } from "../components/ui";
+import { parsePositiveIntParam } from "../lib/routeParams";
 
 function value(record: Record<string, unknown>, key: string): string {
   const result = record[key];
@@ -9,12 +11,13 @@ function value(record: Record<string, unknown>, key: string): string {
 }
 
 export default function ReplayReviewPage() {
-  const id = Number(useParams().sessionId);
+  const id = parsePositiveIntParam(useParams().sessionId);
   const [review, setReview] = useState<ReplayReview | null>(null);
   const [reflection, setReflection] = useState("");
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => { api.replayLab.review(id).then(setReview).catch((reason) => setError(reason instanceof Error ? reason.message : "Review failed")); }, [id]);
-  const saveReflection = async () => { if (!review || !reflection.trim()) return; try { await api.replayLab.reflect(id, review.session.version, "post_session_learning", reflection, "POST_SESSION"); setReview(await api.replayLab.review(id)); setReflection(""); } catch (reason) { setError(reason instanceof Error ? reason.message : "Reflection failed"); } };
+  useEffect(() => { if (id !== null) api.replayLab.review(id).then(setReview).catch((reason) => setError(reason instanceof Error ? reason.message : "Review failed")); }, [id]);
+  const saveReflection = async () => { if (!review || !reflection.trim() || id === null) return; try { await api.replayLab.reflect(id, review.session.version, "post_session_learning", reflection, "POST_SESSION"); setReview(await api.replayLab.review(id)); setReflection(""); } catch (reason) { setError(reason instanceof Error ? reason.message : "Reflection failed"); } };
+  if (id === null) return <PageErrorState title="Invalid replay review" message="This replay review link is invalid." actionHref="/replay-lab" actionLabel="Back to Replay Lab" />;
   if (!review) return <main className="decision-page"><div className={error ? "decision-error" : "decision-empty"}>{error || "Loading review..."}</div></main>;
   return <main className="decision-page intelligence-page">
     <header className="decision-page__header"><div><p className="decision-eyebrow">Process before outcome</p><h1>Session Review</h1><p>{review.session.symbol} · {review.session.timeframe} · {review.session.completion_reason?.replaceAll("_", " ")}</p></div><Link className="decision-secondary-action" to="/replay-lab">All Sessions</Link></header>

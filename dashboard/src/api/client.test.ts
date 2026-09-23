@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import config from "../config";
 import { api, storeTokens } from "./client";
+import { AppError } from "./errors";
 
 describe("API client contracts", () => {
   afterEach(() => {
@@ -57,5 +58,27 @@ describe("API client contracts", () => {
       "/api/decisions/preview",
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+  it("formats backend validation errors without exposing JSON", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        detail: [{ type: "int_parsing", loc: ["path", "session_id"], msg: "Input should be a valid integer" }],
+      }), { status: 422, headers: { "Content-Type": "application/json" } }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.replayLab.get(Number.NaN)).rejects.toMatchObject({
+      title: "Check your input",
+      fieldErrors: { session_id: "Input should be a valid integer" },
+    } satisfies Partial<AppError>);
+  });
+
+  it("formats network failures with a recovery message", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+    await expect(api.health()).rejects.toMatchObject({
+      code: "NETWORK_ERROR",
+      message: "Check your connection and try again.",
+    } satisfies Partial<AppError>);
   });
 });

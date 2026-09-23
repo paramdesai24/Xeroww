@@ -118,6 +118,45 @@
   }
 }
 
+/* Shared loading, empty, success, and error feedback */
+.feedback-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1440px;
+  margin: 0 auto 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--border-default);
+  background: var(--surface);
+  font-size: 11px;
+}
+.feedback-notice > div:first-child { display: grid; gap: 2px; }
+.feedback-notice strong { color: var(--text-primary); font-size: 11px; }
+.feedback-notice span { color: var(--text-secondary); }
+.feedback-notice small { color: var(--text-tertiary); font: 9px var(--font-mono); }
+.feedback-notice--error { border-left: 2px solid var(--negative); }
+.feedback-notice--success { border-left: 2px solid var(--positive); }
+.feedback-notice__actions { display: flex; gap: 6px; }
+.feedback-notice button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font: 650 10px var(--font-sans);
+  cursor: pointer;
+}
+.feedback-page { display: grid; flex: 1; min-height: 100%; place-items: center; padding: 24px; background: var(--canvas); color: var(--text-primary); }
+.feedback-page section { width: min(460px, 100%); padding: 24px; border: 1px solid var(--border-default); background: var(--surface); }
+.feedback-page h1 { margin: 5px 0 8px; font-size: 22px; }
+.feedback-page p:not(.decision-eyebrow) { margin: 0 0 18px; color: var(--text-secondary); font-size: 12px; }
+.feedback-page section > div { display: flex; gap: 8px; }
+.feedback-empty { display: grid; place-items: center; gap: 5px; min-height: 180px; padding: 24px; color: var(--text-secondary); text-align: center; }
+.feedback-empty strong { color: var(--text-primary); font-size: 13px; }
+.feedback-empty span { max-width: 440px; font-size: 11px; }
+.feedback-field-error { display: block; margin-top: 5px; color: var(--negative); font-size: 10px; }
+
 /* V0.9 Decision Workbench */
 .decision-page {
   flex: 1;

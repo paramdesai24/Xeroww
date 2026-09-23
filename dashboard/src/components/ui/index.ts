@@ -9,3 +9,5 @@ export * from "./Divider";
 export * from "./Progress";
 export * from "./Table";
 export * from "./Skeleton";
+export * from "./Feedback";
+export * from "./AppErrorBoundary";
