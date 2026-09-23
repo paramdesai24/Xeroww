@@ -1,4 +1,4 @@
-# Xeroww (V0.9)
+# Xeroww (V0.11)
 
 > **Deterministic Financial Intelligence & Market Structure Platform**
 >
@@ -37,7 +37,16 @@
 
 ## 1. Executive Summary & Philosophy
 
-Xeroww is a deterministic financial intelligence and decision-support platform. V0.9 adds a multi-page Decision Workbench that turns market evidence into immutable, auditable decision tickets without issuing predictions or trade recommendations.
+Xeroww is a deterministic financial intelligence and decision-support platform. V0.11 combines the immutable Decision Workbench with an authenticated Replay and Behaviour Lab and point-in-time Portfolio Intelligence. The platform explains observed conditions, process quality, portfolio performance, attribution, and risk without issuing predictions or trade recommendations.
+
+### V0.10 and V0.11 capabilities
+
+- Persisted Replay Lab sessions with a server-owned candle cursor and a mandatory decision gate.
+- One-candle progression, conservative execution rules, append-only events, process scoring, and private behaviour observations.
+- Compact replay screens for setup, practice, review, and cross-session descriptive analytics.
+- Immutable portfolio valuation snapshots with NIFTY 50 benchmark context and formula provenance.
+- Performance, drawdown, attribution, covariance, correlation, beta, risk contribution, and concentration analysis.
+- Pre-decision portfolio impact warnings that remain advisory and are stored with the immutable decision ticket.
 
 ### Core Philosophy
 - **Deterministic Analytics Only**: Zero machine learning hallucinations, zero black-box "confidence scores", and zero automated trade recommendations. Financial decisions belong to human intelligence; mathematical market conditions belong to Xeroww.

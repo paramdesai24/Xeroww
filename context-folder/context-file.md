@@ -42,6 +42,20 @@ Never let the project become:
 
 The differentiator is systems + explainability, not visual indicators.
 
+## Current implemented state: V0.11
+
+The current product has moved beyond a market dashboard into three connected decision-support workflows:
+
+* The Decision Workbench captures immutable plans, evidence, risk, portfolio context, and append-only amendments.
+
+* The Replay and Behaviour Lab persists server-owned historical sessions, blocks future-data exposure, requires a decision before progression, records executions and reflections, and scores process separately from outcome.
+
+* Portfolio Intelligence stores point-in-time valuation snapshots and explains observed return, drawdown, attribution, covariance, correlation, beta, risk contribution, concentration, and pre-decision portfolio impact.
+
+The default product surfaces stay compact. They show one status, a small KPI set, no more than three primary warnings, and one dominant chart or table. Formula detail, provenance, event history, and longer explanations remain available through progressive disclosure.
+
+Replay is a deliberate-practice environment, not a paper trading game. Portfolio warnings are advisory, not recommendations. Both modules preserve the core rule that calculations must be deterministic, versioned, testable, and inspectable.
+
 # 1. Why I'm Building It
 
 I am a B.Tech Computer Science student preparing for Fall 2027 MSCS in the United States.
