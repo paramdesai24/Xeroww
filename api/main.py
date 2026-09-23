@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from api.core.config import settings
+from api.core.error_handlers import register_exception_handlers
 from api.database.session import create_all_tables
 
 # V0.5 routes (preserved)
@@ -106,34 +107,7 @@ app.add_api_route("/metrics", metrics_endpoint, methods=["GET"], include_in_sche
 
 
 
-# ---------------------------------------------------------------------------
-# Global Exception Handlers
-# ---------------------------------------------------------------------------
-from fastapi.responses import JSONResponse
-from api.core.exceptions import XerowwException
-from api.core.tracing import get_current_trace_id
-from datetime import datetime, timezone
-
-
-@app.exception_handler(XerowwException)
-async def xeroww_exception_handler(request, exc: XerowwException):
-    headers = {}
-    if exc.status_code == 429:
-        headers["Retry-After"] = "60"
-    return JSONResponse(
-        status_code=exc.status_code,
-        headers=headers,
-        content={
-            "detail": exc.message,
-            "error": {
-                "code": exc.code,
-                "message": exc.message,
-                "details": exc.details,
-            },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "request_id": get_current_trace_id(),
-        },
-    )
+register_exception_handlers(app)
 
 
 
