@@ -62,6 +62,7 @@ class DecisionPreviewRequest(DecisionPlanBase):
 
 class DecisionCreateRequest(DecisionPlanBase):
     expected_as_of: str
+    expected_portfolio_snapshot_id: int | None = Field(default=None, gt=0)
     supporting_evidence_keys: list[str] = Field(default_factory=list)
     conflicting_evidence_keys: list[str] = Field(default_factory=list)
     conflicts_reviewed: bool = False
@@ -144,6 +145,9 @@ class DecisionDetailResponse(BaseModel):
     thesis: str
     change_mind_condition: str | None
     portfolio_id: int | None
+    replay_session_id: int | None = None
+    replay_event_sequence: int | None = None
+    replay_index: int | None = None
     source_context: str | None
     source_as_of: datetime | None
     source_period: str | None

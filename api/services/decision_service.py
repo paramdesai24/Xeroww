@@ -70,7 +70,7 @@ class DecisionService:
         portfolio_capital, available_cash = self._portfolio_context(data.portfolio_id)
         capital = portfolio_capital if portfolio_capital is not None else data.capital_base
         try:
-            return PositionSizingService.calculate(
+            risk = PositionSizingService.calculate(
                 intent=data.intent,
                 capital_base=capital,
                 entry_zone_low=data.entry_zone_low,
@@ -81,6 +81,30 @@ class DecisionService:
                 max_allocation_pct=data.max_allocation_pct,
                 available_cash=available_cash,
             )
+            if data.portfolio_id and risk.get("complete") and risk.get("recommended_quantity", 0) > 0:
+                from api.services.portfolio_impact_service import PortfolioImpactService
+                from api.services.portfolio_risk_policy_service import PortfolioRiskPolicyService
+                from api.services.portfolio_valuation_service import PortfolioValuationService
+
+                snapshot = PortfolioValuationService(
+                    self.db, self.user_id, self.market_data
+                ).latest(data.portfolio_id)
+                policy = PortfolioRiskPolicyService(self.db, self.user_id).get(data.portfolio_id)
+                normalized_symbol = self.market_data.provider.normalize_symbol(data.symbol)
+                impact = PortfolioImpactService(self.market_data).build(
+                    snapshot,
+                    policy,
+                    symbol=normalized_symbol,
+                    quantity=risk["recommended_quantity"],
+                    entry_price=risk["planned_entry_price"],
+                    invalidation_price=data.invalidation_price,
+                )
+                risk["portfolio_impact"] = impact
+                risk.setdefault("warnings", []).extend(
+                    f"{item['code'].replace('_', ' ').title()}: {item['subject']} is {item['actual']:.2f} versus a {item['threshold']:.2f} threshold."
+                    for item in impact.get("warnings", [])
+                )
+            return risk
         except PositionSizingError as exc:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -145,6 +169,17 @@ class DecisionService:
             )
 
         risk = self._risk(data)
+        impact = risk.get("portfolio_impact")
+        if data.expected_portfolio_snapshot_id and (
+            not impact or impact.get("portfolio_snapshot_id") != data.expected_portfolio_snapshot_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "code": "PORTFOLIO_CONTEXT_CHANGED",
+                    "message": "The portfolio changed after preview. Review the refreshed impact before submitting.",
+                },
+            )
         now = datetime.utcnow()
         source_as_of = self._as_datetime(built["resolved_as_of"])
         entry = DecisionJournalEntry(
@@ -288,7 +323,8 @@ class DecisionService:
             "id", "symbol", "holding_period", "setup_type", "entry_trigger", "entry_zone_low",
             "entry_zone_high", "invalidation_price", "target_zone_low", "target_zone_high",
             "max_risk_pct", "max_allocation_pct", "confidence", "thesis", "change_mind_condition",
-            "portfolio_id", "source_as_of", "source_period", "ticket_version", "snapshot_hash",
+            "portfolio_id", "replay_session_id", "replay_event_sequence", "replay_index",
+            "source_as_of", "source_period", "ticket_version", "snapshot_hash",
             "context_snapshot", "risk_snapshot", "supporting_evidence_keys", "conflicting_evidence_keys",
             "submitted_at", "closed_at", "timestamp", "created_at", "version",
         )
