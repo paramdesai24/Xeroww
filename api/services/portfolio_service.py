@@ -308,6 +308,8 @@ class PortfolioService:
         self.db.commit()
         self.db.refresh(txn)
 
+        self._capture_snapshot(portfolio.id)
+
         try:
             from api.events import get_event_bus, AssetBought
             get_event_bus().publish(
@@ -378,6 +380,8 @@ class PortfolioService:
         self.db.commit()
         self.db.refresh(txn)
 
+        self._capture_snapshot(portfolio.id)
+
         try:
             from api.events import get_event_bus, AssetSold
             get_event_bus().publish(
@@ -395,6 +399,19 @@ class PortfolioService:
             pass
 
         return TransactionResponse.model_validate(txn)
+
+    def _capture_snapshot(self, portfolio_id: int) -> None:
+        """Capture post-trade valuation without failing a completed trade on provider issues."""
+        try:
+            from api.services.portfolio_valuation_service import PortfolioValuationService
+
+            PortfolioValuationService(
+                self.db, self.user_id, self._get_provider()
+            ).capture(portfolio_id)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception("Post-trade portfolio snapshot failed")
 
     # -----------------------------------------------------------------------
     # Factory
