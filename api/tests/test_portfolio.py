@@ -130,6 +130,58 @@ class TestPortfolioService:
 
 
 class TestPortfolioValidation:
+    def test_owner_can_rename_portfolio(self, client):
+        token = _register_login(client, "rename_portfolio@test.io")
+        headers = {"Authorization": f"Bearer {token}"}
+        created = client.post("/portfolios", json={"name": "Original"}, headers=headers)
+
+        response = client.patch(
+            f"/portfolios/{created.json()['id']}",
+            json={"name": "  Core Holdings  "},
+            headers=headers,
+        )
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "Core Holdings"
+
+    def test_portfolio_rename_is_tenant_scoped(self, client):
+        first = _register_login(client, "rename_owner@test.io")
+        created = client.post("/portfolios", json={"name": "Private"}, headers={"Authorization": f"Bearer {first}"})
+        second = _register_login(client, "rename_other@test.io")
+
+        response = client.patch(
+            f"/portfolios/{created.json()['id']}",
+            json={"name": "Not Allowed"},
+            headers={"Authorization": f"Bearer {second}"},
+        )
+
+        assert response.status_code == 404
+
+    def test_blank_portfolio_name_is_rejected(self, client):
+        token = _register_login(client, "blank_portfolio@test.io")
+        response = client.post(
+            "/portfolios",
+            json={"name": "   "},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    @pytest.mark.parametrize("quantity", ["NaN", "Infinity", "-Infinity"])
+    def test_non_finite_trade_quantity_is_rejected(self, client, quantity):
+        token = _register_login(client, f"nonfinite_{quantity.lower().replace('-', 'neg')}@test.io")
+        headers = {"Authorization": f"Bearer {token}"}
+        created = client.post("/portfolios", json={"name": "Finite"}, headers=headers)
+
+        response = client.post(
+            f"/portfolios/{created.json()['id']}/trade",
+            json={"symbol": "RELIANCE.NS", "side": "BUY", "quantity": quantity},
+            headers=headers,
+        )
+
+        assert response.status_code == 422
+
     def test_buy_insufficient_cash_rejected(self, client):
         token = _register_login(client, "insuf_cash@test.io")
         headers = {"Authorization": f"Bearer {token}"}

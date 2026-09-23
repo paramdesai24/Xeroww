@@ -18,6 +18,7 @@ from api.schemas.portfolio import (
     PortfolioCreate,
     PortfolioResponse,
     PortfolioSummaryResponse,
+    PortfolioUpdate,
     TradeOrderRequest,
     TransactionResponse,
 )
@@ -49,6 +50,21 @@ def create_portfolio(
 ):
     portfolio = PortfolioService.create(0, body.name, db, current_user.id)
     return portfolio
+
+
+@router.patch(
+    "/{portfolio_id}",
+    response_model=PortfolioResponse,
+    summary="Rename a simulated portfolio",
+)
+def rename_portfolio(
+    portfolio_id: int,
+    body: PortfolioUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    svc = PortfolioService(db, current_user.id)
+    return svc.rename_portfolio(portfolio_id, body.name)
 
 
 @router.get(

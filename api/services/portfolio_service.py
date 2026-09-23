@@ -68,6 +68,14 @@ class PortfolioService:
             )
         return portfolio
 
+    def rename_portfolio(self, portfolio_id: int, name: str) -> Portfolio:
+        portfolio = self.get_portfolio(portfolio_id)
+        portfolio.name = name.strip()
+        portfolio.updated_at = datetime.utcnow()
+        self.db.commit()
+        self.db.refresh(portfolio)
+        return portfolio
+
     def get_summary(self, portfolio_id: int) -> PortfolioSummaryResponse:
         """
         Build a live portfolio summary with market valuations.

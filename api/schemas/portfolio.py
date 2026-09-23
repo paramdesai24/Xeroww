@@ -6,19 +6,47 @@ Market prices in responses are computed live — never stored.
 """
 
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PortfolioCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100, examples=["My Paper Portfolio"])
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Portfolio name is required.")
+        return normalized
+
+
+class PortfolioUpdate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, examples=["Long Term Portfolio"])
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Portfolio name is required.")
+        return normalized
+
 
 class TradeOrderRequest(BaseModel):
     symbol: str = Field(..., examples=["RELIANCE.NS"])
     side: str = Field(..., pattern="^(BUY|SELL)$", examples=["BUY"])
-    quantity: float = Field(..., gt=0, examples=[10])
+    quantity: float = Field(..., gt=0, allow_inf_nan=False, examples=[10])
     # If None, uses live market price from MarketDataProvider
-    limit_price: float | None = Field(None, gt=0, examples=[2500.0])
+    limit_price: float | None = Field(None, gt=0, allow_inf_nan=False, examples=[2500.0])
+
+    @field_validator("symbol")
+    @classmethod
+    def validate_symbol(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if not normalized:
+            raise ValueError("Symbol is required.")
+        return normalized
 
 
 class HoldingResponse(BaseModel):
