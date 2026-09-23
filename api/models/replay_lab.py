@@ -12,7 +12,6 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
-    Text,
     UniqueConstraint,
     func,
 )
@@ -196,4 +195,3 @@ class ReplaySessionResult(Base):
     )
 
     session: Mapped[ReplaySession] = relationship("ReplaySession", back_populates="result")
-
