@@ -25,6 +25,20 @@ import type {
 import config from "../config";
 import { fetchSystemHealth } from "./systemHealth";
 import type { SystemHealthSnapshot } from "../types/health";
+import type {
+  ReplayAnalytics,
+  ReplayEvent,
+  ReplayReview,
+  ReplaySessionCreate,
+  ReplaySessionList,
+  ReplaySessionState,
+} from "../types/replayLab";
+import type {
+  PortfolioAnalytics,
+  PortfolioSnapshot,
+  PortfolioSnapshotList,
+  RiskPolicy,
+} from "../types/portfolioIntelligence";
 
 const BASE_URL = config.apiBaseUrl;
 
@@ -291,6 +305,57 @@ export const api = {
 
     review: (id: number): Promise<Record<string, unknown>> =>
       authFetch<Record<string, unknown>>(`/decisions/${id}/review`),
+  },
+
+  replayLab: {
+    create: (body: ReplaySessionCreate): Promise<ReplaySessionState> =>
+      authFetch<ReplaySessionState>("/replay-sessions", { method: "POST", body: JSON.stringify(body) }),
+    list: (): Promise<ReplaySessionList> => authFetch<ReplaySessionList>("/replay-sessions"),
+    get: (id: number): Promise<ReplaySessionState> => authFetch<ReplaySessionState>(`/replay-sessions/${id}`),
+    command: (id: number, action: "start" | "advance" | "pause" | "resume" | "abandon", version: number): Promise<ReplaySessionState> =>
+      authFetch<ReplaySessionState>(`/replay-sessions/${id}/${action}`, {
+        method: "POST",
+        body: JSON.stringify({ expected_version: version, idempotency_key: crypto.randomUUID() }),
+      }),
+    previewDecision: (id: number, plan: DecisionPlan): Promise<DecisionPreview> =>
+      authFetch<DecisionPreview>(`/replay-sessions/${id}/decisions/preview`, { method: "POST", body: JSON.stringify(plan) }),
+    submitDecision: (id: number, body: Record<string, unknown>): Promise<{ decision_id: number; session_id: number; session_version: number }> =>
+      authFetch<{ decision_id: number; session_id: number; session_version: number }>(`/replay-sessions/${id}/decisions`, { method: "POST", body: JSON.stringify(body) }),
+    events: (id: number): Promise<ReplayEvent[]> => authFetch<ReplayEvent[]>(`/replay-sessions/${id}/events`),
+    review: (id: number): Promise<ReplayReview> => authFetch<ReplayReview>(`/replay-sessions/${id}/review`),
+    analytics: (): Promise<ReplayAnalytics> => authFetch<ReplayAnalytics>("/replay-analytics"),
+    reflect: (id: number, version: number, promptKey: string, response: string, phase: "PRE_DECISION" | "POST_SESSION"): Promise<ReplaySessionState> =>
+      authFetch<ReplaySessionState>(`/replay-sessions/${id}/reflections`, {
+        method: "POST",
+        body: JSON.stringify({ prompt_key: promptKey, response, phase, expected_version: version, idempotency_key: crypto.randomUUID() }),
+      }),
+    exit: (id: number, version: number, reasonCategory: string, explanation: string): Promise<ReplaySessionState> =>
+      authFetch<ReplaySessionState>(`/replay-sessions/${id}/exit`, {
+        method: "POST",
+        body: JSON.stringify({ reason_category: reasonCategory, explanation, evidence_keys: [], expected_version: version, idempotency_key: crypto.randomUUID() }),
+      }),
+  },
+
+  portfolioIntelligence: {
+    capture: (portfolioId: number): Promise<PortfolioSnapshot> =>
+      authFetch<PortfolioSnapshot>(`/portfolios/${portfolioId}/snapshots`, { method: "POST" }),
+    snapshots: (portfolioId: number): Promise<PortfolioSnapshotList> =>
+      authFetch<PortfolioSnapshotList>(`/portfolios/${portfolioId}/snapshots`),
+    performance: (portfolioId: number): Promise<PortfolioAnalytics> =>
+      authFetch<PortfolioAnalytics>(`/portfolios/${portfolioId}/performance`),
+    attribution: (portfolioId: number): Promise<PortfolioAnalytics> =>
+      authFetch<PortfolioAnalytics>(`/portfolios/${portfolioId}/attribution`),
+    risk: (portfolioId: number): Promise<PortfolioAnalytics> =>
+      authFetch<PortfolioAnalytics>(`/portfolios/${portfolioId}/risk`),
+    getPolicy: (portfolioId: number): Promise<RiskPolicy> =>
+      authFetch<RiskPolicy>(`/portfolios/${portfolioId}/risk-policy`),
+    updatePolicy: (portfolioId: number, policy: RiskPolicy): Promise<RiskPolicy> =>
+      authFetch<RiskPolicy>(`/portfolios/${portfolioId}/risk-policy`, {
+        method: "PUT",
+        body: JSON.stringify({ ...policy, expected_version: policy.version }),
+      }),
+    impact: (portfolioId: number, body: Record<string, unknown>): Promise<Record<string, unknown>> =>
+      authFetch<Record<string, unknown>>(`/portfolios/${portfolioId}/impact-preview`, { method: "POST", body: JSON.stringify(body) }),
   },
 
 
