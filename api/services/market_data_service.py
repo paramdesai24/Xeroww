@@ -6,6 +6,7 @@ Consumes normalized market data from a MarketDataProvider abstraction
 and provides clean, cached, error-handled access to routes and analytics engines.
 """
 
+import math
 from typing import Any
 from fastapi import HTTPException, status
 
@@ -66,14 +67,16 @@ class MarketDataService:
     ) -> tuple[str, list[dict[str, Any]]]:
         normalized = self.provider.normalize_symbol(symbol)
         cache_key = f"candles:{normalized}:{period}:{interval}"
-        cached = self.cache.get(cache_key)
-        if cached:
-            return normalized, cached
-
         try:
-            candles = self.provider.get_ohlc(normalized, period=period, interval=interval)
+            cached = self.cache.get(cache_key)
+            source = cached if cached else self.provider.get_ohlc(
+                normalized,
+                period=period,
+                interval=interval,
+            )
+            candles = self._finite_candles(source)
             if not candles:
-                raise ValueError(f"No OHLC data available for symbol '{normalized}'.")
+                raise RuntimeError(f"No valid OHLC data is available for '{normalized}'.")
             self.cache.set(cache_key, candles, ttl_seconds=settings.CACHE_OHLC_TTL)
             return normalized, candles
         except ValueError as exc:
@@ -82,6 +85,33 @@ class MarketDataService:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error fetching OHLC: {exc}")
+
+    @staticmethod
+    def _finite_candles(candles: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Drop unusable price rows and normalize invalid volume to zero."""
+        result: list[dict[str, Any]] = []
+        for candle in candles:
+            try:
+                prices = {
+                    key: float(candle[key])
+                    for key in ("open", "high", "low", "close")
+                }
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not all(math.isfinite(value) for value in prices.values()):
+                continue
+            try:
+                volume = float(candle.get("volume", 0))
+            except (TypeError, ValueError):
+                volume = 0.0
+            if not math.isfinite(volume) or volume < 0:
+                volume = 0.0
+            result.append({
+                **candle,
+                **prices,
+                "volume": int(volume),
+            })
+        return result
 
     def get_benchmark_candles(
         self,

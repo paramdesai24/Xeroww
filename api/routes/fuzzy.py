@@ -27,6 +27,7 @@ from fastapi import APIRouter, Query, HTTPException, Depends
 from fastapi.responses import JSONResponse
 
 from api.core.dependencies import get_market_data_service
+from api.core.json_safety import sanitize_for_json
 from api.services.market_data_service import MarketDataService
 from api.fuzzy.orchestrator import default_fuzzy_orchestrator, FuzzyExplainabilityReport
 
@@ -92,4 +93,4 @@ def get_fuzzy_explain(
             detail=f"Fuzzy inference error for '{symbol}': {exc}",
         ) from exc
 
-    return JSONResponse(content=report.to_dict())
+    return JSONResponse(content=sanitize_for_json(report.to_dict()))
