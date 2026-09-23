@@ -58,7 +58,10 @@ export function usePortfolioWorkspace() {
         setLoading(false);
         return;
       }
-      const nextId = list.some((item) => item.id === active?.id) ? active.id : list[0].id;
+      const activeId = active?.id;
+      const nextId = activeId !== undefined && list.some((item) => item.id === activeId)
+        ? activeId
+        : list[0].id;
       await loadPortfolio(nextId);
     } catch (reason) {
       setError(normalizeError(reason, "Portfolios failed to load."));
