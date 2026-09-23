@@ -34,6 +34,12 @@ const AlertsManager = lazy(() => import("./components/AlertsManager"));
 const DecisionsPage = lazy(() => import("./pages/DecisionsPage"));
 const DecisionCreatePage = lazy(() => import("./pages/DecisionCreatePage"));
 const DecisionDetailPage = lazy(() => import("./pages/DecisionDetailPage"));
+const ReplaySessionListPage = lazy(() => import("./pages/ReplaySessionListPage"));
+const ReplaySessionSetupPage = lazy(() => import("./pages/ReplaySessionSetupPage"));
+const ReplayLabPage = lazy(() => import("./pages/ReplayLabPage"));
+const ReplayReviewPage = lazy(() => import("./pages/ReplayReviewPage"));
+const ReplayAnalyticsPage = lazy(() => import("./pages/ReplayAnalyticsPage"));
+const PortfolioIntelligencePage = lazy(() => import("./pages/PortfolioIntelligencePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 const SystemView = lazy(() => import("./components/SystemView"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
@@ -54,6 +60,7 @@ export default function App() {
   const path = location.pathname;
   const activeModule: Module = path.startsWith("/watchlists") ? "WATCHLISTS"
     : path.startsWith("/portfolio") ? "PORTFOLIO"
+    : path.startsWith("/replay-lab") ? "REPLAY_LAB"
     : path.startsWith("/alerts") ? "ALERTS"
     : path.startsWith("/decisions") ? "JOURNAL"
     : path.startsWith("/system") ? "SYSTEM"
@@ -187,7 +194,7 @@ export default function App() {
   };
 
   const handleModuleChange = (mod: Module) => {
-    const protectedModules: Module[] = ["WATCHLISTS", "PORTFOLIO", "ALERTS", "JOURNAL"];
+    const protectedModules: Module[] = ["WATCHLISTS", "PORTFOLIO", "REPLAY_LAB", "ALERTS", "JOURNAL"];
     if (protectedModules.includes(mod) && !auth.isAuthenticated) {
       setShowAuthModal(true);
     }
@@ -195,6 +202,7 @@ export default function App() {
       MARKET: `/market/${encodeURIComponent(activeSymbol)}`,
       WATCHLISTS: "/watchlists",
       PORTFOLIO: "/portfolio",
+      REPLAY_LAB: "/replay-lab",
       ALERTS: "/alerts",
       JOURNAL: "/decisions",
       SYSTEM: "/system",
@@ -488,7 +496,7 @@ export default function App() {
 
         {activeModule === "PORTFOLIO" &&
           (auth.isAuthenticated ? (
-            <Suspense fallback={lazyFallback}><PortfolioView /></Suspense>
+            <Suspense fallback={lazyFallback}>{/^\/portfolio\/\d+\/(overview|performance|attribution|risk)$/.test(path) ? <PortfolioIntelligencePage /> : <PortfolioView />}</Suspense>
           ) : (
             renderAuthGate("Portfolio Valuation Engine")
           ))}
@@ -508,10 +516,20 @@ export default function App() {
           </Suspense>
         ) : renderAuthGate("Decision Workbench"))}
 
+        {activeModule === "REPLAY_LAB" && (auth.isAuthenticated ? (
+          <Suspense fallback={lazyFallback}>
+            {path === "/replay-lab/new" ? <ReplaySessionSetupPage />
+              : path === "/replay-lab/analytics" ? <ReplayAnalyticsPage />
+              : /^\/replay-lab\/\d+\/review$/.test(path) ? <ReplayReviewPage />
+              : /^\/replay-lab\/\d+$/.test(path) ? <ReplayLabPage />
+              : <ReplaySessionListPage />}
+          </Suspense>
+        ) : renderAuthGate("Replay and Behaviour Lab"))}
+
         {activeModule === "SYSTEM" && (
           <Suspense fallback={lazyFallback}><SystemView user={auth.user} /></Suspense>
         )}
-        {!path.startsWith("/market") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/system") && path !== "/" && (
+        {!path.startsWith("/market") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/replay-lab") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/system") && path !== "/" && (
           <Suspense fallback={lazyFallback}><NotFoundPage /></Suspense>
         )}
       </div>
