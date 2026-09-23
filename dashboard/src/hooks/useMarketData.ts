@@ -37,16 +37,18 @@ export function useMarketData(): MarketState {
     setLoading(true);
     setError(null);
     try {
-      const [quoteData, ohlcData, patternData, structureData] = await Promise.all([
+      const [quoteResult, ohlcResult, patternResult, structureResult] = await Promise.allSettled([
         api.getQuote(symbol),
         api.getOHLC(symbol),
         api.getPatterns(symbol),
-        api.marketStructure.getSummary(symbol).catch(() => null),
+        api.marketStructure.getSummary(symbol),
       ]);
-      setQuote(quoteData);
-      setOhlc(ohlcData);
-      setPattern(patternData);
-      setStructure(structureData);
+      if (quoteResult.status === "rejected") throw quoteResult.reason;
+      if (ohlcResult.status === "rejected") throw ohlcResult.reason;
+      setQuote(quoteResult.value);
+      setOhlc(ohlcResult.value);
+      setPattern(patternResult.status === "fulfilled" ? patternResult.value : null);
+      setStructure(structureResult.status === "fulfilled" ? structureResult.value : null);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to load market data";
       setError(message);
