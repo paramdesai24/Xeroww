@@ -1,6 +1,8 @@
 # Domain Events and CQRS Preparation
 
-> Current-state boundary: V0.8 uses a synchronous in-memory domain event bus. Routes call services directly. The CQRS package contains preparation interfaces and is not the active request dispatch path. There is no event store, Kafka transport, or Spark runtime. Sections describing those systems are target-state proposals.
+> Current-state boundary: V0.11 uses a synchronous in-memory domain event bus. Routes call services directly. Replay sessions also persist their own append-only audit events in PostgreSQL or SQLite. The CQRS package contains preparation interfaces and is not the active request dispatch path. There is no Kafka transport or Spark runtime. Sections describing those systems are target-state proposals.
+
+Replay durable events are the authoritative session audit trail. Bounded integration events are published only after successful commits for diagnostics and future transport integration. Portfolio snapshot and risk policy changes follow the same post-commit publication rule. Free-text reflections and full analytical matrices are never copied into integration event payloads.
 
 ## 1. Architectural Vision & Purpose
 

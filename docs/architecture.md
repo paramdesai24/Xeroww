@@ -1,12 +1,14 @@
-# Xeroww Architecture V0.9
+# Xeroww Architecture V0.11
 
 ## Overview
 
-Xeroww V0.9 combines a strict **provider abstraction** with an immutable Decision Workbench.
+Xeroww V0.11 combines a strict **provider abstraction** with an immutable Decision Workbench, a persisted Replay Lab, and point-in-time Portfolio Intelligence.
 No route, service, or frontend component directly imports `yfinance`.
 This boundary allows a future provider implementation to be introduced without changing route contracts. Kafka, Spark, and Snowflake are roadmap concepts, not active runtime components.
 
 Decision tickets are user-owned records. Their market evidence is captured by the server from a single point-in-time candle slice, hashed for reproducibility, and never overwritten. Later changes are stored as append-only amendments.
+
+Replay sessions keep their cursor, dataset fingerprint, decision linkage, executions, reflections, and scoring inputs on the server. The API returns only revealed candles. Portfolio analytics operate on immutable valuation snapshots instead of silently recomputing history from current prices.
 
 The market provider exposes a centralized NIFTY 50 constituent catalogue. Decision forms consume that catalogue through `/stocks` and rank local prefix and contains matches without issuing a network request for every keystroke.
 
