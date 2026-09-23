@@ -70,6 +70,10 @@ def db(engine) -> Session:
 @pytest.fixture(scope="function")
 def client(db: Session) -> TestClient:
     """TestClient with overridden DB dependency for full integration tests."""
+    from api.core.dependencies import get_market_data_service
+    from api.services.cache_service import InMemoryCacheService
+    from api.services.market_data_service import MarketDataService
+
     def override_get_db():
         try:
             yield db
@@ -77,6 +81,9 @@ def client(db: Session) -> TestClient:
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_market_data_service] = lambda: MarketDataService(
+        mock_provider, InMemoryCacheService()
+    )
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
