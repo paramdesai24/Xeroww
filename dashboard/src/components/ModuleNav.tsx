@@ -4,7 +4,7 @@
 import type { UserProfile } from "../types/auth";
 import config from "../config";
 
-export type Module = "MARKET" | "WATCHLISTS" | "PORTFOLIO" | "ALERTS" | "JOURNAL" | "SYSTEM";
+export type Module = "MARKET" | "WATCHLISTS" | "PORTFOLIO" | "REPLAY_LAB" | "ALERTS" | "JOURNAL" | "SYSTEM";
 
 interface Props {
   activeModule: Module;
@@ -19,6 +19,7 @@ const MODULE_CONFIG: { id: Module; label: string }[] = [
   { id: "MARKET", label: "Market" },
   { id: "WATCHLISTS", label: "Watchlists" },
   { id: "PORTFOLIO", label: "Portfolio" },
+  { id: "REPLAY_LAB", label: "Replay Lab" },
   { id: "ALERTS", label: "Alerts" },
   { id: "JOURNAL", label: "Decisions" },
   { id: "SYSTEM", label: "System" },
