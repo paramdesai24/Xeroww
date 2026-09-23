@@ -12,6 +12,7 @@ export default function DecisionCreatePage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const initialSource = (params.get("source")?.toUpperCase() ?? "MANUAL") as DecisionSource;
+  const replaySessionId = params.get("replaySessionId") ? Number(params.get("replaySessionId")) : null;
   const [plan, setPlan] = useState<DecisionPlan>({
     symbol: params.get("symbol") ?? "",
     direction: "BULLISH",
@@ -26,7 +27,7 @@ export default function DecisionCreatePage() {
     target_zone_high: null,
     max_risk_pct: 1,
     max_allocation_pct: 20,
-    capital_base: 100000,
+    capital_base: params.get("capital") ? Number(params.get("capital")) : 100000,
     confidence: 3,
     thesis: "",
     change_mind_condition: "",
@@ -65,7 +66,9 @@ export default function DecisionCreatePage() {
     }
     setBusy(true); setError(null);
     try {
-      const result = await api.decisions.preview({ ...plan, symbol });
+      const result = replaySessionId
+        ? await api.replayLab.previewDecision(replaySessionId, { ...plan, symbol })
+        : await api.decisions.preview({ ...plan, symbol });
       setPreview(result);
       setSupporting(result.evidence.items.filter((item) => item.relationship === "aligned").map((item) => item.key));
       setConflicts(result.evidence.items.filter((item) => item.relationship === "conflicting").map((item) => item.key));
@@ -78,15 +81,24 @@ export default function DecisionCreatePage() {
     if (!preview) return;
     setBusy(true); setError(null);
     try {
-      const created = await api.decisions.create({
+      const request = {
         ...plan,
         expected_as_of: preview.resolved_as_of,
+        expected_portfolio_snapshot_id: Number(
+          (preview.risk.portfolio_impact as Record<string, unknown> | undefined)?.portfolio_snapshot_id,
+        ) || undefined,
         supporting_evidence_keys: supporting,
         conflicting_evidence_keys: conflicts,
         conflicts_reviewed: conflictsReviewed,
-      });
+      };
       sessionStorage.removeItem(storageKey);
-      navigate(`/decisions/${created.id}`);
+      if (replaySessionId) {
+        await api.replayLab.submitDecision(replaySessionId, request);
+        navigate(`/replay-lab/${replaySessionId}`);
+      } else {
+        const created = await api.decisions.create(request);
+        navigate(`/decisions/${created.id}`);
+      }
     } catch (err) { setError(err instanceof Error ? err.message : "Decision submission failed"); }
     finally { setBusy(false); }
   };
@@ -104,7 +116,7 @@ export default function DecisionCreatePage() {
         <section className="decision-form">
           <h2>Context and intent</h2>
           <div className="decision-form__grid">
-            <label>Symbol<SymbolAutocomplete value={plan.symbol} onChange={(symbol) => update("symbol", symbol)} /></label>
+            <label>Symbol{replaySessionId ? <input value={plan.symbol} readOnly /> : <SymbolAutocomplete value={plan.symbol} onChange={(symbol) => update("symbol", symbol)} />}</label>
             <label>Direction<select value={plan.direction} onChange={(e) => update("direction", e.target.value as DecisionDirection)}><option>BULLISH</option><option>BEARISH</option><option>NEUTRAL</option></select></label>
             <label>Intent<select value={plan.intent} onChange={(e) => update("intent", e.target.value as DecisionIntent)}>{["ENTER","ADD","HOLD","REDUCE","EXIT","WATCH","AVOID"].map((v) => <option key={v}>{v}</option>)}</select></label>
             <label>Holding period<select value={plan.holding_period} onChange={(e) => update("holding_period", e.target.value)}><option>INTRADAY</option><option>SWING</option><option>POSITIONAL</option><option>LONG_TERM_RESEARCH</option></select></label>
@@ -154,6 +166,7 @@ export default function DecisionCreatePage() {
                 <span>Limiting factor: {String(preview.risk.limiting_factor)}</span>
               </> : <span>{String(preview.risk.reason ?? "Not applicable")}</span>}
             </div>
+            {preview.warnings.slice(0, 3).map((warning) => <div className="decision-warning" key={warning}>{warning}</div>)}
             <button className="decision-primary-action" onClick={() => void submit()} disabled={busy || !conflictsReviewed}>Submit Immutable Decision</button>
           </>}
         </aside>

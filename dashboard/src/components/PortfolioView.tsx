@@ -174,6 +174,11 @@ export default function PortfolioView() {
               </div>
             ))}
           </div>
+          <div className="px-4 py-2 border-b border-[#1E2538] bg-[#05070B] flex justify-end">
+            <button onClick={() => navigate(`/portfolio/${active.id}/overview`)} className="px-3 py-1.5 text-xs font-semibold border border-[#1E90FF] text-[#60A5FA] hover:bg-[#1E90FF]/10 transition-colors">
+              Open Portfolio Intelligence
+            </button>
+          </div>
 
           {/* Tab strip */}
           <div className="flex border-b border-[#1E2538] bg-[#05070B]">
