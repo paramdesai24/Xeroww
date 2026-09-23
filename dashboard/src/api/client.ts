@@ -193,6 +193,12 @@ export const api = {
         body: JSON.stringify({ name }),
       }),
 
+    rename: (id: number, name: string): Promise<Portfolio> =>
+      authFetch<Portfolio>(`/portfolios/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name }),
+      }),
+
     trade: (
       portfolioId: number,
       symbol: string,
