@@ -33,6 +33,7 @@ from api.events.alert_events import (
 )
 from api.events.decision_events import DecisionTicketEvent
 from api.events.replay_lab_events import ReplayLabEvent
+from api.events.portfolio_intelligence_events import PortfolioIntelligenceEvent
 from api.events.bus import (
     EventBus,
     InMemoryEventBus,
@@ -60,6 +61,7 @@ __all__ = [
     "AlertDeleted",
     "DecisionTicketEvent",
     "ReplayLabEvent",
+    "PortfolioIntelligenceEvent",
     "EventBus",
     "InMemoryEventBus",
     "get_event_bus",
