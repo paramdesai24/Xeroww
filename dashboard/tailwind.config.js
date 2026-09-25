@@ -10,6 +10,16 @@ export default {
         sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         mono: ["IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", "monospace"],
       },
+      fontSize: {
+        "page": ["var(--type-page-size)", { lineHeight: "var(--type-page-leading)" }],
+        "section": ["var(--type-section-size)", { lineHeight: "var(--type-section-leading)" }],
+        "card": ["var(--type-card-size)", { lineHeight: "var(--type-card-leading)" }],
+        "body": ["var(--type-body-size)", { lineHeight: "var(--type-body-leading)" }],
+        "control": ["var(--type-control-size)", { lineHeight: "var(--type-control-leading)" }],
+        "label": ["var(--type-label-size)", { lineHeight: "var(--type-label-leading)" }],
+        "data": ["var(--type-data-size)", { lineHeight: "var(--type-data-leading)" }],
+        "metric": ["var(--type-metric-size)", { lineHeight: "var(--type-metric-leading)" }],
+      },
       colors: {
         canvas: "var(--canvas)",
         surface: {

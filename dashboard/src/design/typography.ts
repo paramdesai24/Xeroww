@@ -1,46 +1,25 @@
-/**
- * Xeroww Design Tokens — Typography
- *
- * Two type families:
- * - Inter (sans): editorial prose, labels, UI text
- * - IBM Plex Mono: financial data, prices, timestamps, codes
- *
- * Scale derived from a readable 13px interface base.
- * All sizes are in pixels because Xeroww is a precision tool.
- */
+/** Semantic typography roles shared by UI and chart integrations. */
 
 export const typography = {
   family: {
     sans: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     mono: "'IBM Plex Mono', 'Cascadia Code', 'SFMono-Regular', Consolas, monospace",
   },
-
-  size: {
-    label:   11,
-    caption: 12,
-    body:    13,
-    data:    13,
-    value:   15,
-    heading: 17,
+  role: {
+    pageTitle: "type-page-title",
+    sectionTitle: "type-section-title",
+    cardTitle: "type-card-title",
+    body: "type-body",
+    control: "type-control",
+    label: "type-label",
+    meta: "type-meta",
+    data: "type-data",
+    metric: "type-metric",
   },
-
-  weight: {
-    regular:   400,
-    medium:    500,
-    semibold:  600,
-    bold:      700,
-  },
-
-  tracking: {
-    label:   "0.04em",
-    wide:    "0.025em",
-    normal:  "0em",
-    tight:   "-0.01em",
-  },
-
-  leading: {
-    compact: 1.35,
-    default: 1.5,
-    relaxed: 1.6,
+  chart: {
+    family: "'IBM Plex Mono', Consolas, monospace",
+    axisSize: 12,
+    nodeTitleSize: 13,
+    nodeDetailSize: 12,
   },
 } as const;
