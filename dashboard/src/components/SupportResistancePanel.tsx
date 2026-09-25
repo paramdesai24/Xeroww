@@ -1,5 +1,5 @@
 // src/components/SupportResistancePanel.tsx
-// Institutional Support & Resistance Zones — v2 composable primitives & natural typography.
+// Support and resistance zones with composable primitives.
 
 import type { SupportResistanceResponse } from "../types/structure";
 import { Panel, PanelHeader, Badge } from "./ui";
@@ -46,13 +46,13 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
       {/* Nearest Levels Grid */}
       <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-[10px] text-[var(--text-tertiary)] font-medium">Nearest Support</span>
+          <span className="text-label text-[var(--text-tertiary)] font-medium">Nearest Support</span>
           {sr.nearest_support ? (
             <div className="flex items-baseline gap-1.5 font-mono flex-wrap">
               <span className="text-xs font-bold text-[var(--positive)] tabular-nums">
                 ₹{sr.nearest_support.price.toFixed(2)}
               </span>
-              <span className="text-[10px] text-[var(--text-tertiary)] tabular-nums">
+              <span className="text-label text-[var(--text-tertiary)] tabular-nums">
                 -{sr.nearest_support.distance_pct}%
               </span>
             </div>
@@ -62,13 +62,13 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
         </div>
 
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-[10px] text-[var(--text-tertiary)] font-medium">Nearest Resistance</span>
+          <span className="text-label text-[var(--text-tertiary)] font-medium">Nearest Resistance</span>
           {sr.nearest_resistance ? (
             <div className="flex items-baseline gap-1.5 font-mono flex-wrap">
               <span className="text-xs font-bold text-[var(--negative)] tabular-nums">
                 ₹{sr.nearest_resistance.price.toFixed(2)}
               </span>
-              <span className="text-[10px] text-[var(--text-tertiary)] tabular-nums">
+              <span className="text-label text-[var(--text-tertiary)] tabular-nums">
                 +{sr.nearest_resistance.distance_pct}%
               </span>
             </div>
@@ -80,7 +80,7 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
 
       {/* Level List */}
       <div className="p-3 flex flex-col gap-2">
-        <div className="flex items-center justify-between text-[10px] text-[var(--text-tertiary)] font-medium pb-1 border-b border-[var(--border-subtle)]">
+        <div className="flex items-center justify-between text-label text-[var(--text-tertiary)] font-medium pb-1 border-b border-[var(--border-subtle)]">
           <span>Level</span>
           <div className="flex items-center gap-4">
             <span>Touches</span>
@@ -100,7 +100,7 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
                 <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
                   ₹{z.price.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-[var(--text-tertiary)] font-mono tabular-nums">
+                <span className="text-label text-[var(--text-tertiary)] font-mono tabular-nums">
                   +{z.distance_pct}%
                 </span>
               </div>
@@ -124,7 +124,7 @@ export default function SupportResistancePanel({ sr, loading }: Props) {
                 <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
                   ₹{z.price.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-[var(--text-tertiary)] font-mono tabular-nums">
+                <span className="text-label text-[var(--text-tertiary)] font-mono tabular-nums">
                   -{z.distance_pct}%
                 </span>
               </div>

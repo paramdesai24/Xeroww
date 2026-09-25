@@ -1,5 +1,5 @@
 // src/components/MarketRegimeCard.tsx
-// Deterministic market regime classifier — v2 composable primitives & natural typography.
+// Deterministic market regime classifier with composable primitives.
 
 import type { MarketRegimeResponse } from "../types/structure";
 import { Panel, PanelHeader, Badge, Metric } from "./ui";
@@ -48,7 +48,7 @@ export default function MarketRegimeCard({ regime, loading }: Props) {
 
       {/* Evidence Audit */}
       <div className="p-3 flex flex-col gap-2">
-        <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
+        <span className="text-label font-semibold text-[var(--text-secondary)]">
           Evidence Audit
         </span>
         <ul className="space-y-1.5 m-0 p-0 list-none">

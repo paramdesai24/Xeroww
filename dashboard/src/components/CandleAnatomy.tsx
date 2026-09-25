@@ -1,5 +1,5 @@
 // src/components/CandleAnatomy.tsx
-// Candle anatomy breakdown — v2 composable primitives & natural typography.
+// Candle anatomy breakdown with composable primitives and natural typography.
 
 import type { OHLCBar } from "../types/market";
 import { Panel, PanelHeader, Badge } from "./ui";
@@ -48,13 +48,13 @@ export default function CandleAnatomy({ candle, isLatest = false }: CandleAnatom
         {/* Ratios strip */}
         <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] grid grid-cols-2 gap-3 text-xs">
           <div>
-            <span className="text-[10px] text-[var(--text-tertiary)] block">Body Ratio</span>
+            <span className="text-label text-[var(--text-tertiary)] block">Body Ratio</span>
             <span className="font-bold text-[var(--text-primary)] font-mono tabular-nums">
               {bodyRatio.toFixed(1)}%
             </span>
           </div>
           <div>
-            <span className="text-[10px] text-[var(--text-tertiary)] block">Wick Ratio</span>
+            <span className="text-label text-[var(--text-tertiary)] block">Wick Ratio</span>
             <span className="font-bold text-[var(--text-primary)] font-mono tabular-nums">
               {wickRatio.toFixed(1)}%
             </span>

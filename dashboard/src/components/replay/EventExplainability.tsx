@@ -39,19 +39,19 @@ export function EventExplainability({
               {title ?? "DETERMINISTIC EXPLAINABILITY AUDIT"}
             </div>
             {timestamp && (
-              <div className="text-[10px] text-[#64748B] whitespace-nowrap">{timestamp}</div>
+              <div className="text-label text-[#64748B] whitespace-nowrap">{timestamp}</div>
             )}
           </div>
         </div>
 
-        <div className="text-[10px] px-1.5 py-0.5 bg-[#10141D] border border-[#1E2538] text-[#94A3B8] rounded-sm shrink-0 whitespace-nowrap">
+        <div className="text-label px-1.5 py-0.5 bg-[#10141D] border border-[#1E2538] text-[#94A3B8] rounded-sm shrink-0 whitespace-nowrap">
           Deterministic
         </div>
       </div>
 
       {/* Signal and Confidence Meter */}
       <div className="space-y-1.5 bg-[#0B0E14] border border-[#1E2538] p-2.5 rounded-sm">
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-label">
           <span className="text-[#64748B] flex items-center gap-1">
             <Activity size={12} className="text-[#1E90FF]" />
             <span>Signal Identifier</span>
@@ -62,7 +62,7 @@ export function EventExplainability({
         </div>
 
         <div className="space-y-1 pt-1">
-          <div className="flex items-center justify-between text-[10px]">
+          <div className="flex items-center justify-between text-label">
             <span className="text-[#64748B]">Rule Coverage Confidence</span>
             <span className="font-bold text-[#F8FAFC]">{confPct}%</span>
           </div>
@@ -78,7 +78,7 @@ export function EventExplainability({
 
       {/* Triggered Rules Checklist */}
       <div className="space-y-1.5">
-        <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-[#64748B]">
+        <div className="flex items-center gap-1.5 text-label uppercase font-bold tracking-wider text-[#64748B]">
           <ListChecks size={12} className="text-[#3B82F6]" />
           <span>Triggered Mathematical Rules ({explainability.triggeredRules.length})</span>
         </div>
@@ -87,7 +87,7 @@ export function EventExplainability({
           {explainability.triggeredRules.map((rule, idx) => (
             <div
               key={idx}
-              className="px-2 py-1 bg-[#0B0E14] border border-[#1E2538] flex items-center gap-2 text-[10px] text-[#CBD5E1]"
+              className="px-2 py-1 bg-[#0B0E14] border border-[#1E2538] flex items-center gap-2 text-label text-[#CBD5E1]"
             >
               <CheckCircle2 size={11} className="text-[#22C55E] shrink-0" />
               <span className="truncate whitespace-nowrap flex-1" title={rule}>
@@ -101,14 +101,14 @@ export function EventExplainability({
       {/* Empirical Evidence */}
       {explainability.evidence.length > 0 && (
         <div className="space-y-1.5 pt-1 border-t border-[#1E2538]">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#64748B]">
+          <div className="text-label uppercase font-bold tracking-wider text-[#64748B]">
             Point-in-Time Evidence
           </div>
           <div className="flex flex-wrap gap-1.5">
             {explainability.evidence.map((ev, idx) => (
               <span
                 key={idx}
-                className="px-1.5 py-0.5 bg-[#10141D] border border-[#1E2538] text-[10px] text-[#94A3B8] rounded-sm whitespace-nowrap"
+                className="px-1.5 py-0.5 bg-[#10141D] border border-[#1E2538] text-label text-[#94A3B8] rounded-sm whitespace-nowrap"
               >
                 {ev}
               </span>

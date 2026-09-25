@@ -72,25 +72,25 @@ export default function MarketBreadthModal({ onClose }: Props) {
               {/* Advance / Decline Bar */}
               <div className="grid grid-cols-4 gap-2 p-3 bg-[#0B0E14] border border-[#1E2538] text-center">
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Universe</div>
+                  <div className="text-label text-[#64748B]">Universe</div>
                   <div className="text-base font-bold font-mono text-[#F8FAFC] tabular-nums mt-0.5">
                     {breadth.universe_size}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Advancing</div>
+                  <div className="text-label text-[#64748B]">Advancing</div>
                   <div className="text-base font-bold font-mono text-[#22C55E] tabular-nums mt-0.5">
                     {breadth.advancing}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Declining</div>
+                  <div className="text-label text-[#64748B]">Declining</div>
                   <div className="text-base font-bold font-mono text-[#EF4444] tabular-nums mt-0.5">
                     {breadth.declining}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Breadth Ratio</div>
+                  <div className="text-label text-[#64748B]">Breadth Ratio</div>
                   <div className="text-base font-bold font-mono text-[#1E90FF] tabular-nums mt-0.5">
                     {breadth.breadth_ratio}
                   </div>
@@ -104,25 +104,25 @@ export default function MarketBreadthModal({ onClose }: Props) {
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="p-2.5 bg-[#22C55E]/10 border border-[#22C55E]/30">
-                    <div className="text-[11px] font-semibold text-[#22C55E]">&gt; +2%</div>
+                    <div className="text-label font-semibold text-[#22C55E]">&gt; +2%</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] mt-0.5 tabular-nums">
                       {breadth.distribution_buckets.gain_gt_2pct}
                     </div>
                   </div>
                   <div className="p-2.5 bg-[#10141D] border border-[#1E2538]">
-                    <div className="text-[11px] text-[#22C55E]/80">0% to +2%</div>
+                    <div className="text-label text-[#22C55E]/80">0% to +2%</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] mt-0.5 tabular-nums">
                       {breadth.distribution_buckets.gain_0_to_2pct}
                     </div>
                   </div>
                   <div className="p-2.5 bg-[#10141D] border border-[#1E2538]">
-                    <div className="text-[11px] text-[#EF4444]/80">-2% to 0%</div>
+                    <div className="text-label text-[#EF4444]/80">-2% to 0%</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] mt-0.5 tabular-nums">
                       {breadth.distribution_buckets.loss_0_to_2pct}
                     </div>
                   </div>
                   <div className="p-2.5 bg-[#EF4444]/10 border border-[#EF4444]/30">
-                    <div className="text-[11px] font-semibold text-[#EF4444]">&lt; -2%</div>
+                    <div className="text-label font-semibold text-[#EF4444]">&lt; -2%</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] mt-0.5 tabular-nums">
                       {breadth.distribution_buckets.loss_gt_2pct}
                     </div>
@@ -137,13 +137,13 @@ export default function MarketBreadthModal({ onClose }: Props) {
                     <div className="text-xs font-semibold text-[#94A3B8]">
                       Pearson Correlation Matrix (20-Session Rolling)
                     </div>
-                    <span className="text-[10px] text-[#64748B]">
+                    <span className="text-label text-[#64748B]">
                       Empirical correlation · Not causality
                     </span>
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-[11px] border-collapse font-mono">
+                    <table className="w-full text-label border-collapse font-mono">
                       <thead>
                         <tr className="border-b border-[#1E2538] text-[#64748B]">
                           <th className="p-1.5 text-left font-sans font-medium text-[#94A3B8]">Symbol</th>

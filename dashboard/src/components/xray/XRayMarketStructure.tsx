@@ -25,9 +25,9 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
           <span className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]" style={{ fontFamily: "var(--font-mono)" }}>
             3. Market Structure Context
           </span>
-          <span className="text-[10px] text-[#6B6B72] font-mono">(₹{currentClose.toFixed(2)})</span>
+          <span className="text-label text-[#6B6B72] font-mono">(₹{currentClose.toFixed(2)})</span>
         </div>
-        <span className="text-[10px] font-mono text-[#1E90FF] border border-[rgba(30,144,255,0.3)] bg-[rgba(30,144,255,0.08)] px-2 py-0.5 rounded-sm">
+        <span className="text-label font-mono text-[#1E90FF] border border-[rgba(30,144,255,0.3)] bg-[rgba(30,144,255,0.08)] px-2 py-0.5 rounded-sm">
           POINT-IN-TIME
         </span>
       </div>
@@ -57,7 +57,7 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold font-mono text-[#FAFAFA]">{trendLabel}</span>
               <span
-                className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-[2px] ${
+                className={`text-label font-mono font-bold px-1.5 py-0.2 rounded-[2px] ${
                   isUptrend
                     ? "bg-[#22C55E]/20 text-[#22C55E]"
                     : isDowntrend
@@ -68,7 +68,7 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
                 {trend}
               </span>
             </div>
-            <span className="text-[10px] font-mono text-[#6B6B72] mt-0.5">
+            <span className="text-label font-mono text-[#6B6B72] mt-0.5">
               Detected Swings: {swingHighCount} Highs · {swingLowCount} Lows
             </span>
           </div>
@@ -79,7 +79,7 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
       <div className="grid grid-cols-2 gap-2 text-xs font-mono">
         {/* Nearest Support */}
         <div className="bg-[#080808] border border-[#1A1A1A] p-2.5 rounded-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[10px] text-[#6B6B72]">
+          <div className="flex items-center justify-between text-label text-[#6B6B72]">
             <span>NEAREST SUPPORT</span>
             <span className="text-[#22C55E] flex items-center gap-0.5">
               <ArrowDownRight size={11} />
@@ -92,11 +92,11 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
               <div className="text-sm font-bold text-[#22C55E] tabular-nums">
                 ₹{nearestSupport.price.toFixed(2)}
               </div>
-              <div className="flex items-center justify-between text-[10px] text-[#A0A0A8] mt-1">
+              <div className="flex items-center justify-between text-label text-[#A0A0A8] mt-1">
                 <span>Dist: ₹{nearestSupport.distance.toFixed(2)}</span>
                 <span className="text-[#22C55E] font-semibold">-{nearestSupport.distancePct}%</span>
               </div>
-              <div className="text-[9px] text-[#6B6B72] mt-0.5">
+              <div className="text-label text-[#6B6B72] mt-0.5">
                 {nearestSupport.touches} touches · str {nearestSupport.strength}/10
               </div>
             </div>
@@ -107,7 +107,7 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
 
         {/* Nearest Resistance */}
         <div className="bg-[#080808] border border-[#1A1A1A] p-2.5 rounded-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[10px] text-[#6B6B72]">
+          <div className="flex items-center justify-between text-label text-[#6B6B72]">
             <span>NEAREST RESISTANCE</span>
             <span className="text-[#EF4444] flex items-center gap-0.5">
               <ArrowUpRight size={11} />
@@ -120,11 +120,11 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
               <div className="text-sm font-bold text-[#EF4444] tabular-nums">
                 ₹{nearestResistance.price.toFixed(2)}
               </div>
-              <div className="flex items-center justify-between text-[10px] text-[#A0A0A8] mt-1">
+              <div className="flex items-center justify-between text-label text-[#A0A0A8] mt-1">
                 <span>Dist: ₹{nearestResistance.distance.toFixed(2)}</span>
                 <span className="text-[#EF4444] font-semibold">+{nearestResistance.distancePct}%</span>
               </div>
-              <div className="text-[9px] text-[#6B6B72] mt-0.5">
+              <div className="text-label text-[#6B6B72] mt-0.5">
                 {nearestResistance.touches} touches · str {nearestResistance.strength}/10
               </div>
             </div>
@@ -136,20 +136,20 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
 
       {/* 3. Moving Average Relationships */}
       <div className="flex flex-col gap-2 bg-[#05070B] border border-[#1A1A1A] p-2.5 rounded-sm text-xs font-mono">
-        <div className="text-[10px] text-[#6B6B72] uppercase">Moving Average Confluence</div>
+        <div className="text-label text-[#6B6B72] uppercase">Moving Average Confluence</div>
 
         {/* EMA 9 / EMA 20 */}
         <div className="flex items-center justify-between border-b border-[#161616] pb-2">
           <div className="flex flex-col">
-            <span className="text-[11px] font-semibold text-[#FAFAFA]">EMA 9 / EMA 20 Relationship</span>
-            <span className="text-[10px] text-[#A0A0A8]">{ema9_ema20.relationship}</span>
+            <span className="text-label font-semibold text-[#FAFAFA]">EMA 9 / EMA 20 Relationship</span>
+            <span className="text-label text-[#A0A0A8]">{ema9_ema20.relationship}</span>
           </div>
           <div className="text-right">
-            <span className="text-[11px] text-[#1E90FF] font-bold tabular-nums">
+            <span className="text-label text-[#1E90FF] font-bold tabular-nums">
               {ema9_ema20.ema9 ? `₹${ema9_ema20.ema9}` : "---"} / {ema9_ema20.ema20 ? `₹${ema9_ema20.ema20}` : "---"}
             </span>
             <span
-              className={`block text-[10px] font-semibold ${
+              className={`block text-label font-semibold ${
                 ema9_ema20.isBullishStack ? "text-[#22C55E]" : "text-[#EF4444]"
               }`}
             >
@@ -162,15 +162,15 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
         {/* SMA 50 / SMA 200 */}
         <div className="flex items-center justify-between pt-0.5">
           <div className="flex flex-col">
-            <span className="text-[11px] font-semibold text-[#FAFAFA]">SMA 50 / SMA 200 Relationship</span>
-            <span className="text-[10px] text-[#A0A0A8]">{sma50_sma200.relationship}</span>
+            <span className="text-label font-semibold text-[#FAFAFA]">SMA 50 / SMA 200 Relationship</span>
+            <span className="text-label text-[#A0A0A8]">{sma50_sma200.relationship}</span>
           </div>
           <div className="text-right">
-            <span className="text-[11px] text-[#FAFAFA] font-bold tabular-nums">
+            <span className="text-label text-[#FAFAFA] font-bold tabular-nums">
               {sma50_sma200.sma50 ? `₹${sma50_sma200.sma50}` : "---"} / {sma50_sma200.sma200 ? `₹${sma50_sma200.sma200}` : "---"}
             </span>
             <span
-              className={`block text-[10px] font-semibold ${
+              className={`block text-label font-semibold ${
                 sma50_sma200.isGoldenCross ? "text-[#22C55E]" : "text-[#EF4444]"
               }`}
             >
@@ -187,11 +187,11 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
           <Activity size={15} className={volume.isVolumeSpike ? "text-[#1E90FF]" : "text-[#A0A0A8]"} />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[#FAFAFA]">
+              <span className="text-label font-bold text-[#FAFAFA]">
                 RVOL {volume.rvol}x
               </span>
               <span
-                className={`text-[9px] font-bold px-1.5 py-0.2 rounded-[2px] ${
+                className={`text-label font-bold px-1.5 py-0.2 rounded-[2px] ${
                   volume.isVolumeSpike
                     ? "bg-[#1E90FF]/20 text-[#1E90FF]"
                     : volume.volumeState === "ELEVATED"
@@ -202,17 +202,17 @@ export function XRayMarketStructure({ structure, currentClose }: XRayMarketStruc
                 {volume.volumeState}
               </span>
             </div>
-            <span className="text-[10px] text-[#6B6B72]">
+            <span className="text-label text-[#6B6B72]">
               Flow: <strong className="text-[#A0A0A8] font-normal">{volume.relationship}</strong>
             </span>
           </div>
         </div>
 
         <div className="text-right">
-          <div className="text-[11px] font-bold text-[#FAFAFA] tabular-nums">
+          <div className="text-label font-bold text-[#FAFAFA] tabular-nums">
             {(volume.currentVolume / 1e5).toFixed(2)}L
           </div>
-          <span className="text-[10px] text-[#6B6B72]">
+          <span className="text-label text-[#6B6B72]">
             Base: {(volume.baselineAvg / 1e5).toFixed(2)}L
           </span>
         </div>

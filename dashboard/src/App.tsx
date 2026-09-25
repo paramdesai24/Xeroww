@@ -14,7 +14,7 @@ import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
 import ReplayControlBar from "./components/ReplayControlBar";
 import Footer from "./components/Footer";
 
-// V0.6 Domain Components
+// Domain components
 import { XRayDrawer } from "./components/xray";
 import { EventTimeline } from "./components/replay";
 import { FuzzyExplainCard } from "./components/FuzzyExplainCard";
@@ -82,7 +82,7 @@ export default function App() {
   const [externalStep, setExternalStep] = useState<number | null>(null);
   const [currentReplayStep, setCurrentReplayStep] = useState<number>(0);
 
-  // V0.8 Mamdani Fuzzy Explainability Engine state
+  // Fuzzy explainability state
   const [fuzzyReport, setFuzzyReport] = useState<FuzzyExplainabilityReport | null>(null);
   const [fuzzyLoading, setFuzzyLoading] = useState<boolean>(false);
   const [fuzzyError, setFuzzyError] = useState<string | null>(null);
@@ -92,7 +92,7 @@ export default function App() {
     return replayEvents.filter((e) => e.candle_index <= currentReplayStep).length;
   }, [replayEvents, currentReplayStep]);
 
-  // V0.5 Market Terminal State (Fully preserved + V0.6 Structure)
+  // Market terminal state
   const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
     useMarketData();
 
@@ -356,7 +356,7 @@ export default function App() {
                           : "Anatomy"}
                       </span>
                       {tab === "EVENTS" && replayEvents.length > 0 && (
-                        <span className="px-1 py-0.2 text-[10px] bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-sm font-mono whitespace-nowrap">
+                        <span className="px-1 py-0.2 text-label bg-[#1E90FF]/20 text-[#60A5FA] border border-[#1E90FF]/30 rounded-sm font-mono whitespace-nowrap">
                           {revealedEventsCount}/{replayEvents.length}
                         </span>
                       )}
@@ -390,7 +390,7 @@ export default function App() {
                       <div className="border border-[var(--border-default)] bg-[var(--surface)] overflow-hidden">
                         <div className="px-3 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-inset)]">
                           <span className="text-xs font-semibold text-[var(--text-primary)]">Market Regime</span>
-                          <span className="text-[10px] text-[var(--text-tertiary)] animate-pulse">Classifying regime…</span>
+                          <span className="text-label text-[var(--text-tertiary)] animate-pulse">Classifying regime…</span>
                         </div>
                         <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-3 gap-2">
                           <Skeleton height={28} />
@@ -405,7 +405,7 @@ export default function App() {
                       <div className="border border-[var(--border-default)] bg-[var(--surface)] overflow-hidden">
                         <div className="px-3 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-inset)]">
                           <span className="text-xs font-semibold text-[var(--text-primary)]">Signal Confluence</span>
-                          <span className="text-[10px] text-[var(--text-tertiary)] animate-pulse">Tallying indicators…</span>
+                          <span className="text-label text-[var(--text-tertiary)] animate-pulse">Tallying indicators…</span>
                         </div>
                         <div className="p-3 bg-[var(--surface-inset)] border-b border-[var(--border-subtle)] grid grid-cols-2 gap-4">
                           <Skeleton height={28} />
@@ -415,7 +415,7 @@ export default function App() {
                       <div className="border border-[var(--border-default)] bg-[var(--surface)] overflow-hidden">
                         <div className="px-3 py-2.5 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-inset)]">
                           <span className="text-xs font-semibold text-[var(--text-primary)]">Structure & Patterns</span>
-                          <span className="text-[10px] text-[var(--text-tertiary)] animate-pulse">Scanning geometry…</span>
+                          <span className="text-label text-[var(--text-tertiary)] animate-pulse">Scanning geometry…</span>
                         </div>
                         <div className="p-3 space-y-2">
                           <Skeleton height={14} width="65%" />
@@ -427,7 +427,7 @@ export default function App() {
                     <>
                       <MarketRegimeCard regime={structure?.market_regime ?? null} loading={loading} />
                       <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} loading={loading} />
-                      {/* V0.8 — Market Context & Synthesis */}
+                      {/* Market context and synthesis */}
                       <FuzzyExplainCard
                         report={fuzzyReport}
                         loading={fuzzyLoading}

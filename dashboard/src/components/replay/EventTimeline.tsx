@@ -122,7 +122,7 @@ export function EventTimeline({
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="px-3 py-1 bg-[#1E90FF]/15 hover:bg-[#1E90FF]/25 border border-[#1E90FF]/40 text-[#1E90FF] text-[11px] font-semibold transition-colors whitespace-nowrap"
+            className="px-3 py-1 bg-[#1E90FF]/15 hover:bg-[#1E90FF]/25 border border-[#1E90FF]/40 text-[#1E90FF] text-label font-semibold transition-colors whitespace-nowrap"
           >
             Reload Events
           </button>
@@ -141,7 +141,7 @@ export function EventTimeline({
             <span className="text-xs font-bold font-mono tracking-wider text-[#F8FAFC] whitespace-nowrap">
               EVENT TIMELINE
             </span>
-            <span className="text-[10px] text-[#64748B] font-mono px-1.5 py-0.2 bg-[#10141D] border border-[#1E2538] rounded-sm whitespace-nowrap">
+            <span className="text-label text-[#64748B] font-mono px-1.5 py-0.2 bg-[#10141D] border border-[#1E2538] rounded-sm whitespace-nowrap">
               0 revealed · {events.length} total
             </span>
           </div>
@@ -151,7 +151,7 @@ export function EventTimeline({
           <span className="text-[#94A3B8] font-semibold whitespace-nowrap">
             Awaiting chronological market events…
           </span>
-          <p className="text-[11px] text-[#64748B] leading-relaxed max-w-[280px] m-0">
+          <p className="text-label text-[#64748B] leading-relaxed max-w-[280px] m-0">
             Bar {currentStep + 1}{totalSteps ? ` / ${totalSteps}` : ""}: Advance playback or press <span className="text-[#1E90FF] font-semibold">Play</span>. Events will reveal dynamically as sessions unfold.
           </p>
         </div>
@@ -168,13 +168,13 @@ export function EventTimeline({
           <span className="text-xs font-bold font-mono tracking-wider text-[#F8FAFC] whitespace-nowrap">
             EVENT TIMELINE
           </span>
-          <span className="text-[10px] text-[#64748B] font-mono px-1.5 py-0.2 bg-[#10141D] border border-[#1E2538] rounded-sm whitespace-nowrap">
+          <span className="text-label text-[#64748B] font-mono px-1.5 py-0.2 bg-[#10141D] border border-[#1E2538] rounded-sm whitespace-nowrap">
             {filteredEvents.length} revealed · {events.length} total
           </span>
         </div>
 
         {/* Severity filter pills */}
-        <div className="flex items-center gap-1 shrink-0 font-mono text-[10px]">
+        <div className="flex items-center gap-1 shrink-0 font-mono text-label">
           <Filter size={10} className="text-[#64748B] mr-0.5 shrink-0" />
           {(["ALL", "CRITICAL", "WARNING", "INFO"] as const).map((sev) => {
             const active = severityFilter === sev;
@@ -227,10 +227,10 @@ export function EventTimeline({
                       isCurrentStep ? "animate-pulse ring-2 ring-[#1E90FF]/40" : ""
                     }`}
                   />
-                  <span className="text-[11px] font-mono text-[#64748B] shrink-0 whitespace-nowrap">
+                  <span className="text-label font-mono text-[#64748B] shrink-0 whitespace-nowrap">
                     {evt.timestamp}
                   </span>
-                  <span className="text-[10px] text-[#334155] shrink-0">·</span>
+                  <span className="text-label text-[#334155] shrink-0">·</span>
 
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     {getEventIcon(evt.type, evt.severity)}
@@ -244,7 +244,7 @@ export function EventTimeline({
                 {/* Right: Confidence badge & expand toggle */}
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span
-                    className={`px-1.5 py-0.5 text-[10px] font-mono font-semibold border rounded-sm whitespace-nowrap ${sevColors.bg} ${sevColors.border} ${sevColors.text}`}
+                    className={`px-1.5 py-0.5 text-label font-mono font-semibold border rounded-sm whitespace-nowrap ${sevColors.bg} ${sevColors.border} ${sevColors.text}`}
                   >
                     {(evt.explainability.confidence * 100).toFixed(0)}%
                   </span>
@@ -264,7 +264,7 @@ export function EventTimeline({
 
               {/* Explainability Accordion */}
               {isExpanded && (
-                <div className="px-3 py-2 mx-2 mb-1 bg-[#000000] border border-[#1E2538] text-[11px] font-mono space-y-1.5">
+                <div className="px-3 py-2 mx-2 mb-1 bg-[#000000] border border-[#1E2538] text-label font-mono space-y-1.5">
                   <div className="flex items-center justify-between text-[#94A3B8] border-b border-[#1A1A1A] pb-1">
                     <span className="text-[#1E90FF] font-semibold truncate whitespace-nowrap">
                       SIGNAL: {evt.explainability.signal}
@@ -274,17 +274,17 @@ export function EventTimeline({
                     </span>
                   </div>
 
-                  <p className="text-[#CBD5E1] text-[10px] leading-relaxed m-0">
+                  <p className="text-[#CBD5E1] text-label leading-relaxed m-0">
                     {evt.description}
                   </p>
 
                   {/* Triggered rules */}
                   {evt.explainability.triggeredRules.length > 0 && (
                     <div className="space-y-0.5 pt-1">
-                      <div className="text-[10px] uppercase tracking-wider text-[#64748B] font-semibold whitespace-nowrap">
+                      <div className="text-label uppercase tracking-wider text-[#64748B] font-semibold whitespace-nowrap">
                         Triggered Rules:
                       </div>
-                      <ul className="list-disc list-inside space-y-0.5 text-[10px] text-[#94A3B8] pl-1">
+                      <ul className="list-disc list-inside space-y-0.5 text-label text-[#94A3B8] pl-1">
                         {evt.explainability.triggeredRules.map((r, i) => (
                           <li key={i} className="truncate whitespace-nowrap" title={r}>
                             {r}
@@ -298,7 +298,7 @@ export function EventTimeline({
                   <div className="pt-1 flex justify-end">
                     <button
                       onClick={() => onSelectEvent(evt)}
-                      className="px-2 py-0.5 bg-[#1E90FF]/15 hover:bg-[#1E90FF]/25 border border-[#1E90FF]/40 text-[#1E90FF] text-[10px] font-semibold transition-colors flex items-center gap-1 whitespace-nowrap"
+                      className="px-2 py-0.5 bg-[#1E90FF]/15 hover:bg-[#1E90FF]/25 border border-[#1E90FF]/40 text-[#1E90FF] text-label font-semibold transition-colors flex items-center gap-1 whitespace-nowrap"
                     >
                       <span>Jump to Candle & Inspect</span>
                       <ChevronRight size={10} />

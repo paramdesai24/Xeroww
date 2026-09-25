@@ -1,5 +1,5 @@
 // src/components/Sidebar.tsx
-// Watchlist panel — v2 pitch-black canvas, vivid amber active state, natural typography.
+// Watchlist panel with a dark canvas and clear active state.
 
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -57,7 +57,7 @@ function QuoteRow({
           {ticker(stock.symbol)}
         </span>
         <span
-          className="text-[11px] text-[var(--text-tertiary)] truncate"
+          className="text-label text-[var(--text-tertiary)] truncate"
           style={{ fontFamily: "var(--font-sans)" }}
         >
           {stock.display_name}
@@ -80,7 +80,7 @@ function QuoteRow({
               ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <div
-              className={`flex items-center gap-0.5 text-[10px] font-medium tabular-nums ${
+              className={`flex items-center gap-0.5 text-label font-medium tabular-nums ${
                 positive
                   ? "text-[var(--positive)]"
                   : negative
@@ -127,7 +127,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
         <h2 className="text-xs font-semibold text-[var(--text-primary)] tracking-normal m-0">
           Watchlist
         </h2>
-        <span className="text-[10px] text-[var(--text-tertiary)]">
+        <span className="text-label text-[var(--text-tertiary)]">
           NSE · {stocks.length}
         </span>
       </div>
@@ -146,7 +146,7 @@ export default function Sidebar({ stocks, activeSymbol, onSelectSymbol }: Sideba
 
       {/* Footer status strip */}
       <div
-        className="watchlist-footer px-4 py-2 flex items-center justify-between border-t border-[var(--border-default)] text-[10px] text-[var(--text-tertiary)]"
+        className="watchlist-footer px-4 py-2 flex items-center justify-between border-t border-[var(--border-default)] text-label text-[var(--text-tertiary)]"
         style={{ backgroundColor: "var(--surface)" }}
       >
         <span>Yahoo feed</span>

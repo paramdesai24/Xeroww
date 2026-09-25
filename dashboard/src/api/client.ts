@@ -1,6 +1,6 @@
 // src/api/client.ts
 // Typed API client — all fetch calls to the Xeroww FastAPI backend.
-// V0.6: Auth-aware — attaches Bearer token when available.
+// Attaches a bearer token to authenticated requests.
 
 import type { StockMeta, QuoteData, OHLCData, PatternData, HealthStatus } from "../types/market";
 import type {
@@ -98,7 +98,7 @@ const authFetch = <T>(path: string, options: RequestInit = {}) =>
 
 export const api = {
   // -------------------------------------------------------------------------
-  // V0.5 — Market data (preserved, no auth required)
+  // Public market data
   // -------------------------------------------------------------------------
   health: (): Promise<HealthStatus> => apiFetch<HealthStatus>("/health"),
   systemHealth: (): Promise<SystemHealthSnapshot> => fetchSystemHealth(),
@@ -117,7 +117,7 @@ export const api = {
     apiFetch<PatternData>(`/patterns/${encodeURIComponent(symbol)}`),
 
   // -------------------------------------------------------------------------
-  // V0.6 — Authentication
+  // Authentication
   // -------------------------------------------------------------------------
   auth: {
     register: (name: string, email: string, password: string): Promise<TokenResponse> =>
@@ -145,7 +145,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Watchlists
+  // Watchlists
   // -------------------------------------------------------------------------
   watchlists: {
     list: (): Promise<Watchlist[]> => authFetch<Watchlist[]>("/watchlists"),
@@ -183,7 +183,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Portfolios
+  // Portfolios
   // -------------------------------------------------------------------------
   portfolios: {
     list: (): Promise<Portfolio[]> => authFetch<Portfolio[]>("/portfolios"),
@@ -225,7 +225,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Alerts
+  // Alerts
   // -------------------------------------------------------------------------
   alerts: {
     list: (): Promise<Alert[]> => authFetch<Alert[]>("/alerts"),
@@ -251,7 +251,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Decision Journal
+  // Decision Journal
   // -------------------------------------------------------------------------
   journal: {
     list: (): Promise<JournalEntry[]> => authFetch<JournalEntry[]>("/journal"),
@@ -371,7 +371,7 @@ export const api = {
 
 
   // -------------------------------------------------------------------------
-  // V0.6 — Market Structure Engine (Deterministic Analytics)
+  // Market structure analysis
   // -------------------------------------------------------------------------
   marketStructure: {
     getSupportResistance: (symbol: string): Promise<SupportResistanceResponse> =>
@@ -394,7 +394,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Historical Market Replay Engine
+  // Historical market replay
   // -------------------------------------------------------------------------
   replay: {
     getTimeline: (symbol: string, period = "1mo"): Promise<import("../types/structure").ReplayTimelineResponse> =>
@@ -408,7 +408,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Deterministic Event Diff ("What Changed?")
+  // Event comparison
   // -------------------------------------------------------------------------
   eventDiff: {
     getLatest: (symbol: string, period = "1mo"): Promise<import("../types/structure").EventDiffResponse> =>
@@ -419,7 +419,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Candle Forensics & Data Provenance
+  // Candle forensics and provenance
   // -------------------------------------------------------------------------
   forensics: {
     inspect: (symbol: string, timestamp: string, period = "6mo"): Promise<import("../types/structure").CandleForensicsResponse> =>
@@ -427,7 +427,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Portfolio Today's Contribution
+  // Portfolio day contribution
   // -------------------------------------------------------------------------
   portfolioContributions: {
     get: (portfolioId: number): Promise<import("../types/structure").PortfolioContributionResponse> =>
@@ -435,7 +435,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Market Breadth & Cross-Asset Relationship Explorer
+  // Market breadth and cross-asset relationships
   // -------------------------------------------------------------------------
   intelligence: {
     getBreadth: (): Promise<import("../types/structure").MarketBreadthResponse> =>
@@ -449,7 +449,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.6 — Market Event Timeline & Explainability Engine
+  // Market event timeline
   // -------------------------------------------------------------------------
   events: {
     getTimeline: (symbol: string, period = "3mo"): Promise<import("../types/events").MarketEventsTimelineResponse> =>
@@ -460,7 +460,7 @@ export const api = {
   },
 
   // -------------------------------------------------------------------------
-  // V0.8 — Mamdani Fuzzy Explainability Engine
+  // Fuzzy explainability
   // -------------------------------------------------------------------------
   fuzzy: {
     /**

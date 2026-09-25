@@ -39,11 +39,11 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
           <span className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]" style={{ fontFamily: "var(--font-mono)" }}>
             1. Candle Anatomy
           </span>
-          <span className="text-[10px] text-[#6B6B72] font-mono">({timestamp})</span>
+          <span className="text-label text-[#6B6B72] font-mono">({timestamp})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className={`px-2 py-0.5 text-[11px] font-bold font-mono uppercase tracking-wide border rounded-sm flex items-center gap-1 ${
+            className={`px-2 py-0.5 text-label font-bold font-mono uppercase tracking-wide border rounded-sm flex items-center gap-1 ${
               isBullish
                 ? "bg-[rgba(34,197,94,0.12)] text-[#22C55E] border-[rgba(34,197,94,0.35)]"
                 : isBearish
@@ -66,28 +66,28 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
       {/* OHLC 4-Cell Primary Matrix */}
       <div className="grid grid-cols-4 gap-2 text-center">
         <div className="bg-[#05070B] border border-[#1A1A1A] p-2 rounded-sm">
-          <div className="text-[10px] text-[#6B6B72] uppercase font-mono tracking-wider">Open</div>
+          <div className="text-label text-[#6B6B72] uppercase font-mono tracking-wider">Open</div>
           <div className="text-xs font-bold font-mono text-[#FAFAFA] tabular-nums mt-0.5">
             ₹{open.toFixed(2)}
           </div>
         </div>
 
         <div className="bg-[#05070B] border border-[#1A1A1A] p-2 rounded-sm">
-          <div className="text-[10px] text-[#6B6B72] uppercase font-mono tracking-wider">High</div>
+          <div className="text-label text-[#6B6B72] uppercase font-mono tracking-wider">High</div>
           <div className="text-xs font-bold font-mono text-[#22C55E] tabular-nums mt-0.5">
             ₹{high.toFixed(2)}
           </div>
         </div>
 
         <div className="bg-[#05070B] border border-[#1A1A1A] p-2 rounded-sm">
-          <div className="text-[10px] text-[#6B6B72] uppercase font-mono tracking-wider">Low</div>
+          <div className="text-label text-[#6B6B72] uppercase font-mono tracking-wider">Low</div>
           <div className="text-xs font-bold font-mono text-[#EF4444] tabular-nums mt-0.5">
             ₹{low.toFixed(2)}
           </div>
         </div>
 
         <div className="bg-[#05070B] border border-[#1A1A1A] p-2 rounded-sm">
-          <div className="text-[10px] text-[#6B6B72] uppercase font-mono tracking-wider">Close</div>
+          <div className="text-label text-[#6B6B72] uppercase font-mono tracking-wider">Close</div>
           <div
             className={`text-xs font-bold font-mono tabular-nums mt-0.5 ${
               isBullish ? "text-[#22C55E]" : isBearish ? "text-[#EF4444]" : "text-[#FAFAFA]"
@@ -100,7 +100,7 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
 
       {/* Stacked Proportional Distribution Bar */}
       <div className="flex flex-col gap-1.5 bg-[#080808] border border-[#1A1A1A] p-2.5 rounded-sm">
-        <div className="flex justify-between items-center text-[10px] text-[#A0A0A8] font-mono">
+        <div className="flex justify-between items-center text-label text-[#A0A0A8] font-mono">
           <span>GEOMETRIC RANGE ALLOCATION</span>
           <span className="text-[#FAFAFA] font-bold">₹{totalRange.toFixed(2)} Total Range</span>
         </div>
@@ -131,7 +131,7 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-between text-[10px] font-mono mt-0.5">
+        <div className="flex items-center justify-between text-label font-mono mt-0.5">
           <span className="flex items-center gap-1 text-[#A0A0A8]">
             <span className="w-2 h-2 rounded-[1px] bg-[#6B6B72]" />
             Upper: {upperWickPct.toFixed(1)}%
@@ -154,41 +154,41 @@ export function XRayAnatomy({ anatomy, timestamp }: XRayAnatomyProps) {
       {/* Forensic Anatomy Breakdown Table */}
       <div className="grid grid-cols-2 gap-2 text-xs font-mono">
         <div className="bg-[#080808] border border-[#1A1A1A] p-2 flex flex-col justify-between">
-          <span className="text-[10px] text-[#6B6B72]">ABSOLUTE BODY SIZE</span>
+          <span className="text-label text-[#6B6B72]">ABSOLUTE BODY SIZE</span>
           <div className="flex items-baseline justify-between mt-1">
             <span className="text-sm font-bold text-[#FAFAFA] tabular-nums">₹{bodySize.toFixed(2)}</span>
-            <span className="text-[11px] text-[#1E90FF] font-semibold">{bodyPct.toFixed(1)}%</span>
+            <span className="text-label text-[#1E90FF] font-semibold">{bodyPct.toFixed(1)}%</span>
           </div>
         </div>
 
         <div className="bg-[#080808] border border-[#1A1A1A] p-2 flex flex-col justify-between">
-          <span className="text-[10px] text-[#6B6B72]">TOTAL BAR RANGE</span>
+          <span className="text-label text-[#6B6B72]">TOTAL BAR RANGE</span>
           <div className="flex items-baseline justify-between mt-1">
             <span className="text-sm font-bold text-[#FAFAFA] tabular-nums">₹{totalRange.toFixed(2)}</span>
-            <span className="text-[11px] text-[#A0A0A8]">High - Low</span>
+            <span className="text-label text-[#A0A0A8]">High - Low</span>
           </div>
         </div>
 
         <div className="bg-[#080808] border border-[#1A1A1A] p-2 flex flex-col justify-between">
-          <span className="text-[10px] text-[#6B6B72]">UPPER WICK (REJECTION)</span>
+          <span className="text-label text-[#6B6B72]">UPPER WICK (REJECTION)</span>
           <div className="flex items-baseline justify-between mt-1">
             <span className="text-sm font-bold text-[#FAFAFA] tabular-nums">₹{upperWick.toFixed(2)}</span>
-            <span className="text-[11px] text-[#A0A0A8]">{upperWickPct.toFixed(1)}%</span>
+            <span className="text-label text-[#A0A0A8]">{upperWickPct.toFixed(1)}%</span>
           </div>
         </div>
 
         <div className="bg-[#080808] border border-[#1A1A1A] p-2 flex flex-col justify-between">
-          <span className="text-[10px] text-[#6B6B72]">LOWER WICK (ABSORPTION)</span>
+          <span className="text-label text-[#6B6B72]">LOWER WICK (ABSORPTION)</span>
           <div className="flex items-baseline justify-between mt-1">
             <span className="text-sm font-bold text-[#FAFAFA] tabular-nums">₹{lowerWick.toFixed(2)}</span>
-            <span className="text-[11px] text-[#A0A0A8]">{lowerWickPct.toFixed(1)}%</span>
+            <span className="text-label text-[#A0A0A8]">{lowerWickPct.toFixed(1)}%</span>
           </div>
         </div>
       </div>
 
       {/* Session Momentum Spread */}
       {typeof spreadToPreviousClose === "number" && typeof spreadToPreviousClosePct === "number" && (
-        <div className="flex items-center justify-between text-[11px] font-mono px-2 py-1.5 bg-[#05070B] border border-[#1A1A1A]">
+        <div className="flex items-center justify-between text-label font-mono px-2 py-1.5 bg-[#05070B] border border-[#1A1A1A]">
           <span className="text-[#6B6B72]">Change vs Prior Close:</span>
           <span
             className={`font-semibold tabular-nums ${

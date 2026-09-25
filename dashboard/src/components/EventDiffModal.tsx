@@ -75,13 +75,13 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
               {/* Diff Summary Bar */}
               <div className="p-3 bg-[#0B0E14] border border-[#1E2538] flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Interval</div>
+                  <div className="text-label text-[#64748B]">Interval</div>
                   <div className="text-xs font-mono font-semibold text-[#F8FAFC] mt-0.5">
                     {data.from_time} → {data.to_time}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Price Movement</div>
+                  <div className="text-label text-[#64748B]">Price Movement</div>
                   <div
                     className={`text-sm font-bold font-mono tabular-nums mt-0.5 ${
                       data.price_delta >= 0 ? "text-[#22C55E]" : "text-[#EF4444]"
@@ -93,7 +93,7 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Observed Events</div>
+                  <div className="text-label text-[#64748B]">Observed Events</div>
                   <div className="text-sm font-bold font-mono text-[#1E90FF] tabular-nums mt-0.5">
                     {data.event_count}
                   </div>
@@ -109,7 +109,7 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
                   {data.events.map((ev, i) => (
                     <div
                       key={i}
-                      className="p-2.5 bg-[#0B0E14] border border-[#1E2538] flex items-start gap-2 text-[11px]"
+                      className="p-2.5 bg-[#0B0E14] border border-[#1E2538] flex items-start gap-2 text-label"
                     >
                       <Activity size={14} className="text-[#3B82F6] shrink-0 mt-0.5" />
                       <div className="flex-1">

@@ -30,7 +30,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
           <span className="text-xs font-semibold text-[var(--text-primary)]">
             Recent Sessions
           </span>
-          <span className="recent-sessions-note text-[11px] text-[var(--text-tertiary)]">
+          <span className="recent-sessions-note text-label text-[var(--text-tertiary)]">
             (Last 10 sessions · Click row for candle forensics)
           </span>
         </div>
@@ -39,11 +39,11 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
             id="toggle-recent-sessions-btn"
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="text-[10px] font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors px-2 py-0.5 border border-[var(--border-default)] hover:border-[var(--border-strong)] bg-[var(--surface-inset)]"
+            className="text-label font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors px-2 py-0.5 border border-[var(--border-default)] hover:border-[var(--border-strong)] bg-[var(--surface-inset)]"
           >
             {expanded ? "▲ Compact (4 sessions)" : "▼ Show all 10"}
           </button>
-          <span className="text-[10px] text-[var(--text-tertiary)] hidden sm:inline">NSE Daily Feed</span>
+          <span className="text-label text-[var(--text-tertiary)] hidden sm:inline">NSE Daily Feed</span>
         </div>
       </div>
 
@@ -74,22 +74,22 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
                   isSelected={isSelected}
                   onClick={() => onSelectCandle && onSelectCandle(c)}
                 >
-                  <TableCell className="text-[11px] text-[var(--text-secondary)]">
+                  <TableCell className="text-label text-[var(--text-secondary)]">
                     {c.time}
                   </TableCell>
-                  <TableCell numeric className="text-[11px]">
+                  <TableCell numeric className="text-label">
                     ₹{c.open.toFixed(2)}
                   </TableCell>
-                  <TableCell numeric className="text-[11px]">
+                  <TableCell numeric className="text-label">
                     ₹{c.high.toFixed(2)}
                   </TableCell>
-                  <TableCell numeric className="text-[11px]">
+                  <TableCell numeric className="text-label">
                     ₹{c.low.toFixed(2)}
                   </TableCell>
-                  <TableCell numeric className={`text-[11px] font-semibold ${dirColor}`}>
+                  <TableCell numeric className={`text-label font-semibold ${dirColor}`}>
                     ₹{c.close.toFixed(2)}
                   </TableCell>
-                  <TableCell numeric className={`text-[11px] font-bold ${dirColor}`}>
+                  <TableCell numeric className={`text-label font-bold ${dirColor}`}>
                     {change >= 0 ? "+" : ""}{changePct.toFixed(2)}%
                   </TableCell>
                 </TableRow>

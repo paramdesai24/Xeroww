@@ -5,7 +5,7 @@
 // Interprets market state using Mamdani Fuzzy Inference across 4 dimensions:
 // Momentum, Volume, Trend, and Structure.
 //
-// Stylized with v2 composable primitives (Panel, PanelHeader, Badge, Metric, Progress, Skeleton)
+// Styled with composable primitives (Panel, PanelHeader, Badge, Metric, Progress, Skeleton)
 // to match the exact institutional aesthetic of MarketRegimeCard and SignalAlignmentCard.
 //
 // NOT a buy/sell signal. NOT ML. Pure deterministic linguistic audit trail.
@@ -155,7 +155,7 @@ function DimensionItem({
                 {dimension.label.replace(/_/g, " ")}
               </Badge>
             </div>
-            <span className="text-[10px] text-[var(--text-tertiary)] truncate">
+            <span className="text-label text-[var(--text-tertiary)] truncate">
               {meta.subtitle}
             </span>
           </div>
@@ -189,7 +189,7 @@ function DimensionItem({
 
           {/* Crisp Inputs */}
           <div>
-            <div className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">
+            <div className="text-label font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">
               Calculated Crisp Inputs
             </div>
             <div className="grid grid-cols-2 gap-1.5">
@@ -198,7 +198,7 @@ function DimensionItem({
                   key={k}
                   className="bg-[var(--surface-inset)] border border-[var(--border-subtle)] p-2"
                 >
-                  <div className="text-[9px] font-mono text-[var(--text-tertiary)] truncate">
+                  <div className="text-label font-mono text-[var(--text-tertiary)] truncate">
                     {k.replace(/_/g, " ")}
                   </div>
                   <div className="text-xs font-mono font-bold text-[var(--text-primary)] mt-0.5 tabular-nums">
@@ -211,12 +211,12 @@ function DimensionItem({
 
           {/* Membership Activations */}
           <div>
-            <div className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">
+            <div className="text-label font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">
               Fuzzy Membership Spread
             </div>
             <div className="space-y-1">
               {dimension.activations.map((a) => (
-                <div key={a.term} className="flex items-center justify-between text-[11px] font-mono">
+                <div key={a.term} className="flex items-center justify-between text-label font-mono">
                   <span className="text-[var(--text-secondary)] truncate w-32">
                     {a.term.replace(/_/g, " ")}
                   </span>
@@ -239,7 +239,7 @@ function DimensionItem({
           {/* Fired Rules Audit */}
           {dimension.fired_rules.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">
+              <div className="text-label font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">
                 Active Inference Rules
               </div>
               <div className="space-y-1.5">
@@ -256,10 +256,10 @@ function DimensionItem({
                       {rule.fired ? "✓" : "○"}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[var(--text-secondary)] text-[11px]">
+                      <div className="text-[var(--text-secondary)] text-label">
                         {rule.description}
                       </div>
-                      <div className="flex items-center gap-2 mt-1 text-[10px] font-mono">
+                      <div className="flex items-center gap-2 mt-1 text-label font-mono">
                         <span className="text-[var(--text-tertiary)]">THEN →</span>
                         <span className="font-semibold text-[var(--text-primary)]">
                           {rule.consequent_term}
@@ -326,7 +326,7 @@ export function FuzzyExplainCard({
             <span className="text-xs font-semibold text-[var(--negative)]">
               Context Evaluation Error
             </span>
-            <p className="text-[11px] text-[var(--text-secondary)] mt-1 mb-0 leading-relaxed">
+            <p className="text-label text-[var(--text-secondary)] mt-1 mb-0 leading-relaxed">
               {error}
             </p>
           </div>
@@ -414,9 +414,9 @@ export function FuzzyExplainCard({
 
       {/* Dimensions Body */}
       <div className="p-3 flex flex-col gap-2">
-        <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--text-secondary)]">
+        <div className="flex items-center justify-between text-label font-semibold text-[var(--text-secondary)]">
           <span>Context Dimensions</span>
-          <span className="text-[10px] text-[var(--text-tertiary)] font-normal">
+          <span className="text-label text-[var(--text-tertiary)] font-normal">
             Click to expand audit
           </span>
         </div>
@@ -430,7 +430,7 @@ export function FuzzyExplainCard({
         {/* Methodology Footer */}
         <div className="pt-2 mt-1 border-t border-[var(--border-subtle)] flex items-start gap-1.5">
           <Sliders size={11} className="text-[var(--text-tertiary)] shrink-0 mt-0.5" />
-          <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed m-0">
+          <p className="text-label text-[var(--text-tertiary)] leading-relaxed m-0">
             Deterministic Mamdani inference synthesizing momentum (30%), volume (20%), trend (35%), and structure (15%). Read-only interpretability layer.
           </p>
         </div>

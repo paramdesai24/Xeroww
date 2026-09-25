@@ -1,5 +1,5 @@
 // src/components/VolumeAnalyticsPanel.tsx
-// Institutional Volume Profile & RVOL Analytics — v2 composable primitives & natural typography.
+// Volume profile and RVOL analytics with composable primitives.
 
 import type { VolumeAnalyticsResponse } from "../types/structure";
 import { Panel, PanelHeader, Badge, Metric } from "./ui";

@@ -1,5 +1,5 @@
 // src/components/OHLCStats.tsx
-// Session Analytics panel — v2 composable primitives & natural typography.
+// Session Analytics panel with composable primitives and natural typography.
 
 import type { OHLCData, QuoteData } from "../types/market";
 import { Panel, PanelHeader } from "./ui";
@@ -67,7 +67,7 @@ export default function OHLCStats({ quote, ohlc }: OHLCStatsProps) {
         <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] font-mono">
             <span>₹{quote.day_low.toFixed(1)}</span>
-            <span className="text-[10px] text-[var(--text-tertiary)] font-sans">Session Range ({dayRangePct.toFixed(1)}%)</span>
+            <span className="text-label text-[var(--text-tertiary)] font-sans">Session Range ({dayRangePct.toFixed(1)}%)</span>
             <span>₹{quote.day_high.toFixed(1)}</span>
           </div>
 

@@ -1,5 +1,5 @@
 // src/components/SignalAlignmentCard.tsx
-// Deterministic signal confluence card — v2 composable primitives & natural typography.
+// Deterministic signal confluence card with composable primitives.
 
 import { useState } from "react";
 import type { SignalAlignmentResponse } from "../types/structure";
@@ -87,7 +87,7 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
             className="w-full flex items-center justify-between text-xs font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors duration-150 py-0.5"
           >
             <span>{expanded ? "▲ Hide conditions" : "▼ Inspect 12 conditions"}</span>
-            <span className="text-[10px] text-[var(--text-tertiary)] font-normal">Rules audit</span>
+            <span className="text-label text-[var(--text-tertiary)] font-normal">Rules audit</span>
           </button>
 
           {expanded && (
@@ -98,7 +98,7 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
                   className="p-2 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex items-start gap-2.5 text-xs"
                 >
                   <span
-                    className={`text-[9px] font-bold px-1.5 py-0.5 border shrink-0 ${
+                    className={`text-label font-bold px-1.5 py-0.5 border shrink-0 ${
                       c.satisfied
                         ? c.bias === "bullish"
                           ? "bg-[var(--positive-subtle)] text-[var(--positive)] border-[var(--positive-border)]"
@@ -112,7 +112,7 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
                     <span className="font-medium text-[var(--text-primary)]">
                       {c.label} <span className="text-[var(--text-tertiary)] font-normal">({c.bias})</span>
                     </span>
-                    <span className="text-[11px] text-[var(--text-secondary)] leading-normal">
+                    <span className="text-label text-[var(--text-secondary)] leading-normal">
                       {c.description}
                     </span>
                   </div>

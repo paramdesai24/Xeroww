@@ -1,5 +1,5 @@
 // src/components/PatternCard.tsx
-// Candlestick Pattern Analysis — v2 composable primitives & natural typography.
+// Candlestick Pattern Analysis with composable primitives and natural typography.
 
 import { CheckCircle2, TrendingUp, TrendingDown, Layers } from "lucide-react";
 import type { PatternData } from "../types/market";
@@ -98,7 +98,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
 
         {/* Interpretation Box */}
         <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-1">
-          <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
+          <span className="text-label font-semibold text-[var(--text-secondary)]">
             Interpretation
           </span>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
@@ -111,12 +111,12 @@ export default function PatternCard({ pattern }: PatternCardProps) {
         {/* Structural Context (if available) */}
         {ctx && (
           <div className="p-2.5 bg-[var(--surface-inset)] border border-[var(--border-subtle)] flex flex-col gap-2">
-            <span className="text-[11px] font-semibold text-[var(--accent-primary)]">
+            <span className="text-label font-semibold text-[var(--accent-primary)]">
               Structural Context
             </span>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-[var(--text-tertiary)]">Nearest Support</span>
+                <span className="text-label text-[var(--text-tertiary)]">Nearest Support</span>
                 <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
                   {ctx.nearest_support_price
                     ? `₹${ctx.nearest_support_price.toFixed(2)} (-${ctx.support_distance_pct}%)`
@@ -124,7 +124,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-[var(--text-tertiary)]">Nearest Resistance</span>
+                <span className="text-label text-[var(--text-tertiary)]">Nearest Resistance</span>
                 <span className="font-semibold text-[var(--text-primary)] font-mono tabular-nums">
                   {ctx.nearest_resistance_price
                     ? `₹${ctx.nearest_resistance_price.toFixed(2)} (+${ctx.resistance_distance_pct}%)`

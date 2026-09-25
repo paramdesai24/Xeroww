@@ -1,5 +1,5 @@
 // src/components/ReplayControlBar.tsx
-// Historical Market Replay controls — v2 quantitative research design system.
+// Historical Market Replay controls for quantitative research.
 // Zero ML, zero prediction — strictly chronological historical playback.
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -211,7 +211,7 @@ export default function ReplayControlBar({
             <button
               key={s}
               onClick={() => setSpeed(s)}
-              className={`h-6 px-1.5 text-[11px] font-mono font-semibold transition-colors border ${
+              className={`h-6 px-1.5 text-label font-mono font-semibold transition-colors border ${
                 speed === s
                   ? "bg-[#1E2538] border-[#3B82F6] text-[#60A5FA]"
                   : "bg-transparent border-transparent text-[#64748B] hover:text-[#F8FAFC]"
@@ -237,7 +237,7 @@ export default function ReplayControlBar({
             <GitCommit size={12} className="text-[#1E90FF] shrink-0" />
             <span className="whitespace-nowrap font-medium">Events</span>
             {typeof timelineEventCount === "number" && timelineEventCount > 0 && (
-              <span className="px-1 py-0.2 text-[10px] bg-[#1E2538] text-[#38BDF8] rounded-sm font-semibold whitespace-nowrap">
+              <span className="px-1 py-0.2 text-label bg-[#1E2538] text-[#38BDF8] rounded-sm font-semibold whitespace-nowrap">
                 {timelineEventCount}
               </span>
             )}
