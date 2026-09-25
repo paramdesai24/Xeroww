@@ -16,7 +16,7 @@ export function WatchlistHeader({ lists, active, asOf, refreshing, onSelect, onA
     <div>
       <p className="decision-eyebrow">Market monitoring</p>
       <h1 className="type-page-title">Watchlists</h1>
-      <p className="type-body">{active ? `${active.item_count ?? 0} symbols · ${refreshing ? "Refreshing quotes" : formatFreshness(asOf)}` : "Track the companies that matter to you."}</p>
+      <p className="type-body">{active ? `${active.item_count ?? 0} symbols · ${refreshing ? "Refreshing quotes" : formatFreshness(asOf, "Checked")}` : "Track the companies that matter to you."}</p>
     </div>
     <div className="workspace-header__controls">
       {lists.length > 0 && <select aria-label="Active watchlist" value={active?.id ?? ""} onChange={(event) => onSelect(Number(event.target.value))}>

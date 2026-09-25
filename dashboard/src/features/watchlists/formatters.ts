@@ -7,8 +7,8 @@ export function formatMove(value: number | null): string {
   return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
 }
 
-export function formatFreshness(value: string | null): string {
+export function formatFreshness(value: string | null, prefix = "As of"): string {
   if (!value) return "Time unavailable";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Time unavailable" : `As of ${date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}`;
+  return Number.isNaN(date.getTime()) ? "Time unavailable" : `${prefix} ${date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}`;
 }
