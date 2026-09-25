@@ -3,6 +3,7 @@
 // Graphite-and-paper design system.
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { Alert, AlertEvaluationResult } from "../types/platform";
 
@@ -16,9 +17,10 @@ const ALERT_TYPES = [
 ];
 
 export default function AlertsManager() {
+  const [searchParams] = useSearchParams();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [results, setResults] = useState<Record<number, AlertEvaluationResult>>({});
-  const [symbol, setSymbol] = useState("");
+  const [symbol, setSymbol] = useState(searchParams.get("symbol") ?? "");
   const [alertType, setAlertType] = useState("price_above");
   const [payloadJson, setPayloadJson] = useState('{"threshold": 2500}');
   const [payloadError, setPayloadError] = useState<string | null>(null);
