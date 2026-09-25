@@ -19,7 +19,6 @@ load_dotenv()
 class Settings:
     # App metadata
     APP_NAME: str = "Xeroww API"
-    APP_VERSION: str = os.getenv("APP_VERSION", "0.11.0")
     APP_ENV: str = os.getenv("APP_ENV", "development")
 
     # CORS

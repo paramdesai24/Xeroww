@@ -16,7 +16,6 @@ async def health_check() -> dict:
     return {
         "status": "healthy",
         "service": "xeroww-api",
-        "version": settings.APP_VERSION,
         "data_provider": settings.MARKET_DATA_PROVIDER,
         "data_note": "Near real-time data — Yahoo Finance delayed feed",
     }

@@ -71,7 +71,6 @@ export interface PatternData {
 export interface HealthStatus {
   status: string;
   service: string;
-  version: string;
   data_provider: string;
   data_note: string;
 }

@@ -1,7 +1,7 @@
 """
 api/main.py
 ───────────
-Xeroww FastAPI application entry point - V0.11 Financial Intelligence Platform.
+Xeroww FastAPI application entry point.
 
 Run with:
   uvicorn main:app --reload --port 8000
@@ -25,13 +25,13 @@ from api.core.config import settings
 from api.core.error_handlers import register_exception_handlers
 from api.database.session import create_all_tables
 
-# V0.5 routes (preserved)
+# Market data routes
 from api.routes import health, stocks, quote, ohlc, patterns
 
-# V0.6 routes (new)
+# Authenticated platform routes
 from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay, diff, forensics, annotations, intelligence, events, system_health
 
-# V0.8 through V0.11 routes
+# Decision, replay, and intelligence routes
 from api.routes import fuzzy
 from api.routes import decisions
 from api.routes import replay_sessions
@@ -58,7 +58,7 @@ async def lifespan(app: FastAPI):
     register_default_handlers(get_event_bus())
 
     print("=" * 60)
-    print(f"  Xeroww API v{settings.APP_VERSION} - Financial Intelligence Platform")
+    print("  Xeroww API - Financial Intelligence Platform")
     print("  Data Provider: Yahoo Finance (near real-time, delayed)")
     print(f"  Database: {settings.DATABASE_URL.split('//')[0]}//...")
     print("  Docs: http://localhost:8000/docs")
@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 app = FastAPI(
     title=settings.APP_NAME,
-    version=settings.APP_VERSION,
+    version="internal",
     description=(
         "Xeroww Financial Intelligence Platform API. "
         "High-performance institutional market data, pattern scanning, "
@@ -112,7 +112,7 @@ register_exception_handlers(app)
 
 
 # ---------------------------------------------------------------------------
-# Register V0.5 routers (preserved)
+# Register market data routes
 # ---------------------------------------------------------------------------
 app.include_router(health.router)
 app.include_router(stocks.router)
@@ -121,7 +121,7 @@ app.include_router(ohlc.router)
 app.include_router(patterns.router)
 
 # ---------------------------------------------------------------------------
-# Register V0.6 routers (multi-tenant platform & market structure engine)
+# Register authenticated platform routes
 # ---------------------------------------------------------------------------
 app.include_router(auth.router)
 app.include_router(watchlists.router)
@@ -138,7 +138,7 @@ app.include_router(events.router)
 app.include_router(system_health.router)
 
 # ---------------------------------------------------------------------------
-# Register V0.8 through V0.11 routers
+# Register decision and intelligence routes
 # ---------------------------------------------------------------------------
 app.include_router(fuzzy.router)
 app.include_router(decisions.router)
@@ -153,17 +153,14 @@ app.include_router(portfolio_intelligence.router)
 async def root():
     return {
         "service": settings.APP_NAME,
-        "version": settings.APP_VERSION,
         "docs": "/docs",
         "health": "/health",
-        "v05_endpoints": [
+        "endpoints": [
             "GET /health",
             "GET /stocks",
             "GET /quote/{symbol}",
             "GET /ohlc/{symbol}",
             "GET /patterns/{symbol}",
-        ],
-        "v06_endpoints": [
             "POST /auth/register",
             "POST /auth/login",
             "POST /auth/refresh",
@@ -178,11 +175,7 @@ async def root():
             "POST /alerts/evaluate-all",
             "GET  /journal",
             "POST /journal",
-        ],
-        "v08_endpoints": [
             "GET  /fuzzy/explain",
-        ],
-        "v09_endpoints": [
             "POST /decisions/preview",
             "POST /decisions",
             "GET  /decisions",
