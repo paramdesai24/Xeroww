@@ -1,4 +1,4 @@
-"""Application service for V0.9 Decision Workbench operations."""
+"""Application service for Decision Workbench operations."""
 
 from datetime import datetime
 from typing import Any
@@ -275,7 +275,7 @@ class DecisionService:
         if entry.status != JournalStatus.OPEN:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail={"code": "INVALID_STATUS_TRANSITION", "message": "Closed or cancelled decisions are terminal in V0.9."},
+                detail={"code": "INVALID_STATUS_TRANSITION", "message": "Closed or cancelled decisions cannot be changed."},
             )
         old = entry.status.value
         entry.status = JournalStatus(data.status)

@@ -84,7 +84,7 @@ class JournalService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
                     "code": "IMMUTABLE_DECISION",
-                    "message": "Submitted V0.9 decisions are immutable. Use the decisions amendment or status endpoint.",
+                    "message": "Submitted decisions are immutable. Use the amendment or status endpoint.",
                 },
             )
 
