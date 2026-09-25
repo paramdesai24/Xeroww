@@ -162,8 +162,8 @@ export default function AuthModal({ auth, onClose }: Props) {
         </form>
 
         <div className="border-t border-[#1E2538] px-5 py-2.5 bg-[#05070B]">
-          <p className="text-[10px] text-[#64748B] font-mono m-0">
-            XEROWW V0.6 · SIMULATED PORTFOLIOS · AUDIT COMPLIANT
+          <p className="text-label text-[#64748B] font-mono m-0">
+            XEROWW · SIMULATED PORTFOLIOS · AUDIT COMPLIANT
           </p>
         </div>
       </div>

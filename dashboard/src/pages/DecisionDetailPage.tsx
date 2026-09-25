@@ -41,7 +41,7 @@ export default function DecisionDetailPage() {
         <div className="decision-header-actions"><Link className="decision-secondary-action" to={`/market/${encodeURIComponent(decision.symbol)}`}>Open Market</Link><span className={`decision-status decision-status--${decision.status.toLowerCase()}`}>{decision.status}</span></div>
       </header>
       {error && <div className="decision-error">{error}</div>}
-      {decision.ticket_version === 0 && <div className="decision-warning">Legacy V0.8 journal entry. Its analytical snapshot may be incomplete.</div>}
+      {decision.ticket_version === 0 && <div className="decision-warning">This earlier journal entry may have an incomplete analytical snapshot.</div>}
 
       <div className="decision-detail-grid">
         <section className="decision-panel">

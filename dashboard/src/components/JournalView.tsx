@@ -54,7 +54,7 @@ export default function JournalView() {
       setCreateError(null);
       await api.journal.create(symbol.trim().toUpperCase(), action, thesis.trim(), {
         timestamp: new Date().toISOString(),
-        client: "xeroww-terminal-v0.8",
+        client: "xeroww-terminal",
       });
       setSymbol("");
       setThesis("");
@@ -220,7 +220,7 @@ export default function JournalView() {
             </button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-[#1E2538] text-[11px] text-[#64748B] space-y-1">
+          <div className="mt-6 pt-4 border-t border-[#1E2538] text-label text-[#64748B] space-y-1">
             <div className="text-[#94A3B8] font-semibold">Tenant Assurance:</div>
             <p>Every logged thesis is cryptographically mapped to your user workspace and immutable across sessions.</p>
           </div>
@@ -241,7 +241,7 @@ export default function JournalView() {
           ) : filteredEntries.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-[#64748B] text-xs gap-1">
               <span className="font-semibold text-[#94A3B8]">No decision records found</span>
-              <span className="text-[11px] text-[#64748B]">
+              <span className="text-label text-[#64748B]">
                 Log a trade thesis on the left to initialize your audit record.
               </span>
             </div>
@@ -264,7 +264,7 @@ export default function JournalView() {
                           {entry.symbol}
                         </span>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 border ${
+                          className={`text-label font-semibold px-2 py-0.5 border ${
                             isBuy
                               ? "border-[#22C55E]/40 text-[#22C55E] bg-[#22C55E]/10"
                               : isSell
@@ -275,7 +275,7 @@ export default function JournalView() {
                           {entry.action}
                         </span>
                         <span
-                          className={`text-[10px] font-mono font-semibold ${
+                          className={`text-label font-mono font-semibold ${
                             isOpen
                               ? "text-[#1E90FF]"
                               : entry.status === "CLOSED"
@@ -369,7 +369,7 @@ export default function JournalView() {
                     )}
 
                     {entry.context_snapshot && Object.keys(entry.context_snapshot).length > 0 && (
-                      <div className="text-[11px] text-[#64748B] font-mono mt-1">
+                      <div className="text-label text-[#64748B] font-mono mt-1">
                         Snapshot: {JSON.stringify(entry.context_snapshot)}
                       </div>
                     )}

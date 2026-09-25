@@ -37,7 +37,7 @@ export default function DecisionsPage() {
     <main className="decision-page">
       <header className="decision-page__header">
         <div>
-          <p className="decision-eyebrow">V0.9 Decision Workbench</p>
+          <p className="decision-eyebrow">Decision workbench</p>
           <h1>Decision Journal</h1>
           <p>Immutable market plans with evidence, risk, and point-in-time provenance.</p>
         </div>
