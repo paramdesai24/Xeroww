@@ -4,6 +4,8 @@ from fastapi import HTTPException
 import pytest
 
 from api.services.watchlist_snapshot_service import build_watchlist_snapshot
+from api.core.dependencies import get_market_data_service
+from api.main import app
 
 
 class Item:
@@ -55,3 +57,26 @@ def test_snapshot_rejects_unowned_list_before_fetching_quotes():
         build_watchlist_snapshot(Lists(), Quotes(), 99)
 
     assert error.value.status_code == 404
+
+
+def test_snapshot_route_requires_owner_and_keeps_partial_rows(client):
+    def headers(email: str):
+        client.post("/auth/register", json={"name": "Snapshot User", "email": email, "password": "SecurePass1"})
+        login = client.post("/auth/login", json={"email": email, "password": "SecurePass1"})
+        return {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    owner = headers("snapshot_owner@test.io")
+    outsider = headers("snapshot_other@test.io")
+    created = client.post("/watchlists", json={"name": "Quotes"}, headers=owner)
+    watchlist_id = created.json()["id"]
+    for symbol in ("RELIANCE.NS", "TCS.NS"):
+        assert client.post(f"/watchlists/{watchlist_id}/symbols", json={"symbol": symbol}, headers=owner).status_code == 201
+
+    app.dependency_overrides[get_market_data_service] = lambda: Quotes()
+    try:
+        response = client.get(f"/watchlists/{watchlist_id}/snapshot", headers=owner)
+        assert response.status_code == 200
+        assert [row["available"] for row in response.json()["rows"]] == [True, False]
+        assert client.get(f"/watchlists/{watchlist_id}/snapshot", headers=outsider).status_code == 404
+    finally:
+        app.dependency_overrides.pop(get_market_data_service, None)
