@@ -1,8 +1,7 @@
 // src/components/ModuleNav.tsx
-// Xeroww workspace navigation — v2 natural typography & vivid amber active indicator.
+// Xeroww workspace navigation with a clear active indicator.
 
 import type { UserProfile } from "../types/auth";
-import config from "../config";
 
 export type Module = "MARKET" | "WATCHLISTS" | "PORTFOLIO" | "REPLAY_LAB" | "ALERTS" | "JOURNAL" | "SYSTEM";
 
@@ -42,7 +41,7 @@ export default function ModuleNav({
         fontFamily: "var(--font-sans)",
       }}
     >
-      {/* Brand & Version */}
+      {/* Brand */}
       <div className="module-nav__brand flex items-center gap-2.5 shrink-0 border-r border-[var(--border-default)]">
         <img
           src="/xeroww-logo.png"
@@ -58,9 +57,6 @@ export default function ModuleNav({
           width="2172"
           height="724"
         />
-        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
-          v{config.app.version}
-        </span>
       </div>
 
       {/* Module tabs with natural title case */}

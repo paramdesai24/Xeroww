@@ -4,7 +4,6 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import config from "../config";
 import type { HealthStatus } from "../types/market";
 
 export default function Footer() {
@@ -39,7 +38,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="status-footer bg-[#000000] border-t border-[#1E2538] flex items-center px-4 justify-between shrink-0 select-none text-[11px] font-mono text-[#64748B]"
+      className="status-footer bg-[#000000] border-t border-[#1E2538] flex items-center px-4 justify-between shrink-0 select-none text-label font-mono text-[#64748B]"
     >
       <div className="status-footer__primary flex items-center gap-3">
         <span className="status-footer__provider">Feed: <span className="text-[#94A3B8] font-medium">{health?.data_provider ?? "Yahoo Finance"}</span></span>
@@ -56,8 +55,6 @@ export default function Footer() {
         </span>
         <span className="status-footer__separator text-[#334155]">·</span>
         <span className="status-footer__database">DB: <span className={operational ? "text-[#94A3B8]" : "text-[#EF4444]"}>{operational ? "Connected" : "Unreachable"}</span></span>
-        <span className="status-footer__separator text-[#334155]">·</span>
-        <span className="text-[#64748B]">v{config.app.version}</span>
       </div>
 
       <div className="status-footer__secondary hidden md:flex items-center gap-2 text-[#475569]">

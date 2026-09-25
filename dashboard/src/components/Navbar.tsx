@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import config from "../config";
 
 export default function Navbar() {
   const [healthy, setHealthy] = useState<boolean | null>(null);
@@ -42,9 +41,6 @@ export default function Navbar() {
             Market Terminal
           </span>
         </div>
-        <span className="px-1.5 py-0.5 rounded-sm text-[10px] font-medium bg-[var(--surface-elevated)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
-          v{config.app.version}
-        </span>
       </div>
 
       {/* Right side telemetry */}
