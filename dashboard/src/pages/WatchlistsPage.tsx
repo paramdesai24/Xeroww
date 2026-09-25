@@ -5,10 +5,10 @@ import { WatchlistHeader } from "../features/watchlists/components/WatchlistHead
 import { WatchlistMetrics } from "../features/watchlists/components/WatchlistMetrics";
 import { WatchlistTable } from "../features/watchlists/components/WatchlistTable";
 import { SymbolPickerDrawer } from "../features/watchlists/components/SymbolPickerDrawer";
+import { WatchlistDialog, type WatchlistDialogMode } from "../features/watchlists/components/WatchlistDialog";
 import { useWatchlistWorkspace } from "../features/watchlists/hooks/useWatchlistWorkspace";
 
 type Sort = "added" | "symbol" | "move" | "price";
-type Dialog = "create" | "rename" | "delete" | "remove" | null;
 
 export default function WatchlistsPage() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function WatchlistsPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<Sort>("added");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [dialog, setDialog] = useState<Dialog>(null);
+  const [dialog, setDialog] = useState<WatchlistDialogMode | null>(null);
   const [name, setName] = useState("");
   const [targetSymbol, setTargetSymbol] = useState("");
   const rows = useMemo(() => {
@@ -28,11 +28,12 @@ export default function WatchlistsPage() {
     return filtered;
   }, [search, sort, workspace.snapshot]);
 
-  const submitDialog = async () => {
-    if (dialog === "create" && name.trim()) { if (await workspace.create(name.trim())) setDialog(null); }
-    if (dialog === "rename" && name.trim()) { if (await workspace.rename(name.trim())) setDialog(null); }
-    if (dialog === "delete") { if (await workspace.removeList()) setDialog(null); }
-    if (dialog === "remove") { if (await workspace.removeSymbol(targetSymbol)) setDialog(null); }
+  const submitDialog = async (value?: string): Promise<boolean> => {
+    if (dialog === "create") return workspace.create(value ?? "");
+    if (dialog === "rename") return workspace.rename(value ?? "");
+    if (dialog === "delete") return workspace.removeList();
+    if (dialog === "remove") return workspace.removeSymbol(targetSymbol);
+    return false;
   };
 
   if (workspace.loading && !workspace.snapshot) return <main className="workspace-page"><div className="workspace-loading"><span>Loading watchlists</span><div /><div /><div /></div></main>;
@@ -49,6 +50,6 @@ export default function WatchlistsPage() {
       </section>
     </>}
     {pickerOpen && <SymbolPickerDrawer existing={workspace.snapshot?.rows.map((row) => row.symbol) ?? []} busy={workspace.mutation === "add"} onClose={() => setPickerOpen(false)} onAdd={workspace.addSymbol} />}
-    {dialog && <div className="workspace-dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) setDialog(null); }}><section className="workspace-dialog" role="dialog" aria-modal="true" aria-labelledby="watchlist-dialog-title"><p className="decision-eyebrow">Watchlist management</p><h2 id="watchlist-dialog-title" className="type-section-title">{dialog === "create" ? "Create Watchlist" : dialog === "rename" ? "Rename Watchlist" : dialog === "delete" ? "Delete Watchlist" : "Remove Symbol"}</h2>{dialog === "create" || dialog === "rename" ? <label>Name<input autoFocus maxLength={100} value={name} onChange={(event) => setName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void submitDialog(); }} /></label> : <p className="type-body">{dialog === "delete" ? `Delete ${workspace.active?.name}? All tracked symbols in this list will be removed.` : `Remove ${targetSymbol} from this watchlist?`}</p>}<div><button className="workspace-button" onClick={() => setDialog(null)}>Cancel</button><button className={dialog === "delete" || dialog === "remove" ? "workspace-button workspace-button--danger" : "decision-primary-action"} disabled={!!workspace.mutation || ((dialog === "create" || dialog === "rename") && !name.trim())} onClick={() => void submitDialog()}>{workspace.mutation ? "Saving" : dialog === "delete" || dialog === "remove" ? "Confirm" : "Save"}</button></div></section></div>}
+    {dialog && <WatchlistDialog mode={dialog} initialName={name} target={dialog === "remove" ? targetSymbol : workspace.active?.name ?? ""} busy={!!workspace.mutation} onClose={() => setDialog(null)} onConfirm={submitDialog} />}
   </main>;
 }
