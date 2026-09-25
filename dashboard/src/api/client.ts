@@ -5,6 +5,7 @@
 import type { StockMeta, QuoteData, OHLCData, PatternData, HealthStatus } from "../types/market";
 import type {
   Watchlist,
+  WatchlistSnapshot,
   Portfolio,
   PortfolioSummary,
   Transaction,
@@ -150,6 +151,9 @@ export const api = {
     list: (): Promise<Watchlist[]> => authFetch<Watchlist[]>("/watchlists"),
 
     get: (id: number): Promise<Watchlist> => authFetch<Watchlist>(`/watchlists/${id}`),
+
+    snapshot: (id: number): Promise<WatchlistSnapshot> =>
+      authFetch<WatchlistSnapshot>(`/watchlists/${id}/snapshot`),
 
     create: (name: string): Promise<Watchlist> =>
       authFetch<Watchlist>("/watchlists", {
