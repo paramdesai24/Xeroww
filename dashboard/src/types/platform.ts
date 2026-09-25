@@ -16,6 +16,27 @@ export interface Watchlist {
   items?: WatchlistItem[];
 }
 
+export interface WatchlistSnapshotRow {
+  symbol: string;
+  company_name: string;
+  price: number | null;
+  change: number | null;
+  change_pct: number | null;
+  quote_timestamp: string | null;
+  context: string;
+  available: boolean;
+  reason: string | null;
+}
+
+export interface WatchlistSnapshot {
+  id: number;
+  name: string;
+  is_default: boolean;
+  as_of: string;
+  data_note: string;
+  rows: WatchlistSnapshotRow[];
+}
+
 export interface Holding {
   symbol: string;
   quantity: number;
