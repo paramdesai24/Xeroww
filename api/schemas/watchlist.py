@@ -46,3 +46,24 @@ class WatchlistDetailResponse(BaseModel):
     items: list[WatchlistItemResponse]
 
     model_config = {"from_attributes": True}
+
+
+class WatchlistSnapshotRow(BaseModel):
+    symbol: str
+    company_name: str
+    price: float | None = None
+    change: float | None = None
+    change_pct: float | None = None
+    quote_timestamp: str | None = None
+    context: str
+    available: bool
+    reason: str | None = None
+
+
+class WatchlistSnapshotResponse(BaseModel):
+    id: int
+    name: str
+    is_default: bool
+    as_of: str
+    data_note: str
+    rows: list[WatchlistSnapshotRow]
