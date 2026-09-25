@@ -78,25 +78,25 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
               {/* 1. OHLC Primary Box */}
               <div className="grid grid-cols-5 gap-2 p-3 bg-[#0B0E14] border border-[#1E2538] text-center">
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Open</div>
+                  <div className="text-label text-[#64748B]">Open</div>
                   <div className="text-sm font-bold font-mono text-[#F8FAFC] tabular-nums mt-0.5">
                     ₹{data.ohlc.open.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">High</div>
+                  <div className="text-label text-[#64748B]">High</div>
                   <div className="text-sm font-bold font-mono text-[#F8FAFC] tabular-nums mt-0.5">
                     ₹{data.ohlc.high.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Low</div>
+                  <div className="text-label text-[#64748B]">Low</div>
                   <div className="text-sm font-bold font-mono text-[#F8FAFC] tabular-nums mt-0.5">
                     ₹{data.ohlc.low.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Close</div>
+                  <div className="text-label text-[#64748B]">Close</div>
                   <div
                     className={`text-sm font-bold font-mono tabular-nums mt-0.5 ${
                       data.ohlc.is_bullish ? "text-[#22C55E]" : "text-[#EF4444]"
@@ -106,7 +106,7 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#64748B]">Day Range</div>
+                  <div className="text-label text-[#64748B]">Day Range</div>
                   <div className="text-sm font-bold font-mono text-[#F8FAFC] tabular-nums mt-0.5">
                     ₹{data.ohlc.day_range.toFixed(2)}
                   </div>
@@ -120,25 +120,25 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="p-2.5 bg-[#10141D] border border-[#1E2538]">
-                    <div className="text-[11px] text-[#94A3B8]">Body Ratio</div>
+                    <div className="text-label text-[#94A3B8]">Body Ratio</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] tabular-nums">
                       {data.anatomy.body_ratio_pct}%
                     </div>
-                    <div className="text-[11px] font-mono text-[#64748B]">₹{data.anatomy.body_size}</div>
+                    <div className="text-label font-mono text-[#64748B]">₹{data.anatomy.body_size}</div>
                   </div>
                   <div className="p-2.5 bg-[#10141D] border border-[#1E2538]">
-                    <div className="text-[11px] text-[#94A3B8]">Upper Shadow</div>
+                    <div className="text-label text-[#94A3B8]">Upper Shadow</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] tabular-nums">
                       {data.anatomy.upper_shadow_ratio_pct}%
                     </div>
-                    <div className="text-[11px] font-mono text-[#64748B]">₹{data.anatomy.upper_shadow}</div>
+                    <div className="text-label font-mono text-[#64748B]">₹{data.anatomy.upper_shadow}</div>
                   </div>
                   <div className="p-2.5 bg-[#10141D] border border-[#1E2538]">
-                    <div className="text-[11px] text-[#94A3B8]">Lower Shadow</div>
+                    <div className="text-label text-[#94A3B8]">Lower Shadow</div>
                     <div className="text-base font-bold font-mono text-[#F8FAFC] tabular-nums">
                       {data.anatomy.lower_shadow_ratio_pct}%
                     </div>
-                    <div className="text-[11px] font-mono text-[#64748B]">₹{data.anatomy.lower_shadow}</div>
+                    <div className="text-label font-mono text-[#64748B]">₹{data.anatomy.lower_shadow}</div>
                   </div>
                 </div>
               </div>
@@ -218,14 +218,14 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
                   <Database size={13} />
                   <span>Data Provenance &amp; Audit Trail</span>
                 </div>
-                <div className="grid grid-cols-2 gap-y-1.5 text-[11px] text-[#94A3B8]">
+                <div className="grid grid-cols-2 gap-y-1.5 text-label text-[#94A3B8]">
                   <div>
                     <span className="text-[#64748B] mr-1.5">Source Provider:</span>
                     <span className="text-[#F8FAFC] font-mono">{data.provenance.source_provider}</span>
                   </div>
                   <div>
                     <span className="text-[#64748B] mr-1.5">Algorithm:</span>
-                    <span className="text-[#F8FAFC] font-mono">{data.provenance.algorithm_version}</span>
+                    <span className="text-[#F8FAFC]">Candle forensics</span>
                   </div>
                   <div>
                     <span className="text-[#64748B] mr-1.5">Calc Window:</span>

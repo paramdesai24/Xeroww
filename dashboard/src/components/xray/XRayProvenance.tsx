@@ -33,13 +33,13 @@ export function XRayProvenance({ provenance }: XRayProvenanceProps) {
             4. Data Lineage &amp; Provenance
           </span>
         </div>
-        <div className="flex items-center gap-1 text-[10px] font-mono text-[#60A5FA] bg-[#1E90FF]/10 border border-[#1E90FF]/30 px-2 py-0.5 rounded-sm">
+        <div className="flex items-center gap-1 text-label font-mono text-[#60A5FA] bg-[#1E90FF]/10 border border-[#1E90FF]/30 px-2 py-0.5 rounded-sm">
           <MonitorCog size={10} />
           <span>{mode === "replay" ? "POINT-IN-TIME" : "LOCAL ANALYSIS"}</span>
         </div>
       </div>
 
-      <div className="bg-[#05070B] border border-[#1A1A1A] p-3 rounded-sm grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-[11px]">
+      <div className="bg-[#05070B] border border-[#1A1A1A] p-3 rounded-sm grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-label">
         <ProvenanceValue label="Source" value={sourceProvider} />
         <ProvenanceValue label="Source kind" value={sourceKind.replaceAll("_", " ")} />
         <ProvenanceValue label="Transport" value={transport} />
@@ -48,13 +48,13 @@ export function XRayProvenance({ provenance }: XRayProvenanceProps) {
         <ProvenanceValue label="Candle" value={`${candleTimestamp} (#${candleIndex})`} />
         <div className="col-span-2 border-t border-[#161616] pt-2">
           <span className="text-[#6B6B72] block mb-1">Algorithms</span>
-          <span className="text-[#A0A0A8]">{algorithms.join(" | ")}</span>
+          <span className="text-[#A0A0A8]">{algorithms.map((item) => item.replace(/-V\d+(?:\.\d+)*$/i, "").replaceAll("-", " ")).join(" | ")}</span>
         </div>
       </div>
 
       <div className="space-y-1">
         {limitations.map((item) => (
-          <div key={item} className="flex items-start gap-1.5 text-[10px] text-[#6B6B72] font-mono">
+          <div key={item} className="flex items-start gap-1.5 text-label text-[#6B6B72] font-mono">
             <Database size={11} className="text-[#1E90FF] mt-0.5 shrink-0" />
             <span>{item}</span>
           </div>
@@ -67,7 +67,7 @@ export function XRayProvenance({ provenance }: XRayProvenanceProps) {
 function ProvenanceValue({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <span className="text-[#6B6B72] block text-[10px]">{label}</span>
+      <span className="text-[#6B6B72] block text-label">{label}</span>
       <span className="text-[#FAFAFA] break-words">{value}</span>
     </div>
   );

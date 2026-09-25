@@ -25,8 +25,8 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
             2. Pattern Engine Display
           </span>
         </div>
-        <span className="text-[10px] font-mono text-[#6B6B72] border border-[#232323] px-2 py-0.5 rounded-sm">
-          DETERMINISTIC V2
+        <span className="text-label font-mono text-[#6B6B72] border border-[#232323] px-2 py-0.5 rounded-sm">
+          DETERMINISTIC
         </span>
       </div>
 
@@ -51,14 +51,14 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
               {patternName}
             </span>
             <span
-              className={`text-[10px] font-mono font-semibold uppercase px-1.5 py-0.2 rounded-[2px] ${
+              className={`text-label font-mono font-semibold uppercase px-1.5 py-0.2 rounded-[2px] ${
                 isBullish ? "bg-[#22C55E]/20 text-[#22C55E]" : isBearish ? "bg-[#EF4444]/20 text-[#EF4444]" : "bg-[#6B6B72]/20 text-[#A0A0A8]"
               }`}
             >
               {category}
             </span>
           </div>
-          <span className="text-[11px] text-[#A0A0A8]">
+          <span className="text-label text-[#A0A0A8]">
             Directional Bias:{" "}
             <strong className={isBullish ? "text-[#22C55E]" : isBearish ? "text-[#EF4444]" : "text-[#FAFAFA]"}>
               {direction.toUpperCase()}
@@ -72,15 +72,15 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
             <span className="text-base font-bold font-mono text-[#FAFAFA] tabular-nums">
               {confidencePct}%
             </span>
-            <span className="text-[10px] text-[#A0A0A8] font-mono">CONF</span>
+            <span className="text-label text-[#A0A0A8] font-mono">CONF</span>
           </div>
-          <span className="text-[9px] font-mono text-[#1E90FF]">Formulaic Fit</span>
+          <span className="text-label font-mono text-[#1E90FF]">Formulaic Fit</span>
         </div>
       </div>
 
       {/* Confidence Meter Bar */}
       <div className="flex flex-col gap-1">
-        <div className="flex justify-between text-[10px] font-mono text-[#6B6B72]">
+        <div className="flex justify-between text-label font-mono text-[#6B6B72]">
           <span>Pattern Confidence (Deterministic, Non-AI)</span>
           <span className="text-[#A0A0A8]">{confidenceScore.toFixed(3)} Score</span>
         </div>
@@ -96,7 +96,7 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
 
       {/* Why It Was Classified (Deterministic Narrative) */}
       <div className="bg-[#05070B] border border-[#1A1A1A] p-2.5 rounded-sm flex flex-col gap-1">
-        <div className="flex items-center gap-1.5 text-[10px] text-[#6B6B72] font-mono uppercase">
+        <div className="flex items-center gap-1.5 text-label text-[#6B6B72] font-mono uppercase">
           <Compass size={12} className="text-[#1E90FF]" />
           <span>Classification Rationale</span>
         </div>
@@ -107,7 +107,7 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
 
       {/* Mathematical Conditions Satisfied Checklist */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between text-[10px] font-mono uppercase text-[#6B6B72]">
+        <div className="flex items-center justify-between text-label font-mono uppercase text-[#6B6B72]">
           <span>Mathematical Conditions Verified</span>
           <span className="text-[#22C55E]">
             {conditions.filter((c) => c.satisfied).length} of {conditions.length} Satisfied
@@ -136,17 +136,17 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[#FAFAFA]">{cond.label}</span>
-                  <span className="text-[10px] text-[#6B6B72]">{cond.expression}</span>
+                  <span className="text-label text-[#6B6B72]">{cond.expression}</span>
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-[11px] font-bold tabular-nums text-[#FAFAFA]">
+                <span className="text-label font-bold tabular-nums text-[#FAFAFA]">
                   {cond.actual}
                   {cond.unit !== "₹" && cond.unit !== "x" ? cond.unit : ""}
                 </span>
                 <span
-                  className={`block text-[9px] font-semibold uppercase ${
+                  className={`block text-label font-semibold uppercase ${
                     cond.satisfied ? "text-[#22C55E]" : "text-[#EF4444]"
                   }`}
                 >
@@ -160,7 +160,7 @@ export function XRayPatternEngine({ pattern }: XRayPatternEngineProps) {
 
       {/* Stop Loss Reference Print */}
       {stopLossReference !== null && (
-        <div className="flex items-center justify-between text-[11px] font-mono px-2 py-1.5 bg-[#05070B] border border-[#1A1A1A]">
+        <div className="flex items-center justify-between text-label font-mono px-2 py-1.5 bg-[#05070B] border border-[#1A1A1A]">
           <span className="flex items-center gap-1.5 text-[#6B6B72]">
             <Target size={12} className="text-[#1E90FF]" />
             <span>Mathematical Stop Reference:</span>

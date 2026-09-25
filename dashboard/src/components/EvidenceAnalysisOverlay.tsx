@@ -56,7 +56,7 @@ export default function EvidenceAnalysisOverlay({
                 <strong>{item.relationship}</strong>
               </div>
               <p>{item.explanation}</p>
-              <footer>{item.source_engine.replaceAll("_", " ")} · {item.algorithm_version}</footer>
+              <footer>{item.source_engine.replaceAll("_", " ")}</footer>
             </article>
           ))}
         </section>
