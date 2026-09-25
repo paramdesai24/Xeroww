@@ -1,5 +1,5 @@
 // src/components/SystemView.tsx
-// Xeroww SRE Operations & System Health Console v0.8
+// Xeroww operations and system health console
 // Design Inspiration: Grafana + Bloomberg Operations Terminal.
 // Institutional pitch-black canvas, high-density telemetry, live canvas sparklines,
 // and real-time architectural topology graph.
@@ -27,6 +27,7 @@ import {
 import { api } from "../api/client";
 import type { SystemHealthSnapshot, TelemetryTimeseries } from "../types/health";
 import type { UserProfile } from "../types/auth";
+import { typography } from "../design";
 
 interface Props {
   user: UserProfile | null;
@@ -135,7 +136,7 @@ function Sparkline({
 
   return (
     <div className="w-full flex flex-col gap-1">
-      <div className="flex items-center justify-between text-[10px] font-mono text-[var(--text-tertiary)]">
+      <div className="flex items-center justify-between text-label font-mono text-[var(--text-tertiary)]">
         <span>{label}</span>
         <span className="font-semibold text-[var(--text-primary)]">
           {latestVal.toFixed(1)} {unit}
@@ -190,11 +191,11 @@ function TopologyMap({
           <span className="text-xs font-semibold text-[var(--text-primary)]">
             LIVE SYSTEM TOPOLOGY MAP
           </span>
-          <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+          <span className="text-label font-mono text-[var(--text-tertiary)]">
             (Interactive node graph · click to inspect)
           </span>
         </div>
-        <div className="flex items-center gap-4 text-[11px] font-mono">
+        <div className="flex items-center gap-4 text-label font-mono">
           <span className="flex items-center gap-1.5 text-[var(--text-secondary)]">
             <span className="w-2 h-2 rounded-full bg-[#22C55E]" /> Operational
           </span>
@@ -250,8 +251,8 @@ function TopologyMap({
                   x={(x1 + x2) / 2}
                   y={(y1 + y2) / 2 - 4}
                   fill="#888899"
-                  fontSize="8"
-                  fontFamily="IBM Plex Mono, monospace"
+                  fontSize={typography.chart.nodeDetailSize}
+                  fontFamily={typography.chart.family}
                   textAnchor="middle"
                 >
                   {edge.protocol}
@@ -297,9 +298,9 @@ function TopologyMap({
                   x="24"
                   y="19"
                   fill="#FAFAFA"
-                  fontSize="11"
+                  fontSize={typography.chart.nodeTitleSize}
                   fontWeight="600"
-                  fontFamily="Inter, sans-serif"
+                  fontFamily={typography.family.sans}
                 >
                   {node.label}
                 </text>
@@ -309,8 +310,8 @@ function TopologyMap({
                   x="12"
                   y="36"
                   fill="#888899"
-                  fontSize="9"
-                  fontFamily="IBM Plex Mono, monospace"
+                  fontSize={typography.chart.nodeDetailSize}
+                  fontFamily={typography.chart.family}
                 >
                   {node.sublabel.length > 24
                     ? node.sublabel.slice(0, 24) + "…"
@@ -402,20 +403,20 @@ export default function SystemView({ user }: Props) {
   const statusBadge = (status: string) => {
     if (status === "operational" || status === "healthy") {
       return (
-        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30">
+        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-label font-semibold bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30">
           <CheckCircle2 className="w-3 h-3" /> OPERATIONAL
         </span>
       );
     }
     if (status === "degraded") {
       return (
-        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30">
+        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-label font-semibold bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30">
           <AlertTriangle className="w-3 h-3" /> DEGRADED
         </span>
       );
     }
     return (
-      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30">
+      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-label font-semibold bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30">
         <XCircle className="w-3 h-3" /> CRITICAL
       </span>
     );
@@ -432,14 +433,12 @@ export default function SystemView({ user }: Props) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-[var(--accent-primary)] animate-pulse" />
-            <h1 className="text-base font-bold tracking-tight text-[#FAFAFA] m-0">
-              SYSTEM HEALTH &amp; TELEMETRY
+            <h1 className="type-page-title text-[#FAFAFA] m-0">
+              System Health
             </h1>
           </div>
           <span className="text-[var(--border-strong)]">|</span>
-          <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-[#161616] border border-[#232323] text-[#A0A0A8]">
-            SRE CONSOLE v0.8
-          </span>
+          <span className="type-meta text-[#A0A0A8]">Telemetry</span>
           {snapshot && statusBadge(snapshot.overall_status)}
         </div>
 
@@ -495,73 +494,73 @@ export default function SystemView({ user }: Props) {
       {/* 2. SRE Vital Signs Banner (Uptime & Quick Summary) */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <div className="p-3 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-1 rounded-sm">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
+          <span className="text-label font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
             Uptime
           </span>
           <span className="text-sm font-bold font-mono text-[var(--text-primary)]">
             {snapshot?.api.uptime_human ?? "—"}
           </span>
-          <span className="text-[9px] text-[var(--text-tertiary)] font-mono">
+          <span className="text-label text-[var(--text-tertiary)] font-mono">
             {snapshot ? `${Math.round(snapshot.api.uptime_seconds)} sec total` : ""}
           </span>
         </div>
 
         <div className="p-3 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-1 rounded-sm">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
+          <span className="text-label font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
             Throughput
           </span>
           <span className="text-base font-bold font-mono text-[var(--accent-primary)]">
             {snapshot ? `${snapshot.api.requests_per_second} req/s` : "—"}
           </span>
-          <span className="text-[9px] text-[var(--text-tertiary)] font-mono">
+          <span className="text-label text-[var(--text-tertiary)] font-mono">
             {snapshot?.api.total_requests} requests
           </span>
         </div>
 
         <div className="p-3 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-1 rounded-sm">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
+          <span className="text-label font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
             Median Latency
           </span>
           <span className="text-base font-bold font-mono text-[#22C55E]">
             {snapshot ? `${snapshot.api.latency_p50_ms} ms` : "—"}
           </span>
-          <span className="text-[9px] text-[var(--text-tertiary)] font-mono">
+          <span className="text-label text-[var(--text-tertiary)] font-mono">
             P50 response time
           </span>
         </div>
 
         <div className="p-3 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-1 rounded-sm">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
+          <span className="text-label font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
             Cache Hit Ratio
           </span>
           <span className="text-base font-bold font-mono text-[var(--text-primary)]">
             {snapshot ? `${snapshot.cache.hit_rate_pct}%` : "—"}
           </span>
-          <span className="text-[9px] text-[var(--text-tertiary)] font-mono">
+          <span className="text-label text-[var(--text-tertiary)] font-mono">
             Backend: {snapshot?.cache.backend ?? "—"}
           </span>
         </div>
 
         <div className="p-3 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-1 rounded-sm">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
+          <span className="text-label font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
             Active Conns
           </span>
           <span className="text-base font-bold font-mono text-[var(--text-primary)]">
             {snapshot?.websocket.connected_clients ?? 0}
           </span>
-          <span className="text-[9px] text-[var(--text-tertiary)] font-mono">
+          <span className="text-label text-[var(--text-tertiary)] font-mono">
             Gateway streams
           </span>
         </div>
 
         <div className="p-3 bg-[#0D0D0D] border border-[var(--border-default)] flex flex-col gap-1 rounded-sm">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
+          <span className="text-label font-mono uppercase tracking-wider text-[var(--text-tertiary)]">
             Domain Events
           </span>
           <span className="text-base font-bold font-mono text-[#A855F7]">
             {snapshot?.events.total_events_published ?? 0}
           </span>
-          <span className="text-[9px] text-[var(--text-tertiary)] font-mono">
+          <span className="text-label text-[var(--text-tertiary)] font-mono">
             {snapshot?.events.subscriber_handlers_count ?? 0} handlers active
           </span>
         </div>
@@ -583,7 +582,7 @@ export default function SystemView({ user }: Props) {
 
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 P50 Median Latency
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
@@ -594,7 +593,7 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Error Rate
               </span>
               <div className="text-sm font-bold font-mono text-[#22C55E]">
@@ -605,7 +604,7 @@ export default function SystemView({ user }: Props) {
 
           {/* Quantile Breakdown Progress Bars */}
           <div className="flex flex-col gap-1.5 py-1">
-            <div className="flex justify-between text-[11px] font-mono text-[var(--text-secondary)]">
+            <div className="flex justify-between text-label font-mono text-[var(--text-secondary)]">
               <span>P50: {snapshot?.api.latency_p50_ms}ms</span>
               <span>P95: {snapshot?.api.latency_p95_ms}ms</span>
               <span>P99: {snapshot?.api.latency_p99_ms}ms</span>
@@ -651,7 +650,7 @@ export default function SystemView({ user }: Props) {
 
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Hit Ratio
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
@@ -662,7 +661,7 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Active Keys
               </span>
               <div className="text-sm font-bold font-mono text-[var(--text-primary)]">
@@ -671,7 +670,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#161616] p-2 rounded">
+          <div className="grid grid-cols-2 gap-2 text-label font-mono bg-[#161616] p-2 rounded">
             <div>
               <span className="text-[var(--text-tertiary)]">Backend: </span>
               <span className="font-semibold text-[var(--text-primary)]">
@@ -720,7 +719,7 @@ export default function SystemView({ user }: Props) {
 
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Query P50 Latency
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
@@ -731,7 +730,7 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Slow Queries (&gt;50ms)
               </span>
               <div
@@ -746,7 +745,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#161616] p-2 rounded">
+          <div className="grid grid-cols-2 gap-2 text-label font-mono bg-[#161616] p-2 rounded">
             <div>
               <span className="text-[var(--text-tertiary)]">Engine: </span>
               <span className="font-semibold text-[var(--text-primary)] uppercase">
@@ -796,7 +795,7 @@ export default function SystemView({ user }: Props) {
 
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Active Replay Sessions
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
@@ -804,7 +803,7 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Playback Speed
               </span>
               <div className="text-sm font-bold font-mono text-[var(--accent-primary)]">
@@ -813,7 +812,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#161616] p-2 rounded">
+          <div className="grid grid-cols-2 gap-2 text-label font-mono bg-[#161616] p-2 rounded">
             <div>
               <span className="text-[var(--text-tertiary)]">Bars Loaded: </span>
               <span className="font-semibold text-[var(--text-primary)]">
@@ -838,7 +837,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="p-2 border border-[#1A1A1A] bg-[#080808] text-[10px] font-mono text-[var(--text-tertiary)] flex items-center justify-between">
+          <div className="p-2 border border-[#1A1A1A] bg-[#080808] text-label font-mono text-[var(--text-tertiary)] flex items-center justify-between">
             <span>Guaranteed Forward-Looking Isolation</span>
             <ShieldCheck className="w-3.5 h-3.5 text-[#22C55E]" />
           </div>
@@ -858,7 +857,7 @@ export default function SystemView({ user }: Props) {
 
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Network Clients
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
@@ -866,7 +865,7 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Throughput
               </span>
               <div className="text-sm font-bold font-mono text-[#10B981]">
@@ -875,7 +874,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#161616] p-2 rounded">
+          <div className="grid grid-cols-2 gap-2 text-label font-mono bg-[#161616] p-2 rounded">
             <div>
               <span className="text-[var(--text-tertiary)]">Total Events: </span>
               <span className="text-[var(--text-primary)]">
@@ -898,7 +897,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="p-2 border border-[#1A1A1A] bg-[#080808] text-[10px] font-mono text-[var(--text-tertiary)] flex items-center justify-between">
+          <div className="p-2 border border-[#1A1A1A] bg-[#080808] text-label font-mono text-[var(--text-tertiary)] flex items-center justify-between">
             <span>EventBus decoupling active</span>
             <Zap className="w-3.5 h-3.5 text-[#F59E0B]" />
           </div>
@@ -918,7 +917,7 @@ export default function SystemView({ user }: Props) {
 
           <div className="flex items-baseline justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Sync Latency
               </span>
               <span className="text-2xl font-bold font-mono text-[var(--text-primary)]">
@@ -929,7 +928,7 @@ export default function SystemView({ user }: Props) {
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+              <span className="text-label font-mono text-[var(--text-tertiary)]">
                 Rate Limit
               </span>
               <div className="text-sm font-bold font-mono text-[#22C55E] uppercase">
@@ -938,7 +937,7 @@ export default function SystemView({ user }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#161616] p-2 rounded">
+          <div className="grid grid-cols-2 gap-2 text-label font-mono bg-[#161616] p-2 rounded">
             <div>
               <span className="text-[var(--text-tertiary)]">Provider: </span>
               <span className="text-[var(--text-primary)] font-semibold">
@@ -993,7 +992,7 @@ export default function SystemView({ user }: Props) {
               <Terminal className="w-3.5 h-3.5" />
               NODE INSPECTOR // {selectedNodeId.toUpperCase()}
             </span>
-            <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
+            <span className="text-label font-mono text-[var(--text-tertiary)]">
               Subsystem status: {snapshot.overall_status}
             </span>
           </div>
@@ -1069,7 +1068,7 @@ export default function SystemView({ user }: Props) {
                 CLOSE [ESC]
               </button>
             </div>
-            <pre className="flex-1 overflow-auto bg-[#050505] p-3 text-[11px] font-mono text-[#22C55E] border border-[#1E1E1E] rounded">
+            <pre className="flex-1 overflow-auto bg-[#050505] p-3 text-label font-mono text-[#22C55E] border border-[#1E1E1E] rounded">
               {JSON.stringify(snapshot, null, 2)}
             </pre>
           </div>

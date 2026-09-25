@@ -1,5 +1,5 @@
 // src/components/ChartPanel.tsx
-// TradingView Lightweight Charts v5 candlestick panel — v2 pitch-black canvas,
+// TradingView Lightweight Charts candlestick panel with a pitch-black canvas,
 // vivid saturated candles, crisp price lines, and natural typography.
 
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +18,7 @@ import {
 import { TrendingUp, TrendingDown, BarChart2, Plus, Minus, RotateCcw } from "lucide-react";
 import type { QuoteData, OHLCData, OHLCBar } from "../types/market";
 import type { MarketStructureSummaryResponse, SRZone } from "../types/structure";
+import { typography } from "../design";
 
 interface ChartPanelProps {
   quote: QuoteData | null;
@@ -67,8 +68,8 @@ export default function ChartPanel({
       layout: {
         background: { type: ColorType.Solid, color: "#000000" }, // pitch black canvas
         textColor: "#A0A0A8", // bright legible axis labels
-        fontFamily: "'IBM Plex Mono', 'Inter', monospace",
-        fontSize: 11,
+        fontFamily: typography.chart.family,
+        fontSize: typography.chart.axisSize,
       },
       grid: {
         vertLines: { color: "#1A1A1A" },
@@ -333,12 +334,9 @@ export default function ChartPanel({
           <>
             <div className="quote-bar__identity flex items-center">
               <div className="quote-bar__asset flex items-baseline gap-2">
-                <span
-                  className="text-lg font-bold tracking-tight text-[var(--text-primary)]"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                >
+                <h1 className="type-page-title text-[var(--text-primary)] m-0">
                   {quote.symbol.replace(".NS", "")}
-                </span>
+                </h1>
                 <span
                   className="text-xs text-[var(--text-secondary)] hidden md:inline"
                   style={{ fontFamily: "var(--font-sans)" }}
@@ -351,7 +349,7 @@ export default function ChartPanel({
 
               <div className="quote-bar__price flex items-baseline gap-2">
                 <span
-                  className="text-xl font-bold text-[var(--text-primary)] tabular-nums"
+                  className="type-metric text-[var(--text-primary)]"
                   style={{ fontFamily: "var(--font-mono)" }}
                 >
                   ₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

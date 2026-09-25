@@ -94,7 +94,9 @@ export default function AlertsManager() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden bg-[#000000] text-[#F8FAFC]">
+    <main className="workspace-page alerts-page">
+      <header className="workspace-header"><div><p className="decision-eyebrow">Market monitoring</p><h1 className="type-page-title">Alerts</h1><p className="type-body">Track observed conditions in your chosen companies.</p></div></header>
+      <div className="alerts-layout flex flex-1 min-h-0 overflow-hidden bg-[#000000] text-[#F8FAFC]">
       {/* Create panel */}
       <div className="w-80 shrink-0 border-r border-[#1E2538] flex flex-col bg-[#05070B]">
         <div className="px-4 py-3 border-b border-[#1E2538]">
@@ -181,12 +183,12 @@ export default function AlertsManager() {
                         <span className="text-xs text-[#F8FAFC] font-mono font-bold">{alert.symbol}</span>
                         <span className="text-xs text-[#64748B]">{alert.alert_type}</span>
                         {alert.triggered_at && (
-                          <span className="text-[10px] px-1.5 py-0.2 bg-[#1E90FF]/10 text-[#1E90FF] border border-[#1E90FF]/30 font-semibold">
+                          <span className="text-label px-1.5 py-0.2 bg-[#1E90FF]/10 text-[#1E90FF] border border-[#1E90FF]/30 font-semibold">
                             Triggered
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-[#64748B] font-mono truncate">
+                      <div className="text-label text-[#64748B] font-mono truncate">
                         {JSON.stringify(alert.condition_payload)}
                       </div>
                       {result && (
@@ -217,6 +219,7 @@ export default function AlertsManager() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </main>
   );
 }
