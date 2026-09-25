@@ -17,8 +17,8 @@ export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>
   ...props
 }) => (
   <thead
-    className={`sticky top-0 z-10 border-b border-[var(--border-subtle)] text-[10px] text-[var(--text-tertiary)] ${className}`}
-    style={{ backgroundColor: "var(--surface-inset)", fontFamily: "var(--font-sans)" }}
+    className={`type-label sticky top-0 z-10 border-b border-[var(--border-subtle)] text-[var(--text-tertiary)] ${className}`}
+    style={{ backgroundColor: "var(--surface-inset)" }}
     {...props}
   >
     {children}
@@ -79,10 +79,9 @@ export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement> & 
   ...props
 }) => (
   <td
-    className={`px-3 py-2 text-xs text-[var(--text-primary)] ${
-      numeric ? "text-right tabular-nums" : "text-left"
+    className={`px-3 py-2 text-[var(--text-primary)] ${
+      numeric ? "type-data text-right" : "type-control text-left"
     } ${className}`}
-    style={{ fontFamily: numeric ? "var(--font-mono)" : "var(--font-sans)" }}
     {...props}
   >
     {children}

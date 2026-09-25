@@ -26,14 +26,11 @@ export const PanelHeader: React.FC<PanelHeaderProps> = ({
       <div className="flex items-center gap-2 min-w-0">
         {icon && <span className="text-[var(--text-secondary)] shrink-0">{icon}</span>}
         <div className="flex flex-col min-w-0">
-          <span
-            className="text-xs font-semibold text-[var(--text-primary)] tracking-normal truncate"
-            style={{ fontFamily: "var(--font-sans)" }}
-          >
+          <span className="type-card-title text-[var(--text-primary)] truncate">
             {title}
           </span>
           {subtitle && (
-            <span className="text-[10px] text-[var(--text-tertiary)] truncate">
+            <span className="type-meta text-[var(--text-tertiary)] truncate">
               {subtitle}
             </span>
           )}

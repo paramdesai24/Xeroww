@@ -19,9 +19,9 @@ export const Metric: React.FC<MetricProps> = ({
   className = "",
 }) => {
   const valueSizes = {
-    sm: "text-xs",
-    md: "text-sm",
-    lg: "text-lg font-bold",
+    sm: "type-data",
+    md: "type-data",
+    lg: "type-metric",
   };
 
   const trendColor =
@@ -34,8 +34,7 @@ export const Metric: React.FC<MetricProps> = ({
   return (
     <div className={`flex flex-col gap-0.5 min-w-0 ${className}`}>
       <span
-        className="text-[10px] text-[var(--text-tertiary)] font-normal tracking-wide truncate"
-        style={{ fontFamily: "var(--font-sans)" }}
+        className="type-label text-[var(--text-tertiary)] truncate"
       >
         {label}
       </span>
@@ -43,14 +42,14 @@ export const Metric: React.FC<MetricProps> = ({
         <span
           className={`font-semibold text-[var(--text-primary)] leading-tight ${
             typeof value === "string" && /[a-zA-Z]{4,}/.test(value)
-              ? "text-xs font-sans tracking-wide"
+              ? "type-body tracking-wide"
               : `tabular-nums font-mono ${valueSizes[size]}`
           }`}
         >
           {value}
         </span>
         {delta !== undefined && (
-          <span className={`text-[10px] tabular-nums font-medium font-mono ${trendColor}`}>
+          <span className={`type-data ${trendColor}`}>
             {delta}
           </span>
         )}
@@ -58,4 +57,3 @@ export const Metric: React.FC<MetricProps> = ({
     </div>
   );
 };
-

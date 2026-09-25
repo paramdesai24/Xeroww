@@ -23,10 +23,10 @@ export const Price: React.FC<PriceProps> = ({
   const isNegative = (change ?? changePct ?? 0) < 0;
 
   const sizeStyles = {
-    sm: { price: "text-xs font-semibold", delta: "text-[10px]" },
-    md: { price: "text-sm font-semibold", delta: "text-xs" },
-    lg: { price: "text-lg font-bold", delta: "text-xs" },
-    hero: { price: "text-2xl font-bold", delta: "text-xs" },
+    sm: { price: "type-data font-semibold", delta: "type-data" },
+    md: { price: "type-data font-semibold", delta: "type-data" },
+    lg: { price: "type-metric", delta: "type-data" },
+    hero: { price: "type-metric", delta: "type-data" },
   };
 
   return (
