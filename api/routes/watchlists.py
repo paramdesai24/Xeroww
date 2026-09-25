@@ -12,9 +12,12 @@ from sqlalchemy.orm import Session
 
 from api.database.session import get_db
 from api.core.dependencies import get_current_user
+from api.core.dependencies import get_market_data_service
 from api.models.user import User
 from api.models.watchlist import Watchlist
 from api.services.watchlist_service import WatchlistService
+from api.services.watchlist_snapshot_service import build_watchlist_snapshot
+from api.services.market_data_service import MarketDataService
 from api.schemas.watchlist import (
     WatchlistCreate,
     WatchlistUpdate,
@@ -22,6 +25,7 @@ from api.schemas.watchlist import (
     WatchlistResponse,
     WatchlistDetailResponse,
     WatchlistItemResponse,
+    WatchlistSnapshotResponse,
 )
 
 router = APIRouter(prefix="/watchlists", tags=["Watchlists"])
@@ -82,6 +86,16 @@ def get_watchlist(
     svc = WatchlistService(db, current_user.id)
     wl = svc.get_watchlist(watchlist_id)
     return _to_detail_response(wl)
+
+
+@router.get("/{watchlist_id}/snapshot", response_model=WatchlistSnapshotResponse, summary="Get watchlist market snapshot")
+def get_watchlist_snapshot(
+    watchlist_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    market: MarketDataService = Depends(get_market_data_service),
+):
+    return build_watchlist_snapshot(WatchlistService(db, current_user.id), market, watchlist_id)
 
 
 @router.patch("/{watchlist_id}", response_model=WatchlistDetailResponse, summary="Rename a watchlist")
