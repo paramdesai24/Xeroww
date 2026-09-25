@@ -13,6 +13,14 @@ from api.services.watchlist_service import WatchlistService
 _COMPANIES = {stock["symbol"]: stock["display_name"] for stock in NIFTY50}
 
 
+def _quote_timestamp(value: object) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return (value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value).isoformat()
+    return str(value)
+
+
 def build_watchlist_snapshot(
     watchlists: WatchlistService,
     market: MarketDataService,
@@ -37,7 +45,7 @@ def build_watchlist_snapshot(
                 price=price,
                 change=change,
                 change_pct=change_pct,
-                quote_timestamp=str(quote.get("timestamp") or "") or None,
+                quote_timestamp=_quote_timestamp(quote.get("timestamp")),
                 context=context,
                 available=True,
             )

@@ -1,9 +1,10 @@
 """Watchlist snapshot behavior with partial market data failures."""
 
+from datetime import datetime
 from fastapi import HTTPException
 import pytest
 
-from api.services.watchlist_snapshot_service import build_watchlist_snapshot
+from api.services.watchlist_snapshot_service import _quote_timestamp, build_watchlist_snapshot
 from api.core.dependencies import get_market_data_service
 from api.main import app
 
@@ -50,6 +51,10 @@ def test_snapshot_preserves_order_and_partial_success():
     assert result.rows[1].available is False
     assert result.rows[1].price is None
     assert result.rows[1].reason == "Market data is temporarily unavailable."
+
+
+def test_naive_provider_time_is_normalized_to_utc():
+    assert _quote_timestamp(datetime(2026, 9, 25, 10, 0)) == "2026-09-25T10:00:00+00:00"
 
 
 def test_snapshot_rejects_unowned_list_before_fetching_quotes():
