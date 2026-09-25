@@ -1,7 +1,7 @@
 """
 services/alert_evaluator.py
 ────────────────────────────
-Alert evaluation engine for Xeroww V0.6.
+Alert evaluation engine for Xeroww.
 
 Architecture:
   AlertEvaluator (ABC) — abstract interface for evaluation.

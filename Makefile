@@ -1,7 +1,7 @@
 .PHONY: help setup test lint seed migrate run-api run-ui docker-up docker-down docker-logs
 
 help:
-	@echo "Xeroww V0.6 Development & Operations CLI"
+	@echo "Xeroww Development & Operations CLI"
 	@echo "=========================================="
 	@echo "Available targets:"
 	@echo "  setup       Install backend and frontend dependencies"

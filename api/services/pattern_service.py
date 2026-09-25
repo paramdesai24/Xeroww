@@ -88,7 +88,7 @@ def detect_marubozu(
 ) -> dict[str, Any]:
     """
     Run Marubozu detection on the latest candle in the series.
-    Delegates to the deterministic pattern engine V2.
+    Delegates to the deterministic pattern engine.
     """
     if not candles:
         return _no_pattern_response(symbol, display_name, candle_summary=None)

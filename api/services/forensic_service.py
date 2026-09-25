@@ -1,7 +1,7 @@
 """
 api/services/forensic_service.py
 ────────────────────────────────
-Candle Forensics & Data Provenance Service for Xeroww V0.6.
+Candle Forensics & Data Provenance Service for Xeroww.
 
 Principle:
 "Click any candle. Open a forensic inspector showing OHLC, Body, Shadows,

@@ -4,7 +4,7 @@ api/core/tracing.py
 Distributed tracing preparation module for Xeroww platform.
 Provides lightweight W3C / OpenTelemetry-compatible trace and span propagation across
 request -> service -> provider/database boundaries.
-Prepares V0.6 for seamless OpenTelemetry exporter attachment in V1.0 distributed cluster.
+Prepares trace context for optional OpenTelemetry exporter attachment.
 """
 
 import secrets

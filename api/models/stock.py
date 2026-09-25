@@ -3,13 +3,7 @@ models/stock.py
 ───────────────
 SQLAlchemy ORM models for Xeroww.
 
-V0 Status: Models define the schema only. No tables are created or queried at runtime.
-           These models represent the contract for what V1 persistence will look like.
-
-V1 Upgrade Path:
-  1. Configure DATABASE_URL in .env
-  2. Call Base.metadata.create_all(engine) at startup (or use Alembic migrations)
-  3. Populate tables from the MarketDataProvider
+These models define persisted instruments and daily candles.
 """
 
 from datetime import datetime, date
@@ -21,7 +15,7 @@ from api.database.session import Base
 class Stock(Base):
     """
     Represents a tracked stock instrument on Xeroww's watchlist.
-    Maps to the `stocks` table (V1+).
+    Maps to the `stocks` table.
     """
     __tablename__ = "stocks"
 
@@ -42,8 +36,8 @@ class Stock(Base):
 class DailyCandle(Base):
     """
     Represents a single OHLCV daily candle for a stock.
-    Maps to the `daily_candles` table (V1+).
-    Source: MarketDataProvider (Yahoo Finance in V0, Kafka in V1+).
+    Maps to the `daily_candles` table.
+    Source: MarketDataProvider.
     """
     __tablename__ = "daily_candles"
 

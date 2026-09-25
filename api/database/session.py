@@ -3,8 +3,7 @@ database/session.py
 ───────────────────
 SQLAlchemy engine and session factory for Xeroww.
 
-V0.5 Status: No active database connection was required at runtime.
-V0.6 Status: SQLite is used by default (zero external dependencies).
+SQLite is used by default for local development.
              Set DATABASE_URL in .env to use PostgreSQL in production.
 
 Upgrade Path:

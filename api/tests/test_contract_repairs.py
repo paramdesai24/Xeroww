@@ -1,4 +1,4 @@
-"""Regression coverage for API contracts repaired in the V0.8 stabilization."""
+"""Regression coverage for API contract repairs."""
 
 from api.core.dependencies import get_market_data_service
 from api.main import app

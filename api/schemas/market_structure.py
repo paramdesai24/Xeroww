@@ -1,7 +1,7 @@
 """
 schemas/market_structure.py
 ───────────────────────────
-Pydantic schemas for Market Structure Engine V2:
+Pydantic schemas for market structure analysis:
   - Support & Resistance zones
   - Volume analytics & RVOL
   - Moving averages & crossovers

@@ -1,7 +1,7 @@
 """
 core/dependencies.py
 ────────────────────
-FastAPI dependency functions for Xeroww V0.6 authentication and authorization.
+FastAPI dependency functions for authentication and authorization.
 
 Usage in routes:
   # Require any authenticated user

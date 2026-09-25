@@ -7,7 +7,7 @@ Roles:
   USER  — standard authenticated user (watchlists, portfolios, alerts, journal)
   ADMIN — platform administrator (future: user management, system analytics)
 
-V0.6: Backed by SQLite by default; PostgreSQL-compatible ORM definition.
+Backed by SQLite by default; PostgreSQL-compatible ORM definition.
 """
 
 import enum

@@ -1,7 +1,7 @@
 """
 api/services/market_breadth_service.py
 ──────────────────────────────────────
-Provider-Independent Market Breadth Engine for Xeroww V0.6.
+Provider-Independent Market Breadth Engine for Xeroww.
 
 Principle:
 "For the supported universe:

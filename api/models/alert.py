@@ -3,7 +3,7 @@ models/alert.py
 ───────────────
 Alert domain model for Xeroww multi-tenant alert engine.
 
-Alert types supported in V0.6:
+Supported alert types:
   price_above       — triggered when current price exceeds threshold
   price_below       — triggered when current price drops below threshold
   percentage_move   — triggered on N% move from reference price

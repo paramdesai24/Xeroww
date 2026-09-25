@@ -3,17 +3,7 @@ services/market_provider.py
 ────────────────────────────
 Abstract Base Class for all Xeroww market data providers.
 
-DESIGN PHILOSOPHY:
-  This interface is the single most important architectural decision in Xeroww V0.
-  All routes interact ONLY with a MarketDataProvider — they never import yfinance directly.
-
-  This means replacing the data layer in future versions requires ONE change:
-    V0:  provider = YahooFinanceProvider()
-    V1:  provider = KafkaMarketProvider()
-    V2:  provider = SparkMarketProvider()
-    V3:  provider = SnowflakeMarketProvider()
-
-  The FastAPI routes, schemas, and the entire React frontend remain unchanged.
+All routes use this interface rather than importing a provider directly.
 """
 
 from abc import ABC, abstractmethod

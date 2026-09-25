@@ -1,7 +1,7 @@
 """
 api/services/thesis_review_service.py
 ─────────────────────────────────────
-Decision Journal Thesis Review Engine for Xeroww V0.6.
+Decision Journal Thesis Review Engine for Xeroww.
 
 Principle:
 "Users can record a market decision/thesis with optional target or invalidation condition.

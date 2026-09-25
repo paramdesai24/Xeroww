@@ -1,7 +1,7 @@
 """
 core/security.py
 ────────────────
-Authentication and cryptographic security utilities for Xeroww V0.6.
+Authentication and cryptographic security utilities for Xeroww.
 
 Provides:
   - bcrypt password hashing and verification
@@ -158,4 +158,3 @@ def is_token_revoked(token: str) -> bool:
     cache = get_cache_service()
     token_sig = token[-32:] if len(token) >= 32 else token
     return cache.exists(f"blacklist:{token_sig}")
-

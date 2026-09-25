@@ -1,7 +1,7 @@
 """
 api/services/event_diff_service.py
 ──────────────────────────────────
-Deterministic Market Event-Diff Engine for Xeroww V0.6 ("What Changed?").
+Deterministic Market Event-Diff Engine for Xeroww ("What Changed?").
 
 Principle:
 - Compares market structure state between two historical points or consecutive bars.

@@ -1,7 +1,7 @@
 """
 services/pattern_engine.py
 ──────────────────────────
-Deterministic Candlestick Pattern Engine V2.
+Deterministic candlestick pattern engine.
 
 Implements modular, mathematically precise candlestick pattern detection.
 Every pattern detector returns structured data:
@@ -801,4 +801,3 @@ def scan_patterns(
                 detections.append(star)
 
     return detections
-

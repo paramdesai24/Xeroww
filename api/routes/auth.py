@@ -1,7 +1,7 @@
 """
 routes/auth.py
 ──────────────
-Authentication routes for Xeroww V0.6.
+Authentication routes for Xeroww.
 
 Endpoints:
   POST /auth/register  — create new user account

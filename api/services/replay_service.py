@@ -1,7 +1,7 @@
 """
 api/services/replay_service.py
 ──────────────────────────────
-Chronological Market Replay Engine for Xeroww V0.6.
+Chronological Market Replay Engine for Xeroww.
 
 Guiding Principle:
 "Prevent future leakage. During replay at time T, the UI/backend must NOT

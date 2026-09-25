@@ -1,4 +1,4 @@
-"""Canonical V0.9 Decision Workbench API."""
+"""Canonical Decision Workbench API."""
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session

@@ -1,7 +1,7 @@
 """
 api/services/correlation_service.py
 ───────────────────────────────────
-Cross-Asset Relationship Explorer for Xeroww V0.6.
+Cross-Asset Relationship Explorer for Xeroww.
 
 Principle:
 "Build rolling correlation analytics between selected instruments.

@@ -58,7 +58,7 @@ class PatternResponse(BaseModel):
     # Latest candle analytics
     latest_candle: CandleSummary = Field(..., description="Analytical breakdown of the most recent candle")
 
-    # Pattern Engine V2 Multi-Pattern Additions (deterministic)
+    # Deterministic multi-pattern fields
     detected_patterns: list[dict[str, Any]] = Field(
         default_factory=list,
         description="List of all detected patterns across recent candles"

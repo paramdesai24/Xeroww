@@ -1,7 +1,7 @@
 """
 routes/market_structure.py
 ──────────────────────────
-FastAPI endpoints for deterministic Market Structure Engine V2:
+FastAPI endpoints for deterministic market structure analysis:
   - /support-resistance/{symbol}
   - /volume/{symbol}
   - /moving-averages/{symbol}

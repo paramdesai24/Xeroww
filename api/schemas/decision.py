@@ -1,4 +1,4 @@
-"""Typed API contracts for the V0.9 Decision Workbench."""
+"""Typed API contracts for the Decision Workbench."""
 
 from datetime import datetime
 from decimal import Decimal
