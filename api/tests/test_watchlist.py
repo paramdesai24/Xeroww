@@ -74,6 +74,15 @@ class TestWatchlistSymbols:
         client.post(f"/watchlists/{wl_id}/symbols", json={"symbol": "TCS.NS"}, headers=headers)
         resp = client.post(f"/watchlists/{wl_id}/symbols", json={"symbol": "TCS.NS"}, headers=headers)
         assert resp.status_code == 409
+        assert resp.json()["error"]["code"] == "DUPLICATE_SYMBOL"
+
+    def test_unsupported_symbol_rejected(self, client):
+        headers = _auth_headers(client, "wl_invalid_sym@test.io")
+        create = client.post("/watchlists", json={"name": "Supported"}, headers=headers)
+        wl_id = create.json()["id"]
+        resp = client.post(f"/watchlists/{wl_id}/symbols", json={"symbol": "FAKE.NS"}, headers=headers)
+        assert resp.status_code == 422
+        assert resp.json()["error"]["code"] == "INVALID_SYMBOL"
 
     def test_remove_symbol(self, client):
         headers = _auth_headers(client, "wl_sym_rem@test.io")

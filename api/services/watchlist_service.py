@@ -9,9 +9,12 @@ Symbols stored in watchlist_items are plain strings — market data is never cac
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException, status
 
 from api.models.watchlist import Watchlist, WatchlistItem
+from api.core.exceptions import XerowwException
+from api.data.nifty50 import NIFTY50
+
+SUPPORTED_SYMBOLS = {stock["symbol"] for stock in NIFTY50}
 
 
 class WatchlistService:
@@ -42,10 +45,7 @@ class WatchlistService:
             .first()
         )
         if not wl:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Watchlist {watchlist_id} not found.",
-            )
+            raise XerowwException("Watchlist not found.", code="WATCHLIST_NOT_FOUND", status_code=404)
         return wl
 
     # -----------------------------------------------------------------------
@@ -54,6 +54,8 @@ class WatchlistService:
 
     def create_watchlist(self, name: str) -> Watchlist:
         """Create a new named watchlist for this user."""
+        if not name.strip():
+            raise XerowwException("Enter a watchlist name.", code="INVALID_WATCHLIST_NAME", status_code=422)
         wl = Watchlist(user_id=self.user_id, name=name.strip(), is_default=False)
         self.db.add(wl)
         self.db.commit()
@@ -63,6 +65,8 @@ class WatchlistService:
     def rename_watchlist(self, watchlist_id: int, new_name: str) -> Watchlist:
         """Rename an existing watchlist."""
         wl = self.get_watchlist(watchlist_id)
+        if not new_name.strip():
+            raise XerowwException("Enter a watchlist name.", code="INVALID_WATCHLIST_NAME", status_code=422)
         wl.name = new_name.strip()
         self.db.commit()
         self.db.refresh(wl)
@@ -72,10 +76,7 @@ class WatchlistService:
         """Delete a watchlist and all its items (cascaded)."""
         wl = self.get_watchlist(watchlist_id)
         if wl.is_default:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot delete the default watchlist.",
-            )
+            raise XerowwException("The default watchlist cannot be deleted.", code="DEFAULT_WATCHLIST", status_code=400)
         self.db.delete(wl)
         self.db.commit()
 
@@ -83,16 +84,15 @@ class WatchlistService:
         """Add a symbol to a watchlist. Raises 409 on duplicate."""
         wl = self.get_watchlist(watchlist_id)
         symbol_upper = symbol.strip().upper()
+        if symbol_upper not in SUPPORTED_SYMBOLS:
+            raise XerowwException("Choose a supported NIFTY 50 symbol.", code="INVALID_SYMBOL", status_code=422)
         item = WatchlistItem(watchlist_id=wl.id, symbol=symbol_upper)
         self.db.add(item)
         try:
             self.db.commit()
         except IntegrityError:
             self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Symbol '{symbol_upper}' is already in this watchlist.",
-            )
+            raise XerowwException("This symbol is already in the watchlist.", code="DUPLICATE_SYMBOL", status_code=409)
         self.db.refresh(item)
         return item
 
@@ -109,9 +109,6 @@ class WatchlistService:
             .first()
         )
         if not item:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Symbol '{symbol_upper}' not found in watchlist {watchlist_id}.",
-            )
+            raise XerowwException("Symbol not found in this watchlist.", code="SYMBOL_NOT_FOUND", status_code=404)
         self.db.delete(item)
         self.db.commit()
