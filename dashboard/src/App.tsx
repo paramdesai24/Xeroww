@@ -28,7 +28,7 @@ import type { ReplayStepResponse } from "./types/structure";
 import type { MarketEvent } from "./types/events";
 import { api } from "./api/client";
 
-const WatchlistManager = lazy(() => import("./components/WatchlistManager"));
+const WatchlistsPage = lazy(() => import("./pages/WatchlistsPage"));
 const PortfolioView = lazy(() => import("./components/PortfolioView"));
 const AlertsManager = lazy(() => import("./components/AlertsManager"));
 const DecisionsPage = lazy(() => import("./pages/DecisionsPage"));
@@ -483,12 +483,7 @@ export default function App() {
         {activeModule === "WATCHLISTS" &&
           (auth.isAuthenticated ? (
             <Suspense fallback={lazyFallback}>
-              <WatchlistManager
-                onSelectSymbol={(sym) => {
-                  setActiveSymbol(sym);
-                  navigate(`/market/${encodeURIComponent(sym)}`);
-                }}
-              />
+              <WatchlistsPage />
             </Suspense>
           ) : (
             renderAuthGate("Watchlist Manager")
