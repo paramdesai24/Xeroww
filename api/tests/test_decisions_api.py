@@ -106,3 +106,20 @@ def test_replay_preview_excludes_future_candles(client):
     metadata = result.json()["context_snapshot"]["metadata"]
     assert metadata["resolved_as_of"] == "2026-01-08"
     assert metadata["bar_count"] == 8
+
+
+def test_alert_source_is_preserved_in_decision(client):
+    app.dependency_overrides[get_market_data_service] = _market_override
+    headers = _headers(client, "alert-decision@example.com")
+    payload = {**_plan(), "source_context": "ALERT", "setup_type": "Alert condition", "entry_trigger": "Above 2500"}
+    preview = client.post("/decisions/preview", headers=headers, json=payload)
+    assert preview.status_code == 200, preview.text
+    created = client.post("/decisions", headers=headers, json={
+        **payload,
+        "expected_as_of": preview.json()["resolved_as_of"],
+        "supporting_evidence_keys": [],
+        "conflicting_evidence_keys": [],
+        "conflicts_reviewed": True,
+    })
+    assert created.status_code == 201, created.text
+    assert created.json()["source_context"] == "ALERT"

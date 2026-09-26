@@ -7,7 +7,7 @@ Pydantic schemas for the alert domain.
 from datetime import datetime
 from typing import Literal
 import math
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 from api.data.nifty50 import NIFTY50
 
 ALERT_TYPES = {"price_above", "price_below", "percentage_move", "volume_spike", "pattern_detected", "moving_average_cross"}
@@ -72,10 +72,10 @@ class AlertCreate(BaseModel):
             raise ValueError("Choose a NIFTY50 company")
         return symbol
 
-    @model_validator(mode="after")
-    def valid_condition(self):
-        self.condition_payload = validate_condition(self.alert_type, self.condition_payload)
-        return self
+    @field_validator("condition_payload")
+    @classmethod
+    def valid_condition(cls, value: dict, info: ValidationInfo) -> dict:
+        return validate_condition(info.data.get("alert_type", ""), value)
 
 
 class AlertPatch(BaseModel):

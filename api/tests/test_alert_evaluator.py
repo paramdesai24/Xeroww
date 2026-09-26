@@ -134,6 +134,7 @@ class TestAlertAPI:
             "condition_payload": {"threshold": -1},
         }, headers=owner)
         assert invalid.status_code == 422
+        assert "condition_payload" in str(invalid.json())
         invalid_symbol = client.post("/alerts", json={
             "symbol": "NOTLISTED.NS", "alert_type": "price_above",
             "condition_payload": {"threshold": 100},
