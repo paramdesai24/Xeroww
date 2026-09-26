@@ -22,7 +22,7 @@ router = APIRouter(prefix="/alerts", tags=["Alerts"])
 @router.get("", response_model=list[AlertResponse], summary="List current user alerts")
 def list_alerts(
     skip: int = 0,
-    limit: int = 50,
+    limit: int = Query(default=500, ge=1, le=500),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

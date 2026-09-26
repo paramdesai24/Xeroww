@@ -6,6 +6,7 @@ Encapsulates all database interactions, tenant-scoping, and evaluation invocatio
 """
 
 from datetime import datetime
+import logging
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -15,13 +16,15 @@ from api.models.alert import Alert, AlertEvaluation, AlertType
 from api.schemas.alert import AlertCreate, AlertPatch, AlertEvaluationResult, AlertEvaluationSummary, AlertResponse
 from api.services.alert_evaluator import StandardAlertEvaluator
 
+logger = logging.getLogger(__name__)
+
 class AlertService:
     def __init__(self, db: Session, user_id: int, evaluator=None):
         self.db = db
         self.user_id = user_id
         self.evaluator = evaluator or StandardAlertEvaluator()
 
-    def list_alerts(self, skip: int = 0, limit: int = 50) -> list[AlertResponse]:
+    def list_alerts(self, skip: int = 0, limit: int = 500) -> list[AlertResponse]:
         alerts = (
             self.db.query(Alert)
             .filter(Alert.user_id == self.user_id)
@@ -102,7 +105,7 @@ class AlertService:
                 )
             )
         except Exception:
-            pass
+            logger.exception("Alert creation event could not be published")
 
         return alert
 
@@ -141,7 +144,7 @@ class AlertService:
                 )
             )
         except Exception:
-            pass
+            logger.exception("Alert deletion event could not be published")
 
     def evaluate_alert(self, alert_id: int) -> AlertEvaluationResult:
         alert = self.get_alert_or_404(alert_id)
@@ -211,7 +214,7 @@ class AlertService:
                     )
                 )
         except Exception:
-            pass
+            logger.exception("Alert evaluation event could not be published")
 
     def evaluate_all_alerts(self) -> list[AlertEvaluationResult]:
         alerts = (

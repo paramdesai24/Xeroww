@@ -19,7 +19,9 @@ export default function DecisionCreatePage() {
     intent: "WATCH",
     holding_period: "SWING",
     setup_type: initialSource === "ALERT" ? "Alert condition" : "Structure and confluence",
-    entry_trigger: params.get("trigger") ?? "",
+    entry_trigger: initialSource === "ALERT" && params.get("alertId")
+      ? `Alert #${params.get("alertId")}: ${params.get("trigger") ?? "condition observed"}`
+      : params.get("trigger") ?? "",
     entry_zone_low: null,
     entry_zone_high: null,
     invalidation_price: null,
