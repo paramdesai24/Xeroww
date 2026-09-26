@@ -1,5 +1,5 @@
-import { lazy, Suspense, useState, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { lazy, Suspense, useState, useEffect, useCallback, useMemo, type CSSProperties } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import ModuleNav, { type Module } from "./components/ModuleNav";
 import Sidebar from "./components/Sidebar";
 import ChartPanel from "./components/ChartPanel";
@@ -13,17 +13,19 @@ import SupportResistancePanel from "./components/SupportResistancePanel";
 import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
 import ReplayControlBar from "./components/ReplayControlBar";
 import Footer from "./components/Footer";
+import MarketResizeHandle from "./components/MarketResizeHandle";
 
 // Domain components
 import { XRayDrawer } from "./components/xray";
 import { EventTimeline } from "./components/replay";
 import { FuzzyExplainCard } from "./components/FuzzyExplainCard";
 import type { FuzzyExplainabilityReport } from "./types/fuzzy";
-import { Skeleton } from "./components/ui";
+import { PageErrorState, Skeleton } from "./components/ui";
 
 import { useMarketData } from "./hooks/useMarketData";
 import { useAuth } from "./hooks/useAuth";
 import { useSelectedCandle } from "./hooks/useSelectedCandle";
+import { useMarketPaneLayout } from "./hooks/useMarketPaneLayout";
 import type { ReplayStepResponse } from "./types/structure";
 import type { MarketEvent } from "./types/events";
 import { api } from "./api/client";
@@ -53,6 +55,16 @@ const lazyFallback = (
   </div>
 );
 
+function marketSymbolFromPath(path: string): string | null {
+  if (!path.startsWith("/market/")) return null;
+  try {
+    const symbol = decodeURIComponent(path.slice("/market/".length)).toUpperCase();
+    return /^[A-Z0-9&-]+\.NS$/.test(symbol) ? symbol : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const auth = useAuth();
   const location = useLocation();
@@ -67,6 +79,7 @@ export default function App() {
     : "MARKET";
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "CONTEXT" | "ANATOMY" | "EVENTS">("STRUCTURE");
+  const [marketWorkspaceRef, marketPanes] = useMarketPaneLayout();
 
   // Differentiated intelligence modals state
   const [isReplayMode, setIsReplayMode] = useState<boolean>(false);
@@ -93,19 +106,27 @@ export default function App() {
   }, [replayEvents, currentReplayStep]);
 
   // Market terminal state
-  const { stocks, activeSymbol, quote, ohlc, pattern, structure, loading, error, setActiveSymbol } =
-    useMarketData();
+  const routedSymbol = marketSymbolFromPath(path);
+  const marketActive = activeModule === "MARKET" && routedSymbol !== null;
+  const activeSymbol = routedSymbol ?? "RELIANCE.NS";
+  const { stocks, quote, ohlc, pattern, structure, loading, error, refresh } =
+    useMarketData(activeSymbol, marketActive);
 
   useEffect(() => {
-    if (path === "/") {
+    if (path === "/" || path === "/market") {
       navigate("/market/RELIANCE.NS", { replace: true });
       return;
     }
-    if (path.startsWith("/market/")) {
-      const routedSymbol = decodeURIComponent(path.slice("/market/".length)).toUpperCase();
-      if (routedSymbol && routedSymbol !== activeSymbol) setActiveSymbol(routedSymbol);
-    }
-  }, [path, navigate, activeSymbol, setActiveSymbol]);
+  }, [path, navigate]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setIsReplayMode(false);
+      setReplayState(null);
+      setExternalStep(null);
+      setSelectedEventId(null);
+    });
+  }, [activeSymbol]);
 
   // Active candles slice (either historical slice from Replay or live OHLC bars)
   const activeCandles = isReplayMode && replayState ? (replayState.candles_slice as any) : ohlc?.candles;
@@ -129,10 +150,11 @@ export default function App() {
   });
 
   // Active candle displayed in sidebar Candle Anatomy & Modals
-  const activeCandle = xray.selectedCandle ?? activeCandles?.at(-1) ?? null;
+  const activeCandle = activeCandles?.length ? xray.selectedCandle ?? activeCandles.at(-1) ?? null : null;
 
   // Fetch market domain events when entering replay mode or switching symbol
   const fetchEvents = useCallback(() => {
+    if (!marketActive) return;
     setLoadingEvents(true);
     api.events
       .getTimeline(activeSymbol, "3mo")
@@ -141,10 +163,10 @@ export default function App() {
         setLoadingEvents(false);
       })
       .catch(() => setLoadingEvents(false));
-  }, [activeSymbol]);
+  }, [activeSymbol, marketActive]);
 
   useEffect(() => {
-    if (isReplayMode) {
+    if (isReplayMode && marketActive) {
       queueMicrotask(() => {
         setSidebarTab("EVENTS");
         fetchEvents();
@@ -152,11 +174,11 @@ export default function App() {
     } else {
       queueMicrotask(() => setSidebarTab((current) => current === "EVENTS" ? "STRUCTURE" : current));
     }
-  }, [isReplayMode, fetchEvents]);
+  }, [isReplayMode, marketActive, fetchEvents]);
 
   // Fetch fuzzy explainability report when symbol changes (non-replay mode)
   const fetchFuzzyReport = useCallback(() => {
-    if (!activeSymbol || isReplayMode) return;
+    if (!marketActive || !activeSymbol || isReplayMode) return;
     setFuzzyLoading(true);
     setFuzzyError(null);
     api.fuzzy
@@ -169,7 +191,7 @@ export default function App() {
         setFuzzyError(err?.message ?? "Fuzzy inference failed");
         setFuzzyLoading(false);
       });
-  }, [activeSymbol, isReplayMode]);
+  }, [activeSymbol, isReplayMode, marketActive]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -248,17 +270,42 @@ export default function App() {
 
       {/* Main Terminal Body */}
       <div className="app-body flex flex-1 min-h-0 overflow-hidden">
-        {activeModule === "MARKET" && (path.startsWith("/market") || path === "/") && (
-          <div className="market-workspace flex-1 min-h-0 overflow-hidden">
+        {activeModule === "MARKET" && path.startsWith("/market/") && !routedSymbol && <PageErrorState title="Invalid market symbol" message="Choose a supported stock from Market or Watchlists." actionHref="/market/RELIANCE.NS" actionLabel="Open Market" />}
+        {marketActive && (
+          <div
+            ref={marketWorkspaceRef}
+            className={`market-workspace flex-1 min-h-0 overflow-hidden${marketPanes.dragging ? " market-workspace--dragging" : ""}`}
+            style={{ "--market-columns": marketPanes.columns } as CSSProperties}
+            data-watchlist-collapsed={marketPanes.layout.collapsed.watchlist}
+            data-center-collapsed={marketPanes.layout.collapsed.center}
+            data-analytics-collapsed={marketPanes.layout.collapsed.analytics}
+          >
             {/* Left: Watchlist */}
-            <Sidebar
-              stocks={stocks}
-              activeSymbol={activeSymbol}
-              onSelectSymbol={setActiveSymbol}
-            />
+            <div className="market-pane market-pane--watchlist" data-collapsed={marketPanes.layout.collapsed.watchlist}>
+              <Sidebar
+                stocks={stocks}
+                activeSymbol={activeSymbol}
+                onSelectSymbol={(symbol) => navigate(`/market/${encodeURIComponent(symbol)}`)}
+                onCollapse={() => marketPanes.togglePane("watchlist")}
+              />
+              <button className="market-pane__rail" type="button" aria-label="Show Watchlist" aria-controls="market-watchlist-content" aria-expanded={false} title="Show Watchlist" onClick={() => marketPanes.togglePane("watchlist")}>Watchlist</button>
+            </div>
+
+            {!marketPanes.layout.collapsed.watchlist && !marketPanes.layout.collapsed.center && (
+              <MarketResizeHandle
+                side="watchlist"
+                value={marketPanes.leftWidth}
+                minimum={180}
+                maximum={marketPanes.leftMax}
+                onChange={(width) => marketPanes.resizePane("watchlist", width)}
+                onDragState={marketPanes.setDragging}
+                onFinish={marketPanes.commitResize}
+              />
+            )}
 
             {/* Center: Chart + OHLC Table */}
-            <div className="market-center flex flex-col min-w-0 min-h-0 overflow-hidden">
+            <div className="market-pane market-pane--center" data-collapsed={marketPanes.layout.collapsed.center}>
+            <div id="market-center-content" className="market-center flex flex-col min-w-0 min-h-0 overflow-hidden">
               {isReplayMode && (
                 <ReplayControlBar
                   symbol={activeSymbol}
@@ -278,6 +325,7 @@ export default function App() {
                 />
               )}
               <ChartPanel
+                symbol={activeSymbol}
                 quote={isReplayMode && replayState?.current_candle ? {
                   ...quote!,
                   price: replayState.current_candle.close,
@@ -301,6 +349,7 @@ export default function App() {
                 } : structure}
                 loading={loading}
                 error={error}
+                onRetry={refresh}
                 onSelectCandle={xray.selectCandle}
                 onOpenReplay={() => setIsReplayMode(true)}
                 onPlanDecision={() => {
@@ -318,6 +367,7 @@ export default function App() {
                 onOpenForensics={() => setShowForensicsModal(true)}
                 isXRayOpen={xray.isDrawerOpen}
                 onToggleXRay={xray.toggleDrawer}
+                onCollapse={() => marketPanes.togglePane("center")}
               />
               <OHLCTable
                 candles={isReplayMode && replayState ? replayState.candles_slice as any : ohlc?.candles}
@@ -325,12 +375,27 @@ export default function App() {
                 onSelectCandle={xray.selectCandle}
               />
             </div>
+            <button className="market-pane__rail" type="button" aria-label="Show chart" aria-controls="market-center-content" aria-expanded={false} title="Show chart" onClick={() => marketPanes.togglePane("center")}>Chart</button>
+            </div>
+
+            {!marketPanes.layout.collapsed.center && !marketPanes.layout.collapsed.analytics && (
+              <MarketResizeHandle
+                side="analytics"
+                value={marketPanes.rightWidth}
+                minimum={280}
+                maximum={marketPanes.rightMax}
+                onChange={(width) => marketPanes.resizePane("analytics", width)}
+                onDragState={marketPanes.setDragging}
+                onFinish={marketPanes.commitResize}
+              />
+            )}
 
             {/* Right: Analytics Sidebar */}
-            <aside className="analytics-panel shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 overflow-hidden">
+            <div className="market-pane market-pane--analytics" data-collapsed={marketPanes.layout.collapsed.analytics}>
+            <aside id="market-analytics-content" className="analytics-panel shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 overflow-hidden">
               {/* Tab selector */}
               {/* Tab selector */}
-              <div className="flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
+              <div className="analytics-panel__tabs flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
                 {(isReplayMode
                   ? (["EVENTS", "STRUCTURE", "CONTEXT", "ANATOMY"] as const)
                   : (["STRUCTURE", "CONTEXT", "ANATOMY"] as const)
@@ -363,6 +428,7 @@ export default function App() {
                     </button>
                   );
                 })}
+                <button className="market-pane__collapse" type="button" aria-label="Hide analytics" aria-controls="market-analytics-content" aria-expanded={true} title="Hide analytics" onClick={() => marketPanes.togglePane("analytics")}>×</button>
               </div>
 
               {/* Analytics body */}
@@ -477,6 +543,11 @@ export default function App() {
                 )}
               </div>
             </aside>
+            <button className="market-pane__rail" type="button" aria-label="Show analytics" aria-controls="market-analytics-content" aria-expanded={false} title="Show analytics" onClick={() => marketPanes.togglePane("analytics")}>Analytics</button>
+            </div>
+            {marketPanes.layout.collapsed.watchlist && marketPanes.layout.collapsed.center && marketPanes.layout.collapsed.analytics && (
+              <button className="market-layout-reset" type="button" onClick={marketPanes.resetLayout}>Reset layout</button>
+            )}
           </div>
         )}
 
@@ -491,7 +562,11 @@ export default function App() {
 
         {activeModule === "PORTFOLIO" &&
           (auth.isAuthenticated ? (
-            <Suspense fallback={lazyFallback}>{/^\/portfolio\/\d+\/(overview|performance|attribution|risk)$/.test(path) ? <PortfolioIntelligencePage /> : <PortfolioView />}</Suspense>
+            <Suspense fallback={lazyFallback}><Routes>
+              <Route path="/portfolio" element={<PortfolioView />} />
+              <Route path="/portfolio/:portfolioId/:view" element={<PortfolioIntelligencePage />} />
+              <Route path="/portfolio/*" element={<PortfolioView />} />
+            </Routes></Suspense>
           ) : (
             renderAuthGate("Portfolio Valuation Engine")
           ))}
@@ -513,11 +588,14 @@ export default function App() {
 
         {activeModule === "REPLAY_LAB" && (auth.isAuthenticated ? (
           <Suspense fallback={lazyFallback}>
-            {path === "/replay-lab/new" ? <ReplaySessionSetupPage />
-              : path === "/replay-lab/analytics" ? <ReplayAnalyticsPage />
-              : /^\/replay-lab\/\d+\/review$/.test(path) ? <ReplayReviewPage />
-              : /^\/replay-lab\/\d+$/.test(path) ? <ReplayLabPage />
-              : <ReplaySessionListPage />}
+            <Routes>
+              <Route path="/replay-lab" element={<ReplaySessionListPage />} />
+              <Route path="/replay-lab/new" element={<ReplaySessionSetupPage />} />
+              <Route path="/replay-lab/analytics" element={<ReplayAnalyticsPage />} />
+              <Route path="/replay-lab/:sessionId/review" element={<ReplayReviewPage />} />
+              <Route path="/replay-lab/:sessionId" element={<ReplayLabPage />} />
+              <Route path="/replay-lab/*" element={<ReplaySessionListPage />} />
+            </Routes>
           </Suspense>
         ) : renderAuthGate("Replay and Behaviour Lab"))}
 

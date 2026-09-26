@@ -25,6 +25,12 @@ export interface QuoteData {
   timestamp: string;
 }
 
+export interface QuoteSnapshot {
+  as_of: string;
+  data_note: string;
+  rows: Array<{ symbol: string; quote: QuoteData | null; available: boolean; reason: string | null }>;
+}
+
 export interface OHLCBar {
   time: string; // "YYYY-MM-DD" — TradingView Lightweight Charts format
   open: number;

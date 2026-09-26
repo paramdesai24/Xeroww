@@ -42,4 +42,12 @@ describe("WatchlistsPage", () => {
     fireEvent.click(screen.getAllByText("Decision")[0]);
     expect(screen.getByTestId("route")).toHaveTextContent("/decisions/new?symbol=RELIANCE.NS&source=WATCHLIST");
   });
+
+  it("routes Market and Alert actions to the selected symbol", () => {
+    render(<MemoryRouter><WatchlistsPage /><RouteReadout /></MemoryRouter>);
+    fireEvent.click(screen.getAllByText("Market")[0]);
+    expect(screen.getByTestId("route")).toHaveTextContent("/market/RELIANCE.NS");
+    fireEvent.click(screen.getAllByText("Alert")[0]);
+    expect(screen.getByTestId("route")).toHaveTextContent("/alerts?symbol=RELIANCE.NS");
+  });
 });

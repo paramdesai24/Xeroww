@@ -7,6 +7,7 @@ export class AppError extends Error {
   readonly fieldErrors: FieldErrors;
   readonly requestId?: string;
   readonly retryable: boolean;
+  readonly retryAt?: number;
 
   constructor(options: {
     code: string;
@@ -16,6 +17,7 @@ export class AppError extends Error {
     fieldErrors?: FieldErrors;
     requestId?: string;
     retryable?: boolean;
+    retryAt?: number;
   }) {
     super(options.message);
     this.name = "AppError";
@@ -25,6 +27,7 @@ export class AppError extends Error {
     this.fieldErrors = options.fieldErrors ?? {};
     this.requestId = options.requestId;
     this.retryable = options.retryable ?? isRetryable(options.status);
+    this.retryAt = options.retryAt;
   }
 }
 
@@ -105,6 +108,7 @@ export async function errorFromResponse(response: Response): Promise<AppError> {
     status: response.status,
     fieldErrors: fieldErrorsFromPayload(payload),
     requestId: payload.request_id,
+    retryAt: response.status === 429 ? Date.now() + (Number(response.headers.get("Retry-After")) || 60) * 1000 : undefined,
   });
 }
 

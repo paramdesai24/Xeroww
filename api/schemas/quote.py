@@ -28,3 +28,16 @@ class QuoteResponse(BaseModel):
     timestamp: datetime = Field(..., description="Timestamp when this quote was fetched")
 
     model_config = {"from_attributes": True}
+
+
+class QuoteSnapshotRow(BaseModel):
+    symbol: str
+    quote: QuoteResponse | None = None
+    available: bool
+    reason: str | None = None
+
+
+class QuoteSnapshotResponse(BaseModel):
+    as_of: datetime
+    data_note: str
+    rows: list[QuoteSnapshotRow]

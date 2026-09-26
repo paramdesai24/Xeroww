@@ -30,7 +30,6 @@ class MarketDataService:
         cached = self.cache.get(cache_key)
         if cached:
             return cached
-
         try:
             stocks = self.provider.get_stocks()
             self.cache.set(cache_key, stocks, ttl_seconds=3600)  # 1 hour
@@ -47,6 +46,11 @@ class MarketDataService:
         cached = self.cache.get(cache_key)
         if cached:
             return cached
+        if self.cache.get(f"quote-unavailable:{normalized}"):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Market quote temporarily unavailable.",
+            )
 
         try:
             quote = self.provider.get_quote(normalized)
@@ -55,6 +59,7 @@ class MarketDataService:
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
         except RuntimeError as exc:
+            self.cache.set(f"quote-unavailable:{normalized}", True, ttl_seconds=20)
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error fetching quote: {exc}")

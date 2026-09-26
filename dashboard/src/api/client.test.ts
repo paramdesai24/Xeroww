@@ -81,4 +81,19 @@ describe("API client contracts", () => {
       message: "Check your connection and try again.",
     } satisfies Partial<AppError>);
   });
+
+  it("carries the server retry interval for limited requests", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: { code: "RATE_LIMIT_EXCEEDED", message: "Rate limit exceeded." },
+    }), { status: 429, headers: { "Retry-After": "30" } })));
+    const started = Date.now();
+    const error = await api.getQuote("DRREDDY.NS").catch((reason: unknown) => reason as AppError);
+    expect(error).toMatchObject({
+      code: "RATE_LIMIT_EXCEEDED",
+      status: 429,
+      retryable: true,
+      retryAt: expect.any(Number),
+    });
+    expect((error as AppError).retryAt).toBeGreaterThanOrEqual(started + 30_000);
+  });
 });

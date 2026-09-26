@@ -19,13 +19,16 @@ import { TrendingUp, TrendingDown, BarChart2, Plus, Minus, RotateCcw } from "luc
 import type { QuoteData, OHLCData, OHLCBar } from "../types/market";
 import type { MarketStructureSummaryResponse, SRZone } from "../types/structure";
 import { typography } from "../design";
+import type { AppError } from "../api/errors";
 
 interface ChartPanelProps {
+  symbol: string;
   quote: QuoteData | null;
   ohlc: OHLCData | null;
   structure?: MarketStructureSummaryResponse | null;
   loading: boolean;
-  error: string | null;
+  error: AppError | null;
+  onRetry?: () => void;
   onSelectCandle?: (candle: OHLCBar) => void;
   onOpenReplay?: () => void;
   onOpenDiff?: () => void;
@@ -33,14 +36,17 @@ interface ChartPanelProps {
   onPlanDecision?: () => void;
   isXRayOpen?: boolean;
   onToggleXRay?: () => void;
+  onCollapse?: () => void;
 }
 
 export default function ChartPanel({
+  symbol,
   quote,
   ohlc,
   structure,
   loading,
   error,
+  onRetry,
   onSelectCandle,
   onOpenReplay,
   onOpenDiff,
@@ -48,6 +54,7 @@ export default function ChartPanel({
   onPlanDecision,
   isXRayOpen,
   onToggleXRay,
+  onCollapse,
 }: ChartPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -59,6 +66,13 @@ export default function ChartPanel({
   const [showSR, setShowSR] = useState<boolean>(true);
   const [showFastMA, setShowFastMA] = useState<boolean>(false); // EMA 9 & EMA 20
   const [showSlowMA, setShowSlowMA] = useState<boolean>(false); // SMA 50 & SMA 200
+  const [clock, setClock] = useState(() => Date.now());
+  useEffect(() => {
+    if (error?.status !== 429) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [error]);
+  const retrySeconds = error?.retryAt ? Math.max(0, Math.ceil((error.retryAt - clock) / 1000)) : 0;
 
   // Initialize chart once
   useEffect(() => {
@@ -114,6 +128,7 @@ export default function ChartPanel({
 
     const ro = new ResizeObserver(() => {
       if (containerRef.current) {
+        if (containerRef.current.clientWidth < 1 || containerRef.current.clientHeight < 1) return;
         chart.applyOptions({
           width: containerRef.current.clientWidth,
           height: containerRef.current.clientHeight,
@@ -132,7 +147,11 @@ export default function ChartPanel({
 
   // Update candle data and handle chart clicks
   useEffect(() => {
-    if (!seriesRef.current || !chartRef.current || !ohlc?.candles) return;
+    if (!seriesRef.current || !chartRef.current) return;
+    if (!ohlc?.candles) {
+      seriesRef.current.setData([]);
+      return;
+    }
 
     const data = ohlc.candles.map((c) => ({
       time: c.time as unknown as import("lightweight-charts").Time,
@@ -323,6 +342,14 @@ export default function ChartPanel({
     chartRef.current.timeScale().fitContent();
   };
 
+  const quoteStats = (
+    <>
+      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Previous close</span><span className="quote-bar__stat-value">₹{quote?.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
+      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Day range</span><span className="quote-bar__stat-value">₹{quote?.day_low.toFixed(1)} - ₹{quote?.day_high.toFixed(1)}</span></div>
+      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Volume</span><span className="quote-bar__stat-value">{quote ? (quote.volume / 1e5).toFixed(2) : "0.00"}L</span></div>
+    </>
+  );
+
   return (
     <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden" style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
@@ -371,62 +398,36 @@ export default function ChartPanel({
                 </span>
               </div>
 
-              <div className="quote-bar__stats hidden lg:grid text-xs text-[var(--text-secondary)]">
-                <div className="quote-bar__stat">
-                  <span className="quote-bar__stat-label">Previous close</span>
-                  <span className="quote-bar__stat-value">
-                    ₹{quote.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="quote-bar__stat">
-                  <span className="quote-bar__stat-label">Day range</span>
-                  <span className="quote-bar__stat-value">
-                    ₹{quote.day_low.toFixed(1)} – ₹{quote.day_high.toFixed(1)}
-                  </span>
-                </div>
-                <div className="quote-bar__stat">
-                  <span className="quote-bar__stat-label">Volume</span>
-                  <span className="quote-bar__stat-value">
-                    {(quote.volume / 1e5).toFixed(2)}L
-                  </span>
-                </div>
-              </div>
+              <div className="quote-bar__stats text-xs text-[var(--text-secondary)]">{quoteStats}</div>
+              <details className="quote-bar__details"><summary>Quote details</summary><div className="quote-bar__details-panel">{quoteStats}</div></details>
+              {onCollapse && <button className="market-pane__collapse quote-bar__collapse" type="button" aria-label="Hide chart" aria-controls="market-center-content" aria-expanded={true} title="Hide chart" onClick={onCollapse}>×</button>}
             </div>
 
             {/* Overlay and intelligence controls */}
-            <div className="quote-bar__controls flex items-center text-xs">
+            <div className="quote-bar__controls flex items-center text-xs" tabIndex={0} aria-label="Chart layers and Workspace actions, scroll for more">
               {/* Overlays Toggle Buttons */}
               <div className="quote-bar__layers flex items-center gap-2">
                 <span className="quote-bar__group-label">Chart layers</span>
                 <button
                   onClick={() => setShowSR(!showSR)}
-                  className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
-                    showSR
-                      ? "bg-[var(--accent-subtle)] text-[var(--accent-primary)] border-[var(--accent-primary)]"
-                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
-                  }`}
+                  className="quote-bar__control"
+                  aria-pressed={showSR}
                   title="Toggle Support / Resistance level lines"
                 >
                   S/R
                 </button>
                 <button
                   onClick={() => setShowFastMA(!showFastMA)}
-                  className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
-                    showFastMA
-                      ? "bg-[var(--accent-sec-subtle)] text-[var(--accent-secondary)] border-[var(--accent-secondary)]"
-                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
-                  }`}
+                  className="quote-bar__control"
+                  aria-pressed={showFastMA}
                   title="Toggle EMA 9 & EMA 20"
                 >
                   EMA 9/20
                 </button>
                 <button
                   onClick={() => setShowSlowMA(!showSlowMA)}
-                  className={`px-2 py-0.5 text-xs font-semibold border rounded-sm transition-colors duration-150 ${
-                    showSlowMA
-                      ? "bg-[var(--surface-elevated)] text-[var(--text-primary)] border-[var(--border-strong)]"
-                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
-                  }`}
+                  className="quote-bar__control"
+                  aria-pressed={showSlowMA}
                   title="Toggle SMA 50 & SMA 200"
                 >
                   SMA 50/200
@@ -440,7 +441,7 @@ export default function ChartPanel({
                   <button
                     id="plan-decision-btn"
                     onClick={onPlanDecision}
-                    className="quote-bar__control"
+                    className="quote-bar__control quote-bar__control--workspace"
                     title="Create an evidence-backed decision ticket"
                   >
                     Plan Decision
@@ -450,7 +451,7 @@ export default function ChartPanel({
                   <button
                     id="trigger-replay-btn"
                     onClick={onOpenReplay}
-                    className="px-2.5 py-1 text-xs font-semibold rounded-sm bg-[var(--accent-subtle)] text-[var(--accent-primary)] border border-[var(--accent-border)] hover:border-[var(--accent-primary)] transition-colors duration-150 whitespace-nowrap shrink-0"
+                    className="quote-bar__control quote-bar__control--workspace"
                     title="Launch Historical Market Replay Scrubber"
                   >
                     Replay
@@ -460,7 +461,7 @@ export default function ChartPanel({
                   <button
                     id="trigger-diff-btn"
                     onClick={onOpenDiff}
-                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150 whitespace-nowrap shrink-0"
+                    className="quote-bar__control quote-bar__control--workspace"
                     title="Inspect What Changed Diff"
                   >
                     Diff
@@ -470,14 +471,11 @@ export default function ChartPanel({
                   <button
                     id="trigger-xray-btn"
                     onClick={onToggleXRay}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-sm border transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                      isXRayOpen
-                        ? "bg-[#1E90FF] text-white border-[#1E90FF]"
-                        : "bg-[var(--surface-elevated)] text-[var(--accent-primary)] border-[var(--border-default)] hover:border-[var(--accent-primary)]"
-                    }`}
+                    className="quote-bar__control quote-bar__control--workspace"
+                    aria-pressed={isXRayOpen}
                     title="Toggle Flagship X-Ray Inspection Drawer (Click any candlestick)"
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isXRayOpen ? "bg-white animate-ping" : "bg-[#1E90FF]"}`} />
+                    <span className="quote-bar__control-dot" />
                     <span>X-Ray</span>
                   </button>
                 )}
@@ -485,7 +483,7 @@ export default function ChartPanel({
                   <button
                     id="trigger-forensics-btn"
                     onClick={onOpenForensics}
-                    className="px-2.5 py-1 text-xs font-medium rounded-sm bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] transition-colors duration-150 whitespace-nowrap shrink-0"
+                    className="quote-bar__control quote-bar__control--workspace"
                     title="Inspect Candle Forensics & Provenance"
                   >
                     Forensics
@@ -495,9 +493,10 @@ export default function ChartPanel({
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2 text-[var(--text-tertiary)] py-1 text-xs">
+          <div className="quote-bar__fallback flex items-center gap-2 text-[var(--text-tertiary)] py-1 text-xs">
             <BarChart2 size={16} />
-            <span>{loading ? "Initializing feed…" : error ?? "Select an asset"}</span>
+            <span>{loading ? `Loading ${symbol}…` : error ? `${symbol}: ${error.status === 429 ? "Requests temporarily limited" : "Quote unavailable"}` : symbol}</span>
+            {onCollapse && <button className="market-pane__collapse" type="button" aria-label="Hide chart" aria-controls="market-center-content" aria-expanded={true} title="Hide chart" onClick={onCollapse}>×</button>}
           </div>
         )}
       </div>
@@ -513,14 +512,17 @@ export default function ChartPanel({
           </div>
         )}
 
-        {error && !loading && (
+        {error && !loading && !ohlc && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80">
             <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-sm px-6 py-4 text-center max-w-sm">
-              <p className="text-[var(--negative)] text-xs font-semibold">Market data error</p>
-              <p className="text-[var(--text-secondary)] text-xs mt-1">{error}</p>
+              <p className="type-card-title">{error.status === 429 ? "Requests temporarily limited" : "Market feed unavailable"}</p>
+              <p className="type-body text-[var(--text-secondary)] mt-1">{error.status === 429 ? `Try again${retrySeconds ? ` in ${retrySeconds}s` : " now"}.` : "Price history could not be loaded. Try again shortly."}</p>
+              {onRetry && <button className="quote-bar__control mt-3" disabled={retrySeconds > 0} onClick={onRetry}>Retry</button>}
             </div>
           </div>
         )}
+
+        {error && !loading && ohlc && <div className="absolute top-3 left-3 z-10 bg-[var(--surface-elevated)] border border-[var(--border-default)] px-3 py-2 type-meta">Quote unavailable. Historical bars remain visible.</div>}
 
         <div ref={containerRef} className="w-full h-full" />
 

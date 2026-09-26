@@ -2,7 +2,7 @@
 // Typed API client — all fetch calls to the Xeroww FastAPI backend.
 // Attaches a bearer token to authenticated requests.
 
-import type { StockMeta, QuoteData, OHLCData, PatternData, HealthStatus } from "../types/market";
+import type { StockMeta, QuoteData, QuoteSnapshot, OHLCData, PatternData, HealthStatus } from "../types/market";
 import type {
   Watchlist,
   WatchlistSnapshot,
@@ -107,6 +107,9 @@ export const api = {
 
   getQuote: (symbol: string): Promise<QuoteData> =>
     apiFetch<QuoteData>(`/quote/${encodeURIComponent(symbol)}`),
+
+  getQuotes: (symbols: string[]): Promise<QuoteSnapshot> =>
+    apiFetch<QuoteSnapshot>(`/quotes?symbols=${encodeURIComponent(symbols.join(","))}`),
 
   getOHLC: (symbol: string, period = "1mo", interval = "1d"): Promise<OHLCData> =>
     apiFetch<OHLCData>(
