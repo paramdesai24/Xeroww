@@ -80,17 +80,31 @@ export interface Alert {
   condition_payload: Record<string, unknown>;
   enabled: boolean;
   triggered_at: string | null;
-  created_at: string;
-}
+    created_at: string;
+    latest_evaluation: AlertEvaluationSummary | null;
+  }
 
-export interface AlertEvaluationResult {
+  export interface AlertEvaluationSummary {
+    id: number;
+    alert_id: number;
+    evaluated_at: string;
+    triggered: boolean;
+    observed_value: number | null;
+    message: string;
+    data_quality_status: "ok" | "delayed" | "insufficient" | "error";
+  }
+
+  export interface AlertEvaluationResult {
   alert_id: number;
   symbol: string;
   alert_type: string;
   triggered: boolean;
   current_value: number | null;
   condition_payload: Record<string, unknown>;
-  message: string;
+    message: string;
+    data_quality_status: AlertEvaluationSummary["data_quality_status"];
+    evaluated_at: string | null;
+    evaluation_id: number | null;
 }
 
 export interface JournalEntry {

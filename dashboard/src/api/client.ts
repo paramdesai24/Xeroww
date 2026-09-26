@@ -10,6 +10,7 @@ import type {
   PortfolioSummary,
   Transaction,
   Alert,
+  AlertEvaluationSummary,
   AlertEvaluationResult,
   JournalEntry,
 } from "../types/platform";
@@ -230,7 +231,7 @@ export const api = {
   // -------------------------------------------------------------------------
   // Alerts
   // -------------------------------------------------------------------------
-  alerts: {
+    alerts: {
     list: (): Promise<Alert[]> => authFetch<Alert[]>("/alerts"),
 
     create: (symbol: string, alertType: string, conditionPayload: Record<string, unknown>): Promise<Alert> =>
@@ -243,8 +244,14 @@ export const api = {
         }),
       }),
 
-    delete: (id: number): Promise<void> =>
-      authFetch<void>(`/alerts/${id}`, { method: "DELETE" }),
+      delete: (id: number): Promise<void> =>
+        authFetch<void>(`/alerts/${id}`, { method: "DELETE" }),
+
+      update: (id: number, changes: { enabled?: boolean; alert_type?: string; condition_payload?: Record<string, unknown> }): Promise<Alert> =>
+        authFetch<Alert>(`/alerts/${id}`, { method: "PATCH", body: JSON.stringify(changes) }),
+
+      history: (id: number): Promise<AlertEvaluationSummary[]> =>
+        authFetch<AlertEvaluationSummary[]>(`/alerts/${id}/evaluations`),
 
     evaluate: (id: number): Promise<AlertEvaluationResult> =>
       authFetch<AlertEvaluationResult>(`/alerts/${id}/evaluate`, { method: "POST" }),
