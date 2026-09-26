@@ -126,6 +126,33 @@ class TestAlertAPI:
         assert data["alert_type"] == "price_above"
         assert data["enabled"] is True
 
+    def test_typed_condition_validation_and_pause(self, client):
+        owner = self._login(client, "alert_patch_owner@test.io")
+        other = self._login(client, "alert_patch_other@test.io")
+        invalid = client.post("/alerts", json={
+            "symbol": "RELIANCE.NS", "alert_type": "price_above",
+            "condition_payload": {"threshold": -1},
+        }, headers=owner)
+        assert invalid.status_code == 422
+        invalid_symbol = client.post("/alerts", json={
+            "symbol": "NOTLISTED.NS", "alert_type": "price_above",
+            "condition_payload": {"threshold": 100},
+        }, headers=owner)
+        assert invalid_symbol.status_code == 422
+        created = client.post("/alerts", json={
+            "symbol": "RELIANCE.NS", "alert_type": "price_above",
+            "condition_payload": {"threshold": 100},
+        }, headers=owner).json()
+        url = f"/alerts/{created['id']}"
+        assert client.patch(url, json={"enabled": False}, headers=other).status_code == 404
+        paused = client.patch(url, json={"enabled": False}, headers=owner)
+        assert paused.status_code == 200
+        assert paused.json()["enabled"] is False
+        assert client.post(f"{url}/evaluate", headers=owner).status_code == 409
+        resumed = client.patch(url, json={"enabled": True}, headers=owner)
+        assert resumed.json()["enabled"] is True
+        assert client.patch(url, json={"condition_payload": {"threshold": 150}}, headers=owner).json()["condition_payload"]["threshold"] == 150
+
     def test_invalid_alert_type_rejected(self, client):
         headers = self._login(client, "alert_invalid@test.io")
         resp = client.post("/alerts", json={
@@ -140,3 +167,48 @@ class TestAlertAPI:
         resp = client.get("/alerts", headers=headers)
         assert resp.status_code == 200
         assert isinstance(resp.json(), list)
+
+    def test_evaluation_history_survives_list_refresh_and_is_tenant_scoped(self, client):
+        owner = self._login(client, "alert_history_owner@test.io")
+        other = self._login(client, "alert_history_other@test.io")
+        created = client.post("/alerts", json={
+            "symbol": "RELIANCE.NS", "alert_type": "price_above",
+            "condition_payload": {"threshold": 2000},
+        }, headers=owner).json()
+        checked = client.post(f"/alerts/{created['id']}/evaluate", headers=owner)
+        assert checked.status_code == 200
+        assert checked.json()["triggered"] is True
+        assert checked.json()["evaluation_id"] is not None
+
+        listed = client.get("/alerts", headers=owner).json()
+        assert listed[0]["latest_evaluation"]["triggered"] is True
+        history = client.get(f"/alerts/{created['id']}/evaluations", headers=owner)
+        assert history.status_code == 200
+        assert len(history.json()) == 1
+        assert history.json()[0]["observed_value"] == 2500.0
+        assert client.get(f"/alerts/{created['id']}/evaluations", headers=other).status_code == 404
+
+    def test_evaluate_all_preserves_success_when_one_provider_call_fails(self, client, monkeypatch):
+        owner = self._login(client, "alert_partial@test.io")
+        for symbol in ("RELIANCE.NS", "TCS.NS"):
+            response = client.post("/alerts", json={
+                "symbol": symbol, "alert_type": "price_above",
+                "condition_payload": {"threshold": 2000},
+            }, headers=owner)
+            assert response.status_code == 201
+
+        original = StandardAlertEvaluator.evaluate
+        def evaluate_with_failure(self, alert):
+            if alert.symbol == "TCS.NS":
+                raise RuntimeError("private provider diagnostic")
+            return original(self, alert)
+
+        monkeypatch.setattr(StandardAlertEvaluator, "evaluate", evaluate_with_failure)
+        response = client.post("/alerts/evaluate-all", headers=owner)
+        assert response.status_code == 200
+        results = {row["symbol"]: row for row in response.json()}
+        assert results["RELIANCE.NS"]["triggered"] is True
+        assert results["TCS.NS"]["data_quality_status"] == "error"
+        assert "private provider diagnostic" not in results["TCS.NS"]["message"]
+        listed = client.get("/alerts", headers=owner).json()
+        assert all(row["latest_evaluation"] is not None for row in listed)

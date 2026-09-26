@@ -90,7 +90,7 @@ class StandardAlertEvaluator(AlertEvaluator):
 
         try:
             return handler(alert)
-        except Exception as e:
+        except Exception:
             return AlertEvaluationResult(
                 alert_id=alert.id,
                 symbol=alert.symbol,
@@ -98,8 +98,13 @@ class StandardAlertEvaluator(AlertEvaluator):
                 triggered=False,
                 current_value=None,
                 condition_payload=alert.condition_payload,
-                message=f"Evaluation error: {e}",
+                message="Market data was unavailable for this check.",
+                data_quality_status="error",
             )
+
+    @staticmethod
+    def _quote_quality(quote: dict[str, Any]) -> str:
+        return "delayed" if "delay" in str(quote.get("data_note", "")).lower() else "ok"
 
     def _get_quote(self, symbol: str) -> dict[str, Any]:
         return self._get_provider().get_quote(symbol)
@@ -130,6 +135,7 @@ class StandardAlertEvaluator(AlertEvaluator):
             message=(
                 f"Price ₹{price:,.2f} {'>' if triggered else '≤'} threshold ₹{threshold:,.2f}"
             ),
+            data_quality_status=self._quote_quality(quote),
         )
 
     def _eval_price_below(self, alert: Alert) -> AlertEvaluationResult:
@@ -147,6 +153,7 @@ class StandardAlertEvaluator(AlertEvaluator):
             message=(
                 f"Price ₹{price:,.2f} {'<' if triggered else '≥'} threshold ₹{threshold:,.2f}"
             ),
+            data_quality_status=self._quote_quality(quote),
         )
 
     def _eval_percentage_move(self, alert: Alert) -> AlertEvaluationResult:
@@ -165,6 +172,7 @@ class StandardAlertEvaluator(AlertEvaluator):
                 current_value=price,
                 condition_payload=alert.condition_payload,
                 message="Invalid reference_price in condition_payload.",
+                data_quality_status="error",
             )
 
         actual_pct = ((price - ref_price) / ref_price) * 100
@@ -183,6 +191,7 @@ class StandardAlertEvaluator(AlertEvaluator):
             current_value=round(actual_pct, 2),
             condition_payload=alert.condition_payload,
             message=f"Move: {actual_pct:+.2f}% vs target {pct_target:.2f}% ({direction})",
+            data_quality_status=self._quote_quality(quote),
         )
 
     def _eval_volume_spike(self, alert: Alert) -> AlertEvaluationResult:
@@ -209,6 +218,7 @@ class StandardAlertEvaluator(AlertEvaluator):
                 f"(x{current_volume/avg_volume:.1f} vs x{multiplier} target)"
                 if avg_volume > 0 else "Insufficient volume history."
             ),
+            data_quality_status=self._quote_quality(quote) if avg_volume > 0 else "insufficient",
         )
 
     def _eval_pattern_detected(self, alert: Alert) -> AlertEvaluationResult:
@@ -223,6 +233,7 @@ class StandardAlertEvaluator(AlertEvaluator):
                 current_value=None,
                 condition_payload=alert.condition_payload,
                 message="No candle data available.",
+                data_quality_status="insufficient",
             )
         from api.services.pattern_service import detect_marubozu
         result = detect_marubozu(candles, alert.symbol, alert.symbol)
@@ -257,6 +268,7 @@ class StandardAlertEvaluator(AlertEvaluator):
                 current_value=None,
                 condition_payload=alert.condition_payload,
                 message=f"Insufficient data for MA({fast_period}/{slow_period}).",
+                data_quality_status="insufficient",
             )
 
         fast_ma_now = sum(closes[-fast_period:]) / fast_period

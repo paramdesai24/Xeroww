@@ -9,7 +9,7 @@ from api.models.stock import Stock, DailyCandle
 from api.models.user import User, UserRole
 from api.models.watchlist import Watchlist, WatchlistItem
 from api.models.portfolio import Portfolio, Holding, PortfolioTransaction
-from api.models.alert import Alert
+from api.models.alert import Alert, AlertEvaluation
 from api.models.intelligence import ChartAnnotation, DecisionJournalEntry, DecisionTicketAmendment
 from api.models.portfolio_intelligence import PortfolioRiskPolicy, PortfolioSnapshot, PortfolioSnapshotHolding
 from api.models.replay_lab import ReplayExecution, ReplaySession, ReplaySessionEvent, ReplaySessionResult
@@ -25,6 +25,7 @@ __all__ = [
     "Holding",
     "PortfolioTransaction",
     "Alert",
+    "AlertEvaluation",
     "ChartAnnotation",
     "DecisionJournalEntry",
     "DecisionTicketAmendment",

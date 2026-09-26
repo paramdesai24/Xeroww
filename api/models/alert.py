@@ -20,7 +20,7 @@ and queries MarketDataProvider at evaluation time. No market data is stored here
 
 import enum
 from datetime import datetime
-from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Enum as SAEnum, JSON, func
+from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Enum as SAEnum, JSON, Float, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from api.database.session import Base
 
@@ -53,9 +53,32 @@ class Alert(Base):
 
     # Relationship
     owner: Mapped["User"] = relationship("User", back_populates="alerts")  # noqa: F821
+    evaluations: Mapped[list["AlertEvaluation"]] = relationship(
+        "AlertEvaluation", back_populates="alert", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return (
             f"<Alert(id={self.id}, symbol={self.symbol!r}, "
             f"type={self.alert_type}, enabled={self.enabled})>"
         )
+
+
+class AlertEvaluation(Base):
+    """An immutable, compact fact about one on-demand alert check."""
+
+    __tablename__ = "alert_evaluations"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    alert_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("alerts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    evaluated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, server_default=func.now(), index=True
+    )
+    triggered: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    observed_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    message: Mapped[str] = mapped_column(String(240), nullable=False)
+    data_quality_status: Mapped[str] = mapped_column(String(24), nullable=False)
+
+    alert: Mapped[Alert] = relationship("Alert", back_populates="evaluations")
