@@ -54,6 +54,7 @@ class DecisionSource(str, enum.Enum):
     MARKET = "MARKET"
     REPLAY = "REPLAY"
     PORTFOLIO = "PORTFOLIO"
+    ALERT = "ALERT"
 
 
 class AmendmentType(str, enum.Enum):

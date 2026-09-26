@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, model_validator
 
 Direction = Literal["BULLISH", "BEARISH", "NEUTRAL"]
 Intent = Literal["ENTER", "ADD", "HOLD", "REDUCE", "EXIT", "WATCH", "AVOID"]
-SourceContext = Literal["MANUAL", "MARKET", "REPLAY", "PORTFOLIO"]
+SourceContext = Literal["MANUAL", "MARKET", "REPLAY", "PORTFOLIO", "ALERT"]
 
 
 class DecisionPlanBase(BaseModel):

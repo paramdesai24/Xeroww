@@ -1,6 +1,6 @@
 export type DecisionDirection = "BULLISH" | "BEARISH" | "NEUTRAL";
 export type DecisionIntent = "ENTER" | "ADD" | "HOLD" | "REDUCE" | "EXIT" | "WATCH" | "AVOID";
-export type DecisionSource = "MANUAL" | "MARKET" | "REPLAY" | "PORTFOLIO";
+export type DecisionSource = "MANUAL" | "MARKET" | "REPLAY" | "PORTFOLIO" | "ALERT";
 
 export interface EvidenceItem {
   key: string;
