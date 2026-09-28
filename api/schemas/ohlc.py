@@ -16,6 +16,7 @@ class OHLCBar(BaseModel):
     for direct compatibility with TradingView Lightweight Charts.
     """
     time: str = Field(..., description="Candle date in YYYY-MM-DD format (TradingView compatible)")
+    chart_time: int | None = Field(default=None, description="UTC Unix timestamp for intraday chart bars")
     open: float = Field(..., description="Opening price")
     high: float = Field(..., description="Session high price")
     low: float = Field(..., description="Session low price")

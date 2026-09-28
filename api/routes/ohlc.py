@@ -13,6 +13,7 @@ from api.core.dependencies import get_market_data_service
 from api.schemas.ohlc import OHLCResponse, OHLCBar
 from api.services.market_data_service import MarketDataService
 from api.analytics import default_orchestrator, AnalyticsOrchestrator
+from api.services.yahoo_provider import INDEX_META
 
 router = APIRouter(tags=["Market Data"])
 
@@ -42,7 +43,7 @@ async def get_ohlc(
     sym, candles_raw = market_data.get_candles(symbol, period=period, interval=interval)
     normalized_bars = orchestrator.parse_ohlc_bars(candles_raw)
     candles = [OHLCBar(**c) for c in normalized_bars]
-    meta = next((item for item in market_data.get_stocks() if item["symbol"] == sym), {})
+    meta = next((item for item in market_data.get_stocks() if item["symbol"] == sym), INDEX_META.get(sym, {}))
     return OHLCResponse(
         symbol=sym,
         display_name=meta.get("display_name", sym),
