@@ -33,6 +33,7 @@ export interface QuoteSnapshot {
 
 export interface OHLCBar {
   time: string; // "YYYY-MM-DD" — TradingView Lightweight Charts format
+  chart_time?: number | null;
   open: number;
   high: number;
   low: number;

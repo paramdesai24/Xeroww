@@ -24,7 +24,7 @@ export interface MarketState {
   refresh: () => void;
 }
 
-export function useMarketData(symbol: string, enabled: boolean): MarketState {
+export function useMarketData(symbol: string, enabled: boolean, period = "1mo", interval = "1d"): MarketState {
   const [stocks, setStocks] = useState<StockMeta[]>([]);
   const [result, setResult] = useState<MarketResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ export function useMarketData(symbol: string, enabled: boolean): MarketState {
     queueMicrotask(() => setLoading(true));
     Promise.allSettled([
       api.getQuote(symbol),
-      api.getOHLC(symbol),
+      api.getOHLC(symbol, period, interval),
       api.getPatterns(symbol),
       api.marketStructure.getSummary(symbol),
     ]).then(([quote, ohlc, pattern, structure]) => {
@@ -58,7 +58,7 @@ export function useMarketData(symbol: string, enabled: boolean): MarketState {
       setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [symbol, enabled, generation]);
+  }, [symbol, enabled, generation, period, interval]);
 
   const refresh = useCallback(() => setGeneration((value) => value + 1), []);
   const current = result?.symbol === symbol && enabled ? result : null;
