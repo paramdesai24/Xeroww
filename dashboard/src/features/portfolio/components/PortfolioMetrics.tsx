@@ -1,5 +1,6 @@
 import type { PortfolioSummary } from "../../../types/platform";
 import { formatMoney, formatPercent } from "../formatters";
+import { MetricCard } from "../../../components/ui";
 
 export function PortfolioMetrics({ portfolio }: { portfolio: PortfolioSummary }) {
   const metrics = [
@@ -13,5 +14,5 @@ export function PortfolioMetrics({ portfolio }: { portfolio: PortfolioSummary })
       tone: portfolio.total_unrealized_pnl >= 0 ? "positive" : "negative",
     },
   ];
-  return <section className="workspace-metrics">{metrics.map((item) => <article key={item.label}><span>{item.label}</span><strong className={item.tone ? `is-${item.tone}` : undefined}>{item.value}</strong><small>{item.note}</small></article>)}</section>;
+  return <section className="workspace-metrics">{metrics.map((item) => <MetricCard key={item.label} label={item.label} value={item.value} note={item.note} tone={item.tone as "positive" | "negative" | undefined} />)}</section>;
 }
