@@ -110,12 +110,12 @@ export default function ChartPanel({
 
     const palette = resolvedTheme === "light"
       ? {
-          canvas: "#F5F6F8",
-          text: "#475569",
-          grid: "#E6EAF0",
-          border: "#DEE3EB",
+          canvas: "#F6F8F8",
+          text: "#4C5F6D",
+          grid: "#E1E9EA",
+          border: "#D7E0E3",
           accent: "#3B82F6",
-          label: "#FFFFFF",
+          label: "#FBFCFB",
           positive: "#16803A",
           negative: "#C92A2A",
         }
@@ -485,20 +485,31 @@ export default function ChartPanel({
 
             {/* Overlay and intelligence controls */}
             <Toolbar className="quote-bar__controls flex items-center text-xs" tabIndex={0} aria-label="Chart layers and Workspace actions, scroll for more">
-              <div className="quote-bar__layers quote-bar__layers--type flex items-center gap-1" role="group" aria-label="Chart type">
-                <span className="quote-bar__group-label">Chart</span>
-                {([ ["candles", "Candles"], ["hollow", "Hollow"], ["line", "Line"], ["area", "Area"], ["baseline", "Baseline"] ] as const).map(([type, label]) => <Pill key={type} selected={chartType === type} onClick={() => setChartType(type)}>{label}</Pill>)}
+              <div className="quote-bar__layers quote-bar__layers--type" role="group" aria-label="Chart type">
+                <select className="quote-bar__select" aria-label="Chart type" value={chartType} onChange={(event) => setChartType(event.target.value as typeof chartType)}>
+                  <option value="candles">Candles</option><option value="hollow">Hollow candles</option><option value="line">Line</option><option value="area">Area</option><option value="baseline">Baseline</option>
+                </select>
               </div>
-              {onTimeframeChange && <div className="quote-bar__layers quote-bar__layers--range flex items-center gap-1" role="group" aria-label="Chart timeframe">
-                <span className="quote-bar__group-label">Range</span>
-                {timeframes.map(([label, range, interval]) => <Pill key={label} selected={timeframe === label} onClick={() => onTimeframeChange(label, range, interval)}>{label === "5D" ? "1W" : label === "3M" || label === "5Y" ? label : label.toUpperCase()}</Pill>)}
+              {onTimeframeChange && <div className="quote-bar__layers quote-bar__layers--range" role="group" aria-label="Chart timeframe">
+                <select className="quote-bar__select quote-bar__select--range" aria-label="Chart timeframe" value={timeframe} onChange={(event) => {
+                  const selected = timeframes.find(([label]) => label === event.target.value);
+                  if (selected) onTimeframeChange(selected[0], selected[1], selected[2]);
+                }}>
+                  {timeframes.map(([label]) => <option key={label} value={label}>{label === "5D" ? "1W" : label.toUpperCase()}</option>)}
+                </select>
               </div>}
-              {/* Overlays Toggle Buttons */}
-              <div className="quote-bar__layers flex items-center gap-2">
-                <span className="quote-bar__group-label">Indicators</span>
-                <Pill selected={showSR} onClick={() => setShowSR((value) => !value)}>S/R</Pill>
-                <Pill selected={showFastMA} onClick={() => setShowFastMA((value) => !value)}>EMA 9/20</Pill>
-                <Pill selected={showSlowMA} onClick={() => setShowSlowMA((value) => !value)}>SMA 50/200</Pill>
+              <div className="quote-bar__layers" role="group" aria-label="Chart indicators">
+                <select className="quote-bar__select quote-bar__select--indicators" aria-label="Toggle chart indicator" defaultValue="" onChange={(event) => {
+                  if (event.target.value === "sr") setShowSR((value) => !value);
+                  if (event.target.value === "ema") setShowFastMA((value) => !value);
+                  if (event.target.value === "sma") setShowSlowMA((value) => !value);
+                  event.currentTarget.value = "";
+                }}>
+                  <option value="">Indicators · {Number(showSR) + Number(showFastMA) + Number(showSlowMA)}</option>
+                  <option value="sr">S/R · {showSR ? "On" : "Off"}</option>
+                  <option value="ema">EMA 9/20 · {showFastMA ? "On" : "Off"}</option>
+                  <option value="sma">SMA 50/200 · {showSlowMA ? "On" : "Off"}</option>
+                </select>
               </div>
 
               {/* Intelligence Feature Buttons */}
