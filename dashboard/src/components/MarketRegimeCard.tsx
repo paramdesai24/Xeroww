@@ -26,6 +26,8 @@ export default function MarketRegimeCard({ regime, loading }: Props) {
 
   const badgeVariant = isUp ? "green" : isDown ? "red" : isRange ? "amber" : "blue";
   const accentEdge = isUp ? "positive" : isDown ? "negative" : "primary";
+  const firstReason = regime.reasons[0] ?? "No evidence available";
+  const briefReason = firstReason.split(/\s+/).slice(0, 8).join(" ");
 
   return (
     <Panel id="market-regime-card" accentEdge={accentEdge} className="overflow-hidden">
@@ -46,20 +48,8 @@ export default function MarketRegimeCard({ regime, loading }: Props) {
         <Metric label="EMA Trend" value={regime.ema_trend.replace(/_/g, " ")} size="sm" />
       </div>
 
-      {/* Evidence Audit */}
-      <div className="p-3 flex flex-col gap-2">
-        <span className="text-label font-semibold text-[var(--text-secondary)]">
-          Evidence Audit
-        </span>
-        <ul className="space-y-1.5 m-0 p-0 list-none">
-          {regime.reasons.map((reason, idx) => (
-            <li key={idx} className="text-xs text-[var(--text-secondary)] flex items-start gap-2 leading-relaxed">
-              <span className="text-[var(--accent-primary)] font-bold text-xs shrink-0">›</span>
-              <span>{reason}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <div className="intelligence-brief"><span>Key evidence</span><strong title={firstReason}>{briefReason}{briefReason.length < firstReason.length ? "…" : ""}</strong></div>
+      <details className="intelligence-audit"><summary>Inspect evidence ({regime.reasons.length})</summary><ul>{regime.reasons.map((reason, idx) => <li key={idx}>{reason}</li>)}</ul></details>
     </Panel>
   );
 }

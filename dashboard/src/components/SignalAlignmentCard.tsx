@@ -73,11 +73,8 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
         </div>
       </div>
 
-      {/* Factual Summary */}
       <div className="p-3 flex flex-col gap-2">
-        <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
-          {alignment.factual_summary}
-        </p>
+        <div className="intelligence-brief"><span>Dominant signal</span><strong>{alignment.dominant_bias.replace(/_/g, " ")} · {Math.round(Math.max(alignment.bullish_alignment_count, alignment.bearish_alignment_count) / Math.max(1, alignment.alignment_total) * 100)}%</strong></div>
 
         <div className="pt-2 border-t border-[var(--border-subtle)]">
           <button
@@ -86,12 +83,13 @@ export default function SignalAlignmentCard({ alignment, loading }: Props) {
             onClick={() => setExpanded(!expanded)}
             className="w-full flex items-center justify-between text-xs font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors duration-150 py-0.5"
           >
-            <span>{expanded ? "▲ Hide conditions" : "▼ Inspect 12 conditions"}</span>
+            <span>{expanded ? "Hide conditions" : `Inspect ${alignment.conditions.length} conditions`}</span>
             <span className="text-label text-[var(--text-tertiary)] font-normal">Rules audit</span>
           </button>
 
           {expanded && (
             <div className="mt-2.5 flex flex-col gap-1.5">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">{alignment.factual_summary}</p>
               {alignment.conditions.map((c) => (
                 <div
                   key={c.condition_id}
