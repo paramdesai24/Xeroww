@@ -7,6 +7,7 @@ by swapping IDs in URL paths, and verifies token revocation upon logout.
 """
 
 import pytest
+from uuid import uuid4
 from starlette.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -25,18 +26,19 @@ client = TestClient(app)
 @pytest.fixture
 def test_users_and_resources():
     db: Session = SessionLocal()
+    run_id = uuid4().hex
 
     # User A
     user_a = User(
         name="User A",
-        email="user_a@xeroww.test",
+        email=f"user_a_{run_id}@xeroww.test",
         password_hash=hash_password("Password123!"),
         role=UserRole.USER,
     )
     # User B
     user_b = User(
         name="User B",
-        email="user_b@xeroww.test",
+        email=f"user_b_{run_id}@xeroww.test",
         password_hash=hash_password("Password123!"),
         role=UserRole.USER,
     )
