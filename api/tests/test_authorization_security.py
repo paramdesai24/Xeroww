@@ -8,11 +8,8 @@ by swapping IDs in URL paths, and verifies token revocation upon logout.
 
 import pytest
 from uuid import uuid4
-from starlette.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from api.main import app
-from api.database.session import SessionLocal
 from api.models.user import User, UserRole
 from api.core.security import hash_password, create_access_token
 from api.models.portfolio import Portfolio
@@ -20,12 +17,8 @@ from api.models.watchlist import Watchlist
 from api.models.alert import Alert, AlertType
 from api.models.intelligence import DecisionJournalEntry, JournalStatus, ChartAnnotation, AnnotationType
 
-client = TestClient(app)
-
-
 @pytest.fixture
-def test_users_and_resources():
-    db: Session = SessionLocal()
+def test_users_and_resources(db: Session):
     run_id = uuid4().hex
 
     # User A
@@ -94,18 +87,10 @@ def test_users_and_resources():
 
     yield data
 
-    # Cleanup
-    db.query(ChartAnnotation).filter(ChartAnnotation.user_id.in_([user_a.id, user_b.id])).delete()
-    db.query(DecisionJournalEntry).filter(DecisionJournalEntry.user_id.in_([user_a.id, user_b.id])).delete()
-    db.query(Alert).filter(Alert.user_id.in_([user_a.id, user_b.id])).delete()
-    db.query(Watchlist).filter(Watchlist.user_id.in_([user_a.id, user_b.id])).delete()
-    db.query(Portfolio).filter(Portfolio.user_id.in_([user_a.id, user_b.id])).delete()
-    db.query(User).filter(User.id.in_([user_a.id, user_b.id])).delete()
-    db.commit()
-    db.close()
+    # The shared db fixture rolls this test transaction back.
 
 
-def test_user_a_cannot_access_user_b_portfolio(test_users_and_resources):
+def test_user_a_cannot_access_user_b_portfolio(client, test_users_and_resources):
     res = client.get(
         f"/portfolios/{test_users_and_resources['portfolio_b_id']}",
         headers={"Authorization": f"Bearer {test_users_and_resources['token_a']}"},
@@ -113,7 +98,7 @@ def test_user_a_cannot_access_user_b_portfolio(test_users_and_resources):
     assert res.status_code in [403, 404]
 
 
-def test_user_a_cannot_trade_on_user_b_portfolio(test_users_and_resources):
+def test_user_a_cannot_trade_on_user_b_portfolio(client, test_users_and_resources):
     res = client.post(
         f"/portfolios/{test_users_and_resources['portfolio_b_id']}/trade",
         headers={"Authorization": f"Bearer {test_users_and_resources['token_a']}"},
@@ -122,7 +107,7 @@ def test_user_a_cannot_trade_on_user_b_portfolio(test_users_and_resources):
     assert res.status_code in [403, 404]
 
 
-def test_user_a_cannot_delete_user_b_watchlist(test_users_and_resources):
+def test_user_a_cannot_delete_user_b_watchlist(client, test_users_and_resources):
     res = client.delete(
         f"/watchlists/{test_users_and_resources['watchlist_b_id']}",
         headers={"Authorization": f"Bearer {test_users_and_resources['token_a']}"},
@@ -130,7 +115,7 @@ def test_user_a_cannot_delete_user_b_watchlist(test_users_and_resources):
     assert res.status_code in [403, 404]
 
 
-def test_user_a_cannot_delete_user_b_alert(test_users_and_resources):
+def test_user_a_cannot_delete_user_b_alert(client, test_users_and_resources):
     res = client.delete(
         f"/alerts/{test_users_and_resources['alert_b_id']}",
         headers={"Authorization": f"Bearer {test_users_and_resources['token_a']}"},
@@ -138,7 +123,7 @@ def test_user_a_cannot_delete_user_b_alert(test_users_and_resources):
     assert res.status_code in [403, 404]
 
 
-def test_user_a_cannot_access_user_b_journal_entry(test_users_and_resources):
+def test_user_a_cannot_access_user_b_journal_entry(client, test_users_and_resources):
     res = client.get(
         f"/journal/{test_users_and_resources['journal_b_id']}",
         headers={"Authorization": f"Bearer {test_users_and_resources['token_a']}"},
@@ -146,7 +131,7 @@ def test_user_a_cannot_access_user_b_journal_entry(test_users_and_resources):
     assert res.status_code in [403, 404]
 
 
-def test_user_a_cannot_delete_user_b_annotation(test_users_and_resources):
+def test_user_a_cannot_delete_user_b_annotation(client, test_users_and_resources):
     res = client.delete(
         f"/annotations/{test_users_and_resources['annotation_b_id']}",
         headers={"Authorization": f"Bearer {test_users_and_resources['token_a']}"},
@@ -154,7 +139,7 @@ def test_user_a_cannot_delete_user_b_annotation(test_users_and_resources):
     assert res.status_code in [403, 404]
 
 
-def test_logout_revokes_token(test_users_and_resources):
+def test_logout_revokes_token(client, test_users_and_resources):
     token = test_users_and_resources["token_a"]
 
     # Verify token works before logout
