@@ -2095,6 +2095,65 @@ body { font-size: var(--type-body-size); line-height: var(--type-body-leading); 
 .chart-panel .quote-bar__company strong { font-size: 12px; line-height: 1.25; }
 .chart-panel .quote-bar__company small { line-height: 1.2; }
 .chart-panel .quote-bar__price .type-metric { font-size: clamp(1.1rem, 1.3vw, 1.55rem); line-height: 1.15; }
+
+/* Premium light temperature and stable financial numerals. */
+:root[data-theme="light"] {
+  --canvas: #F4F7FA;
+  --surface-base: #F4F7FA;
+  --surface: #FCFDFE;
+  --surface-raised: #FCFDFE;
+  --surface-elevated: #F7F9FC;
+  --surface-overlay: #EFF4F8;
+  --surface-inset: #F7F9FC;
+  --surface-gradient: linear-gradient(145deg, #FCFDFE 0%, #F8FAFC 100%);
+  --nav-background: rgba(252, 253, 254, .78);
+  --border-subtle: rgba(15, 23, 42, .05);
+  --border-default: rgba(15, 23, 42, .08);
+  --border-strong: rgba(15, 23, 42, .16);
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-tertiary: #718096;
+}
+html, body, button, input, select, textarea, table { font-variant-numeric: tabular-nums; }
+
+/* A single translucent navigation material in both appearances. */
+:root[data-theme="dark"] .module-nav {
+  background: rgba(8, 15, 28, .72);
+  border-bottom-color: rgba(255, 255, 255, .06);
+}
+:root[data-theme="light"] .module-nav {
+  background: rgba(252, 253, 254, .78);
+  border-bottom-color: rgba(15, 23, 42, .08);
+}
+.module-nav { backdrop-filter: blur(18px) saturate(1.18); -webkit-backdrop-filter: blur(18px) saturate(1.18); }
+
+/* Terminal table rhythm, numeric alignment, and a restrained hover lift. */
+.market-screener thead, .workspace-table thead, .recent-sessions-table thead {
+  background: color-mix(in srgb, var(--surface-inset) 84%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.market-screener td, .workspace-table td { height: 54px; }
+.recent-sessions-table td { height: 52px; }
+.market-screener th:nth-child(4), .market-screener th:nth-child(5), .market-screener th:nth-child(6),
+.market-screener td:nth-child(4), .market-screener td:nth-child(5), .market-screener td:nth-child(6),
+.workspace-table th:nth-child(n+2), .workspace-table td:nth-child(n+2),
+.recent-sessions-table th:nth-child(n+2), .recent-sessions-table td:nth-child(n+2) { text-align: right; }
+.market-screener td:nth-child(4), .market-screener td:nth-child(5), .market-screener td:nth-child(6),
+.workspace-table td:nth-child(n+2):not(:last-child), .recent-sessions-table td:nth-child(n+2) {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.workspace-table td:last-child .workspace-row-actions { justify-content: flex-end; }
+.market-screener tbody tr:hover, .workspace-table tbody tr:hover, .recent-sessions-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-primary) 5%, var(--surface));
+  box-shadow: inset 3px 0 var(--accent-primary), 0 0 22px color-mix(in srgb, var(--accent-primary) 8%, transparent);
+}
+
+/* Give the plot and its floating OHLC strip room to breathe. */
+.chart-plot { padding-top: 16px; }
+.chart-crosshair-ribbon { top: 64px; }
+.chart-plot__canvas { border-top: 1px solid var(--border-subtle); }
 .candle-forensics { background: color-mix(in srgb, var(--canvas) 78%, transparent) !important; backdrop-filter: blur(10px); }
 .candle-forensics__panel { max-width: min(920px, calc(100vw - 32px)); background: var(--surface) !important; border-color: var(--border-default) !important; box-shadow: 0 24px 80px rgba(0, 0, 0, .42); }
 .candle-forensics [class*="bg-[#0B0E14]"], .candle-forensics [class*="bg-[#05070B]"] { background: var(--surface-inset) !important; }

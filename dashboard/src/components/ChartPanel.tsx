@@ -110,19 +110,19 @@ export default function ChartPanel({
 
     const palette = resolvedTheme === "light"
       ? {
-          canvas: "#F6F8F8",
-          text: "#4C5F6D",
-          grid: "#E1E9EA",
-          border: "#D7E0E3",
+          canvas: "#F4F7FA",
+          text: "#64748B",
+          grid: "rgba(100, 116, 139, 0.14)",
+          border: "rgba(15, 23, 42, 0.10)",
           accent: "#3B82F6",
-          label: "#FBFCFB",
+          label: "#FCFDFE",
           positive: "#16803A",
           negative: "#C92A2A",
         }
       : {
           canvas: "#050607",
           text: "#9AA4B2",
-          grid: "#101317",
+          grid: "rgba(148, 163, 184, 0.09)",
           border: "#1B222B",
           accent: "#3B82F6",
           label: "#11161D",
@@ -313,9 +313,15 @@ export default function ChartPanel({
     // Fast MAs: EMA 9 & EMA 20
     if (showFastMA) {
       // Compute EMA 9 (secondary electric blue)
+      const ema9GlowSeries = chart.addSeries(LineSeries, {
+        color: "rgba(59, 130, 246, 0.18)",
+        lineWidth: 4,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
       const ema9Series = chart.addSeries(LineSeries, {
         color: "#3B82F6",
-        lineWidth: 1,
+        lineWidth: 2,
         title: "EMA 9",
       });
       const k9 = 2 / (9 + 1);
@@ -325,13 +331,20 @@ export default function ChartPanel({
         ema9 = i === 0 ? closes[0] : closes[i] * k9 + ema9 * (1 - k9);
         if (i >= 8) ema9Data.push({ time: times[i], value: Number(ema9.toFixed(2)) });
       }
+      ema9GlowSeries.setData(ema9Data);
       ema9Series.setData(ema9Data);
-      maSeriesRef.current.push(ema9Series);
+      maSeriesRef.current.push(ema9GlowSeries, ema9Series);
 
       // Compute EMA 20 (Dodger Blue primary)
+      const ema20GlowSeries = chart.addSeries(LineSeries, {
+        color: "rgba(30, 144, 255, 0.14)",
+        lineWidth: 4,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
       const ema20Series = chart.addSeries(LineSeries, {
         color: "#1E90FF",
-        lineWidth: 1,
+        lineWidth: 2,
         title: "EMA 20",
       });
       const k20 = 2 / (20 + 1);
@@ -341,8 +354,9 @@ export default function ChartPanel({
         ema20 = i === 0 ? closes[0] : closes[i] * k20 + ema20 * (1 - k20);
         if (i >= 19) ema20Data.push({ time: times[i], value: Number(ema20.toFixed(2)) });
       }
+      ema20GlowSeries.setData(ema20Data);
       ema20Series.setData(ema20Data);
-      maSeriesRef.current.push(ema20Series);
+      maSeriesRef.current.push(ema20GlowSeries, ema20Series);
     }
 
     // Slow MAs: SMA 50 & SMA 200
@@ -546,7 +560,7 @@ export default function ChartPanel({
       </div>
 
       {/* Candlestick Chart Canvas — True pitch black #000000 */}
-      <div className="flex-1 min-h-0 relative bg-[var(--canvas)] overflow-hidden">
+      <div className="chart-plot flex-1 min-h-0 relative bg-[var(--canvas)] overflow-hidden">
         {ohlc?.candles.length ? <div className="chart-crosshair-ribbon" aria-live="off">
           <span>{(hoveredBar ?? ohlc.candles.at(-1))?.time}</span>
           {(["open", "high", "low", "close"] as const).map((key) => <span key={key}><small>{key[0].toUpperCase()}</small> ₹{(hoveredBar ?? ohlc.candles.at(-1))?.[key].toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>)}
@@ -573,7 +587,7 @@ export default function ChartPanel({
 
         {error && !loading && ohlc && <div className="absolute top-3 left-3 z-10 bg-[var(--surface-elevated)] border border-[var(--border-default)] px-3 py-2 type-meta">Quote unavailable. Historical bars remain visible.</div>}
 
-        <div ref={containerRef} className="w-full h-full" />
+        <div ref={containerRef} className="chart-plot__canvas w-full h-full" />
 
         {/* Zoom & Scaling Control Bar — Bottom Right Corner */}
         {ohlc && ohlc.candles && ohlc.candles.length > 0 && !loading && (
