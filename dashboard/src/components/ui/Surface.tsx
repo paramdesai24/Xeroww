@@ -32,9 +32,9 @@ export const Surface: React.FC<SurfaceProps> = ({
 
   return (
     <div
-      className={className}
+      className={`ui-surface ${className}`.trim()}
       style={{
-        backgroundColor: bgMap[level],
+        ...(level === "surface" ? {} : { backgroundColor: bgMap[level] }),
         borderTop: borderTopMap[accentEdge],
         ...style,
       }}

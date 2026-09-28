@@ -11,3 +11,4 @@ export * from "./Table";
 export * from "./Skeleton";
 export * from "./Feedback";
 export * from "./AppErrorBoundary";
+export * from "./Primitives";
