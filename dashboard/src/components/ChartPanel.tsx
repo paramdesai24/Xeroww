@@ -2,28 +2,35 @@
 // TradingView Lightweight Charts candlestick panel with a pitch-black canvas,
 // vivid saturated candles, crisp price lines, and natural typography.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   createChart,
   ColorType,
   CrosshairMode,
   CandlestickSeries,
   LineSeries,
+  AreaSeries,
+  BaselineSeries,
+  HistogramSeries,
   LineStyle,
   type IChartApi,
   type ISeriesApi,
   type IPriceLine,
   type MouseEventParams,
 } from "lightweight-charts";
-import { TrendingUp, TrendingDown, BarChart2, Plus, Minus, RotateCcw } from "lucide-react";
-import type { QuoteData, OHLCData, OHLCBar } from "../types/market";
+import { TrendingUp, TrendingDown, BarChart2, Plus, Minus, RotateCcw, Maximize2, Minimize2 } from "lucide-react";
+import type { QuoteData, OHLCData, OHLCBar, StockMeta } from "../types/market";
 import type { MarketStructureSummaryResponse, SRZone } from "../types/structure";
 import { typography } from "../design";
 import type { AppError } from "../api/errors";
+import { useTheme } from "../theme/context";
+import { chartCandles } from "./market/chartCandles";
+import { Pill, Toolbar } from "./ui";
 
 interface ChartPanelProps {
   symbol: string;
   quote: QuoteData | null;
+  stock?: StockMeta | null;
   ohlc: OHLCData | null;
   structure?: MarketStructureSummaryResponse | null;
   loading: boolean;
@@ -34,6 +41,11 @@ interface ChartPanelProps {
   onOpenDiff?: () => void;
   onOpenForensics?: () => void;
   onPlanDecision?: () => void;
+  onAddWatchlist?: () => void;
+  onCreateAlert?: () => void;
+  onShare?: () => void;
+  timeframe?: string;
+  onTimeframeChange?: (label: string, period: string, interval: string) => void;
   isXRayOpen?: boolean;
   onToggleXRay?: () => void;
   onCollapse?: () => void;
@@ -42,6 +54,7 @@ interface ChartPanelProps {
 export default function ChartPanel({
   symbol,
   quote,
+  stock,
   ohlc,
   structure,
   loading,
@@ -52,13 +65,20 @@ export default function ChartPanel({
   onOpenDiff,
   onOpenForensics,
   onPlanDecision,
+  onAddWatchlist,
+  onCreateAlert,
+  onShare,
+  timeframe = "1M",
+  onTimeframeChange,
   isXRayOpen,
   onToggleXRay,
   onCollapse,
 }: ChartPanelProps) {
+  const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const seriesRef = useRef<ISeriesApi<any> | null>(null);
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const priceLinesRef = useRef<IPriceLine[]>([]);
   const maSeriesRef = useRef<ISeriesApi<"Line">[]>([]);
 
@@ -66,6 +86,15 @@ export default function ChartPanel({
   const [showSR, setShowSR] = useState<boolean>(true);
   const [showFastMA, setShowFastMA] = useState<boolean>(false); // EMA 9 & EMA 20
   const [showSlowMA, setShowSlowMA] = useState<boolean>(false); // SMA 50 & SMA 200
+  const [chartType, setChartType] = useState<"candles" | "hollow" | "line" | "area" | "baseline">("candles");
+  const [hoveredBar, setHoveredBar] = useState<OHLCBar | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setIsFullscreen(false); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isFullscreen]);
   const [clock, setClock] = useState(() => Date.now());
   useEffect(() => {
     if (error?.status !== 429) return;
@@ -73,37 +102,60 @@ export default function ChartPanel({
     return () => window.clearInterval(timer);
   }, [error]);
   const retrySeconds = error?.retryAt ? Math.max(0, Math.ceil((error.retryAt - clock) / 1000)) : 0;
+  const chartBars = useMemo(() => chartCandles(ohlc), [ohlc]);
 
   // Initialize chart once
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const palette = resolvedTheme === "light"
+      ? {
+          canvas: "#F5F6F8",
+          text: "#475569",
+          grid: "#E6EAF0",
+          border: "#DEE3EB",
+          accent: "#3B82F6",
+          label: "#FFFFFF",
+          positive: "#16803A",
+          negative: "#C92A2A",
+        }
+      : {
+          canvas: "#050607",
+          text: "#9AA4B2",
+          grid: "#101317",
+          border: "#1B222B",
+          accent: "#3B82F6",
+          label: "#11161D",
+          positive: "#22C55E",
+          negative: "#EF4444",
+        };
+
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: "#000000" }, // pitch black canvas
-        textColor: "#A0A0A8", // bright legible axis labels
+        background: { type: ColorType.Solid, color: palette.canvas },
+        textColor: palette.text,
         fontFamily: typography.chart.family,
         fontSize: typography.chart.axisSize,
       },
       grid: {
-        vertLines: { color: "#1A1A1A" },
-        horzLines: { color: "#1A1A1A" },
+        vertLines: { color: palette.grid },
+        horzLines: { color: palette.grid },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: "#3B82F688", labelBackgroundColor: "#161616" }, // elegant secondary accent crosshair
-        horzLine: { color: "#3B82F688", labelBackgroundColor: "#161616" },
+        vertLine: { color: palette.accent, labelBackgroundColor: palette.label },
+        horzLine: { color: palette.accent, labelBackgroundColor: palette.label },
       },
       rightPriceScale: {
-        borderColor: "#232323",
-        textColor: "#A0A0A8",
+        borderColor: palette.border,
+        textColor: palette.text,
         scaleMargins: {
           top: 0.08,
           bottom: 0.08,
         },
       },
       timeScale: {
-        borderColor: "#232323",
+        borderColor: palette.border,
         timeVisible: true,
         secondsVisible: false,
         fixLeftEdge: true,
@@ -114,17 +166,26 @@ export default function ChartPanel({
       height: containerRef.current.clientHeight,
     });
 
-    const series = chart.addSeries(CandlestickSeries, {
-      upColor: "#22C55E",
-      downColor: "#EF4444",
-      borderUpColor: "#22C55E",
-      borderDownColor: "#EF4444",
-      wickUpColor: "#22C55E",
-      wickDownColor: "#EF4444",
-    });
+    const series = chartType === "line"
+      ? chart.addSeries(LineSeries, { color: palette.accent, lineWidth: 2 })
+      : chartType === "area"
+        ? chart.addSeries(AreaSeries, { lineColor: palette.accent, topColor: `${palette.accent}55`, bottomColor: `${palette.accent}05` })
+        : chartType === "baseline"
+          ? chart.addSeries(BaselineSeries, { baseValue: { type: "price", price: quote?.previous_close ?? 0 }, topLineColor: palette.positive, topFillColor1: `${palette.positive}44`, topFillColor2: `${palette.positive}05`, bottomLineColor: palette.negative, bottomFillColor1: `${palette.negative}05`, bottomFillColor2: `${palette.negative}44` })
+          : chart.addSeries(CandlestickSeries, {
+              upColor: chartType === "hollow" ? "transparent" : palette.positive,
+              downColor: chartType === "hollow" ? "transparent" : palette.negative,
+              borderUpColor: palette.positive,
+              borderDownColor: palette.negative,
+              wickUpColor: palette.positive,
+              wickDownColor: palette.negative,
+            });
 
     chartRef.current = chart;
-    seriesRef.current = series as ISeriesApi<"Candlestick">;
+    seriesRef.current = series as ISeriesApi<any>;
+    const volumeSeries = chart.addSeries(HistogramSeries, { priceScaleId: "", priceFormat: { type: "volume" }, lastValueVisible: false, priceLineVisible: false });
+    volumeSeries.priceScale().applyOptions({ scaleMargins: { top: .82, bottom: 0 } });
+    volumeSeriesRef.current = volumeSeries;
 
     const ro = new ResizeObserver(() => {
       if (containerRef.current) {
@@ -142,43 +203,55 @@ export default function ChartPanel({
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      volumeSeriesRef.current = null;
+      priceLinesRef.current = [];
+      maSeriesRef.current = [];
     };
-  }, []);
+  }, [resolvedTheme, chartType, quote?.previous_close]);
 
   // Update candle data and handle chart clicks
   useEffect(() => {
     if (!seriesRef.current || !chartRef.current) return;
-    if (!ohlc?.candles) {
+    if (!chartBars.length) {
       seriesRef.current.setData([]);
+      volumeSeriesRef.current?.setData([]);
       return;
     }
 
-    const data = ohlc.candles.map((c) => ({
-      time: c.time as unknown as import("lightweight-charts").Time,
-      open: c.open,
-      high: c.high,
-      low: c.low,
-      close: c.close,
-    }));
+    const data = chartBars.map(({ bar, time }) => chartType === "candles" || chartType === "hollow" ? ({
+      time, open: bar.open, high: bar.high, low: bar.low, close: bar.close,
+    }) : ({ time, value: bar.close }));
 
-    seriesRef.current.setData(data);
+    seriesRef.current.setData(data as any);
+    volumeSeriesRef.current?.setData(chartBars.map(({ bar, time }) => ({
+      time,
+      value: bar.volume,
+      color: bar.close >= bar.open ? (resolvedTheme === "light" ? "#16803A33" : "#22C55E44") : (resolvedTheme === "light" ? "#C6282833" : "#EF444444"),
+    })));
+
+    const handleCrosshairMove = (param: MouseEventParams) => {
+      const matched = param.time ? chartBars.find((item) => String(item.time) === String(param.time))?.bar ?? null : null;
+      setHoveredBar((previous) => previous?.chart_time === matched?.chart_time && previous?.time === matched?.time ? previous : matched);
+    };
+    chartRef.current.subscribeCrosshairMove(handleCrosshairMove);
 
     // Subscribe to crosshair click for candle forensic selection
-    const handleCrosshairMove = (param: MouseEventParams) => {
-      if (!param.time || !onSelectCandle || !ohlc?.candles) return;
+    const handleCandleClick = (param: MouseEventParams) => {
+      if (!param.time || !onSelectCandle) return;
       const clickedTime = String(param.time);
-      const matched = ohlc.candles.find((c) => String(c.time) === clickedTime);
+      const matched = chartBars.find((item) => String(item.time) === clickedTime)?.bar;
       if (matched) {
         onSelectCandle(matched);
       }
     };
 
-    chartRef.current.subscribeClick(handleCrosshairMove);
+    chartRef.current.subscribeClick(handleCandleClick);
 
     return () => {
-      chartRef.current?.unsubscribeClick(handleCrosshairMove);
+      chartRef.current?.unsubscribeClick(handleCandleClick);
+      chartRef.current?.unsubscribeCrosshairMove(handleCrosshairMove);
     };
-  }, [ohlc, onSelectCandle]);
+  }, [chartBars, onSelectCandle, resolvedTheme, chartType]);
 
   // Support / Resistance Lines
   useEffect(() => {
@@ -219,7 +292,7 @@ export default function ChartPanel({
       });
       priceLinesRef.current.push(line);
     });
-  }, [showSR, structure]);
+  }, [showSR, structure, resolvedTheme, chartType]);
 
   // Moving Average Overlays
   useEffect(() => {
@@ -232,10 +305,10 @@ export default function ChartPanel({
     });
     maSeriesRef.current = [];
 
-    if (!ohlc?.candles || ohlc.candles.length === 0) return;
+    if (!chartBars.length) return;
 
-    const closes = ohlc.candles.map((c) => c.close);
-    const times = ohlc.candles.map((c) => c.time as unknown as import("lightweight-charts").Time);
+    const closes = chartBars.map(({ bar }) => bar.close);
+    const times = chartBars.map(({ time }) => time);
 
     // Fast MAs: EMA 9 & EMA 20
     if (showFastMA) {
@@ -304,7 +377,7 @@ export default function ChartPanel({
         maSeriesRef.current.push(sma200Series);
       }
     }
-  }, [showFastMA, showSlowMA, ohlc]);
+  }, [showFastMA, showSlowMA, chartBars, resolvedTheme, chartType]);
 
   const positive = (quote?.change_pct ?? 0) > 0;
   const negative = (quote?.change_pct ?? 0) < 0;
@@ -344,14 +417,19 @@ export default function ChartPanel({
 
   const quoteStats = (
     <>
-      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Previous close</span><span className="quote-bar__stat-value">₹{quote?.previous_close.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div>
-      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Day range</span><span className="quote-bar__stat-value">₹{quote?.day_low.toFixed(1)} - ₹{quote?.day_high.toFixed(1)}</span></div>
+      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Open</span><span className="quote-bar__stat-value">₹{ohlc?.candles.at(-1)?.open.toLocaleString("en-IN", { maximumFractionDigits: 2 }) ?? "--"}</span></div>
+      <div className="quote-bar__stat"><span className="quote-bar__stat-label">High</span><span className="quote-bar__stat-value">₹{quote?.day_high.toFixed(2)}</span></div>
+      <div className="quote-bar__stat"><span className="quote-bar__stat-label">Low</span><span className="quote-bar__stat-value">₹{quote?.day_low.toFixed(2)}</span></div>
       <div className="quote-bar__stat"><span className="quote-bar__stat-label">Volume</span><span className="quote-bar__stat-value">{quote ? (quote.volume / 1e5).toFixed(2) : "0.00"}L</span></div>
     </>
   );
+  const timeframes = [
+    ["1D", "1d", "5m"], ["5D", "5d", "15m"], ["1M", "1mo", "1d"], ["3M", "3mo", "1d"],
+    ["6M", "6mo", "1d"], ["1Y", "1y", "1d"], ["5Y", "5y", "1wk"], ["Max", "max", "1mo"],
+  ] as const;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden" style={{ backgroundColor: "var(--canvas)" }}>
+    <div className={`chart-panel flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden${isFullscreen ? " chart-panel--fullscreen" : ""}`} style={{ backgroundColor: "var(--canvas)" }}>
       {/* Quote Bar — natural case, clear size jumps, crisp layout */}
       <div
         className="quote-bar flex shrink-0 select-none border-b border-[var(--border-default)]"
@@ -364,12 +442,7 @@ export default function ChartPanel({
                 <h1 className="type-page-title text-[var(--text-primary)] m-0">
                   {quote.symbol.replace(".NS", "")}
                 </h1>
-                <span
-                  className="text-xs text-[var(--text-secondary)] hidden md:inline"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                >
-                  {quote.display_name}
-                </span>
+                <span className="quote-bar__company"><strong>{quote.display_name}</strong><small>{stock?.sector ?? "Equity"} · {stock?.exchange ?? "NSE"}</small></span>
               </div>
 
               <div className="quote-bar__divider" />
@@ -398,75 +471,45 @@ export default function ChartPanel({
                 </span>
               </div>
 
-              <div className="quote-bar__stats text-xs text-[var(--text-secondary)]">{quoteStats}</div>
-              <details className="quote-bar__details"><summary>Quote details</summary><div className="quote-bar__details-panel">{quoteStats}</div></details>
+              <div className="quote-bar__header-actions">
+                {onPlanDecision && <button onClick={onPlanDecision}>Decision</button>}
+                <details className="quote-bar__more"><summary>More</summary><div className="quote-bar__more-panel">
+                  {onAddWatchlist && <button onClick={onAddWatchlist}>Add to watchlist</button>}
+                  {onCreateAlert && <button onClick={onCreateAlert}>Create alert</button>}
+                  {onShare && <button onClick={onShare}>Share stock</button>}
+                  <div className="quote-bar__more-stats">{quoteStats}</div>
+                </div></details>
+              </div>
               {onCollapse && <button className="market-pane__collapse quote-bar__collapse" type="button" aria-label="Hide chart" aria-controls="market-center-content" aria-expanded={true} title="Hide chart" onClick={onCollapse}>×</button>}
             </div>
 
             {/* Overlay and intelligence controls */}
-            <div className="quote-bar__controls flex items-center text-xs" tabIndex={0} aria-label="Chart layers and Workspace actions, scroll for more">
+            <Toolbar className="quote-bar__controls flex items-center text-xs" tabIndex={0} aria-label="Chart layers and Workspace actions, scroll for more">
+              <div className="quote-bar__layers quote-bar__layers--type flex items-center gap-1" role="group" aria-label="Chart type">
+                <span className="quote-bar__group-label">Chart</span>
+                {([ ["candles", "Candles"], ["hollow", "Hollow"], ["line", "Line"], ["area", "Area"], ["baseline", "Baseline"] ] as const).map(([type, label]) => <Pill key={type} selected={chartType === type} onClick={() => setChartType(type)}>{label}</Pill>)}
+              </div>
+              {onTimeframeChange && <div className="quote-bar__layers quote-bar__layers--range flex items-center gap-1" role="group" aria-label="Chart timeframe">
+                <span className="quote-bar__group-label">Range</span>
+                {timeframes.map(([label, range, interval]) => <Pill key={label} selected={timeframe === label} onClick={() => onTimeframeChange(label, range, interval)}>{label === "5D" ? "1W" : label === "3M" || label === "5Y" ? label : label.toUpperCase()}</Pill>)}
+              </div>}
               {/* Overlays Toggle Buttons */}
               <div className="quote-bar__layers flex items-center gap-2">
-                <span className="quote-bar__group-label">Chart layers</span>
-                <button
-                  onClick={() => setShowSR(!showSR)}
-                  className="quote-bar__control"
-                  aria-pressed={showSR}
-                  title="Toggle Support / Resistance level lines"
-                >
-                  S/R
-                </button>
-                <button
-                  onClick={() => setShowFastMA(!showFastMA)}
-                  className="quote-bar__control"
-                  aria-pressed={showFastMA}
-                  title="Toggle EMA 9 & EMA 20"
-                >
-                  EMA 9/20
-                </button>
-                <button
-                  onClick={() => setShowSlowMA(!showSlowMA)}
-                  className="quote-bar__control"
-                  aria-pressed={showSlowMA}
-                  title="Toggle SMA 50 & SMA 200"
-                >
-                  SMA 50/200
-                </button>
+                <span className="quote-bar__group-label">Indicators</span>
+                <Pill selected={showSR} onClick={() => setShowSR((value) => !value)}>S/R</Pill>
+                <Pill selected={showFastMA} onClick={() => setShowFastMA((value) => !value)}>EMA 9/20</Pill>
+                <Pill selected={showSlowMA} onClick={() => setShowSlowMA((value) => !value)}>SMA 50/200</Pill>
               </div>
 
               {/* Intelligence Feature Buttons */}
               <div className="quote-bar__actions flex items-center gap-2 shrink-0">
-                <span className="quote-bar__group-label">Workspace</span>
-                {onPlanDecision && (
-                  <button
-                    id="plan-decision-btn"
-                    onClick={onPlanDecision}
-                    className="quote-bar__control quote-bar__control--workspace"
-                    title="Create an evidence-backed decision ticket"
-                  >
-                    Plan Decision
-                  </button>
-                )}
-                {onOpenReplay && (
-                  <button
-                    id="trigger-replay-btn"
-                    onClick={onOpenReplay}
-                    className="quote-bar__control quote-bar__control--workspace"
-                    title="Launch Historical Market Replay Scrubber"
-                  >
-                    Replay
-                  </button>
-                )}
-                {onOpenDiff && (
-                  <button
-                    id="trigger-diff-btn"
-                    onClick={onOpenDiff}
-                    className="quote-bar__control quote-bar__control--workspace"
-                    title="Inspect What Changed Diff"
-                  >
-                    Diff
-                  </button>
-                )}
+                <button className="quote-bar__control" type="button" onClick={() => setIsFullscreen((value) => !value)} title={isFullscreen ? "Exit fullscreen chart" : "Fullscreen chart"} aria-label={isFullscreen ? "Exit fullscreen chart" : "Fullscreen chart"}>
+                  {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+                </button>
+                {onPlanDecision && <Pill onClick={onPlanDecision}>Decision</Pill>}
+                {onOpenReplay && <Pill onClick={onOpenReplay}>Replay</Pill>}
+                {onOpenDiff && <Pill onClick={onOpenDiff}>Diff</Pill>}
+                {onOpenForensics && <Pill onClick={onOpenForensics}>Forensics</Pill>}
                 {onToggleXRay && (
                   <button
                     id="trigger-xray-btn"
@@ -479,18 +522,8 @@ export default function ChartPanel({
                     <span>X-Ray</span>
                   </button>
                 )}
-                {onOpenForensics && (
-                  <button
-                    id="trigger-forensics-btn"
-                    onClick={onOpenForensics}
-                    className="quote-bar__control quote-bar__control--workspace"
-                    title="Inspect Candle Forensics & Provenance"
-                  >
-                    Forensics
-                  </button>
-                )}
               </div>
-            </div>
+            </Toolbar>
           </>
         ) : (
           <div className="quote-bar__fallback flex items-center gap-2 text-[var(--text-tertiary)] py-1 text-xs">
@@ -503,6 +536,11 @@ export default function ChartPanel({
 
       {/* Candlestick Chart Canvas — True pitch black #000000 */}
       <div className="flex-1 min-h-0 relative bg-[var(--canvas)] overflow-hidden">
+        {ohlc?.candles.length ? <div className="chart-crosshair-ribbon" aria-live="off">
+          <span>{(hoveredBar ?? ohlc.candles.at(-1))?.time}</span>
+          {(["open", "high", "low", "close"] as const).map((key) => <span key={key}><small>{key[0].toUpperCase()}</small> ₹{(hoveredBar ?? ohlc.candles.at(-1))?.[key].toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>)}
+          <span><small>Vol</small> {(((hoveredBar ?? ohlc.candles.at(-1))?.volume ?? 0) / 1e5).toFixed(2)}L</span>
+        </div> : null}
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 transition-opacity duration-150">
             <div className="flex items-center gap-2.5 px-4 py-2 rounded-sm bg-[var(--surface-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] text-xs font-medium">
