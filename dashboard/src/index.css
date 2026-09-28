@@ -2087,6 +2087,14 @@ body { font-size: var(--type-body-size); line-height: var(--type-body-leading); 
 .chart-panel .quote-bar__layers, .chart-panel .quote-bar__actions { min-width: max-content; }
 .chart-panel .quote-bar__control--workspace[aria-pressed="true"] { color: var(--text-primary); }
 .chart-crosshair-ribbon { border-radius: 6px; background: var(--surface-elevated); }
+
+/* Keep the stock identity calm and aligned across every symbol page. */
+.chart-panel .quote-bar__asset { align-items: center; }
+.chart-panel .quote-bar__asset h1 { font-size: clamp(1.45rem, 1.9vw, 2.05rem); line-height: 1.05; }
+.chart-panel .quote-bar__company { justify-content: center; align-self: center; }
+.chart-panel .quote-bar__company strong { font-size: 12px; line-height: 1.25; }
+.chart-panel .quote-bar__company small { line-height: 1.2; }
+.chart-panel .quote-bar__price .type-metric { font-size: clamp(1.1rem, 1.3vw, 1.55rem); line-height: 1.15; }
 .candle-forensics { background: color-mix(in srgb, var(--canvas) 78%, transparent) !important; backdrop-filter: blur(10px); }
 .candle-forensics__panel { max-width: min(920px, calc(100vw - 32px)); background: var(--surface) !important; border-color: var(--border-default) !important; box-shadow: 0 24px 80px rgba(0, 0, 0, .42); }
 .candle-forensics [class*="bg-[#0B0E14]"], .candle-forensics [class*="bg-[#05070B]"] { background: var(--surface-inset) !important; }
