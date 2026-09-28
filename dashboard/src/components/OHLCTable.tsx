@@ -9,6 +9,7 @@ interface OHLCTableProps {
 }
 
 export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHLCTableProps) {
+  const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   if (!candles || candles.length === 0) return null;
 
@@ -18,7 +19,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
   return (
     <div
       className={`flex flex-col shrink-0 ${
-        expanded ? "max-h-84 md:max-h-96" : "max-h-48"
+        open ? expanded ? "max-h-84 md:max-h-96" : "max-h-48" : "max-h-12"
       } border-t border-[var(--border-default)] select-none transition-all duration-200`}
       style={{ backgroundColor: "var(--canvas)", fontFamily: "var(--font-sans)" }}
     >
@@ -27,29 +28,26 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
         className="px-4 py-2 flex items-center justify-between border-b border-[var(--border-default)] shrink-0"
         style={{ backgroundColor: "var(--surface)" }}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--text-primary)]">
-            Recent Sessions
-          </span>
-          <span className="recent-sessions-note text-label text-[var(--text-tertiary)]">
-            (Last 10 sessions · Click row for candle forensics)
-          </span>
-        </div>
+        <button type="button" aria-expanded={open} aria-controls="recent-sessions-content" onClick={() => setOpen((value) => !value)} className="recent-sessions-toggle">
+          <span aria-hidden="true">{open ? "▾" : "▸"}</span>
+          <span>Recent Sessions</span>
+          <span className="recent-sessions-note">{open ? "Last 10 sessions · Click row for candle forensics" : "Show OHLC history"}</span>
+        </button>
         <div className="flex items-center gap-2.5">
-          <button
+          {open && <button
             id="toggle-recent-sessions-btn"
             type="button"
             onClick={() => setExpanded(!expanded)}
             className="text-label font-semibold text-[var(--accent-primary)] hover:text-[var(--text-primary)] transition-colors px-2 py-0.5 border border-[var(--border-default)] hover:border-[var(--border-strong)] bg-[var(--surface-inset)]"
           >
             {expanded ? "▲ Compact (4 sessions)" : "▼ Show all 10"}
-          </button>
-          <span className="text-label text-[var(--text-tertiary)] hidden sm:inline">NSE Daily Feed</span>
+          </button>}
+          {open && <span className="text-label text-[var(--text-tertiary)] hidden sm:inline">NSE Daily Feed</span>}
         </div>
       </div>
 
       {/* Table Container */}
-      <div className="recent-sessions-table overflow-y-auto overflow-x-auto min-h-0 flex-1">
+      <div id="recent-sessions-content" hidden={!open} className="recent-sessions-table overflow-y-auto overflow-x-auto min-h-0 flex-1">
         <Table>
           <TableHeader>
             <tr>

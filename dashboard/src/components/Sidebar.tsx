@@ -37,13 +37,13 @@ function QuoteRow({ stock, quote, loading, isActive, onSelect }: {
   const negative = (quote?.change_pct ?? 0) < 0;
   return <button onClick={onSelect} className={`watchlist-row w-full text-left px-4 h-14 flex items-center justify-between transition-colors duration-150 border-b border-[var(--border-subtle)] select-none outline-none ${isActive ? "bg-[var(--surface-elevated)] border-l-2 border-l-[var(--accent-primary)]" : "bg-transparent hover:bg-[var(--surface)] border-l-2 border-l-transparent"}`}>
     <div className="flex flex-col gap-0.5 min-w-0 flex-1 pr-2">
-      <span className="text-xs font-bold tracking-wide text-[var(--text-primary)] truncate">{stock.symbol.replace(/\.NS$/i, "")}</span>
-      <span className="text-label text-[var(--text-tertiary)] truncate">{stock.display_name}</span>
+      <span className="watchlist-row__symbol text-xs font-bold tracking-wide text-[var(--text-primary)] truncate">{stock.symbol.replace(/\.NS$/i, "")}</span>
+      <span className="watchlist-row__company text-label text-[var(--text-tertiary)] truncate">{stock.display_name}</span>
     </div>
     <div className="flex flex-col items-end gap-0.5 shrink-0">
       {quote ? <>
-        <span className="text-xs font-semibold text-[var(--text-primary)] tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-        <span className={`flex items-center gap-0.5 text-label font-medium tabular-nums ${positive ? "text-[var(--positive)]" : negative ? "text-[var(--negative)]" : "text-[var(--text-tertiary)]"}`} style={{ fontFamily: "var(--font-mono)" }}>
+        <span className="watchlist-row__price text-xs font-semibold text-[var(--text-primary)] tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>₹{quote.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span className={`watchlist-row__move flex items-center gap-0.5 text-label font-medium tabular-nums ${positive ? "text-[var(--positive)]" : negative ? "text-[var(--negative)]" : "text-[var(--text-tertiary)]"}`} style={{ fontFamily: "var(--font-mono)" }}>
           {positive ? <TrendingUp size={10} /> : negative ? <TrendingDown size={10} /> : <Minus size={10} />}
           {quote.change_pct > 0 ? "+" : ""}{quote.change_pct.toFixed(2)}%
         </span>
