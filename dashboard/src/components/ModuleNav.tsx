@@ -1,134 +1,49 @@
-// src/components/ModuleNav.tsx
-// Xeroww workspace navigation with a clear active indicator.
-
 import type { UserProfile } from "../types/auth";
+import GlobalSearch from "./GlobalSearch";
+import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "../theme/context";
 
-export type Module = "MARKET" | "WATCHLISTS" | "PORTFOLIO" | "REPLAY_LAB" | "ALERTS" | "JOURNAL" | "SYSTEM";
+export type Module = "HOME" | "MARKETS" | "STOCK" | "WATCHLISTS" | "PORTFOLIO" | "REPLAY" | "ALERTS" | "JOURNAL" | "SETTINGS";
 
 interface Props {
   activeModule: Module;
-  onModuleChange: (m: Module) => void;
+  onModuleChange: (module: Module) => void;
+  onOpenSymbol: (symbol: string) => void;
+  onOpenBreadth?: () => void;
   user: UserProfile | null;
   onLogout: () => void;
   onLogin?: () => void;
-  onOpenBreadth?: () => void;
 }
 
-const MODULE_CONFIG: { id: Module; label: string }[] = [
-  { id: "MARKET", label: "Market" },
+const PRIMARY: Array<{ id: Module; label: string }> = [
+  { id: "HOME", label: "Home" },
+  { id: "MARKETS", label: "Markets" },
   { id: "WATCHLISTS", label: "Watchlists" },
   { id: "PORTFOLIO", label: "Portfolio" },
-  { id: "REPLAY_LAB", label: "Replay Lab" },
-  { id: "ALERTS", label: "Alerts" },
   { id: "JOURNAL", label: "Decisions" },
-  { id: "SYSTEM", label: "System" },
 ];
 
-export default function ModuleNav({
-  activeModule,
-  onModuleChange,
-  user,
-  onLogout,
-  onLogin,
-  onOpenBreadth,
-}: Props) {
-  return (
-    <nav
-      id="module-nav"
-      className="module-nav shrink-0 border-b border-[var(--border-default)] select-none"
-      style={{
-        backgroundColor: "var(--canvas)",
-        fontFamily: "var(--font-sans)",
-      }}
-    >
-      {/* Brand */}
-      <div className="module-nav__brand flex items-center gap-2.5 shrink-0 border-r border-[var(--border-default)]">
-        <img
-          src="/xeroww-logo.png"
-          alt="Xeroww"
-          className="module-nav__logo module-nav__logo--compact"
-          width="1254"
-          height="1254"
-        />
-        <img
-          src="/xeroww-logo-long.png"
-          alt="Xeroww"
-          className="module-nav__logo module-nav__logo--full"
-          width="2172"
-          height="724"
-        />
-      </div>
+export default function ModuleNav({ activeModule, onModuleChange, onOpenSymbol, onOpenBreadth, user, onLogout, onLogin }: Props) {
+  const { resolvedTheme } = useTheme();
+  const compactLogo = resolvedTheme === "light" ? "/xeroww-logo-light.png" : "/xeroww-logo.png";
+  const fullLogo = resolvedTheme === "light" ? "/xeroww-logo-long-light.png" : "/xeroww-logo-long.png";
 
-      {/* Module tabs with natural title case */}
-      <div className="module-nav__tabs flex items-center overflow-x-auto">
-        {MODULE_CONFIG.map(({ id, label }) => {
-          const active = activeModule === id;
-          return (
-            <button
-              key={id}
-              id={`module-tab-${id.toLowerCase()}`}
-              onClick={() => onModuleChange(id)}
-              className={`module-nav__tab h-full px-4 text-[13px] font-medium flex items-center border-r border-[var(--border-default)] transition-colors duration-150 relative ${
-                active
-                  ? "text-[var(--text-primary)] bg-[var(--surface)] font-semibold"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50"
-              }`}
-            >
-              {label}
-              {active && (
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-[2px]"
-                  style={{ backgroundColor: "var(--accent-primary)" }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Market Breadth trigger */}
-      {onOpenBreadth && (
-        <button
-          id="nav-breadth-btn"
-          onClick={onOpenBreadth}
-          className="module-nav__breadth ml-3 px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors duration-150 rounded-sm bg-[var(--surface)]"
-        >
-          Market Breadth
-        </button>
-      )}
-
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* User Session status */}
-      <div className="module-nav__session flex items-center gap-3 px-4 shrink-0 border-l border-[var(--border-default)]">
-        {user ? (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[var(--positive)] shrink-0" />
-              <span className="text-xs font-medium text-[var(--text-primary)]">
-                {user.name}
-              </span>
-              <span className="text-xs text-[var(--text-tertiary)]">({user.role})</span>
-            </div>
-            <button
-              id="logout-btn"
-              onClick={onLogout}
-              className="text-xs text-[var(--text-tertiary)] hover:text-[var(--negative)] transition-colors duration-150"
-            >
-              Sign out
-            </button>
-          </>
-        ) : (
-          <button
-            id="login-btn"
-            onClick={onLogin}
-            className="px-3 py-1 text-xs font-semibold text-[var(--accent-primary)] bg-[var(--accent-subtle)] border border-[var(--accent-border)] hover:border-[var(--accent-primary)] transition-colors duration-150 rounded-sm"
-          >
-            Sign in
-          </button>
-        )}
-      </div>
-    </nav>
-  );
+  return <nav id="module-nav" className="module-nav" aria-label="Primary navigation">
+    <button className="module-nav__brand" type="button" onClick={() => onModuleChange("HOME")} aria-label="Xeroww home">
+      <img src={compactLogo} alt="" className="module-nav__logo module-nav__logo--compact" />
+      <img src={fullLogo} alt="Xeroww" className="module-nav__logo module-nav__logo--full" />
+    </button>
+    <div className="module-nav__tabs">
+      {PRIMARY.map(({ id, label }) => <button key={id} type="button" onClick={() => onModuleChange(id)} className={`module-nav__tab${activeModule === id ? " is-active" : ""}`} aria-current={activeModule === id ? "page" : undefined}>{label}</button>)}
+    </div>
+    <div className="module-nav__tools">
+      <GlobalSearch onOpenSymbol={onOpenSymbol} />
+      <button className={`module-nav__utility${activeModule === "ALERTS" ? " is-active" : ""}`} onClick={() => onModuleChange("ALERTS")}>Alerts</button>
+      <button className={`module-nav__utility${activeModule === "REPLAY" ? " is-active" : ""}`} onClick={() => onModuleChange("REPLAY")}>Replay</button>
+      {onOpenBreadth && <button className="module-nav__utility" type="button" onClick={onOpenBreadth}>Breadth</button>}
+      <ThemeToggle />
+      {user ? <div className="module-nav__profile"><button type="button" onClick={() => onModuleChange("SETTINGS")} aria-label="Open settings"><span className="module-nav__avatar" aria-hidden="true">{user.name.trim().charAt(0).toUpperCase()}<span className="module-nav__presence" /></span>{user.name}</button><button type="button" onClick={onLogout}>Sign out</button></div>
+        : <button id="login-btn" className="module-nav__signin" type="button" onClick={onLogin}>Sign in</button>}
+    </div>
+  </nav>;
 }
