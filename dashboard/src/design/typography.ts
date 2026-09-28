@@ -2,7 +2,8 @@
 
 export const typography = {
   family: {
-    sans: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    display: "'Inter Tight', 'Inter', system-ui, sans-serif",
+    sans: "'Inter', system-ui, sans-serif",
     mono: "'IBM Plex Mono', 'Cascadia Code', 'SFMono-Regular', Consolas, monospace",
   },
   role: {
@@ -18,7 +19,7 @@ export const typography = {
   },
   chart: {
     family: "'IBM Plex Mono', Consolas, monospace",
-    axisSize: 12,
+    axisSize: 11,
     nodeTitleSize: 13,
     nodeDetailSize: 12,
   },

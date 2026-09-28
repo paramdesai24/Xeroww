@@ -23,18 +23,18 @@ export const spacing = {
 
 export const motion = {
   duration: {
-    fast:  "100ms",
-    base:  "160ms",
+    fast:  "180ms",
+    base:  "180ms",
     slow:  "180ms",
   },
   ease: {
-    default: "cubic-bezier(0.16, 1, 0.3, 1)",
+    default: "cubic-bezier(.2,.8,.2,1)",
     linear:  "linear",
   },
   // Standard transition shorthand for CSS
   transitions: {
-    base:  "color 160ms cubic-bezier(0.16,1,0.3,1), background-color 160ms cubic-bezier(0.16,1,0.3,1), border-color 160ms cubic-bezier(0.16,1,0.3,1)",
-    fast:  "color 100ms cubic-bezier(0.16,1,0.3,1), background-color 100ms cubic-bezier(0.16,1,0.3,1)",
-    opacity: "opacity 160ms cubic-bezier(0.16,1,0.3,1)",
+    base:  "color 180ms cubic-bezier(.2,.8,.2,1), background-color 180ms cubic-bezier(.2,.8,.2,1), border-color 180ms cubic-bezier(.2,.8,.2,1)",
+    fast:  "color 180ms cubic-bezier(.2,.8,.2,1), background-color 180ms cubic-bezier(.2,.8,.2,1)",
+    opacity: "opacity 180ms cubic-bezier(.2,.8,.2,1)",
   },
 } as const;
