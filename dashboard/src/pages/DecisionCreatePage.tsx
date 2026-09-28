@@ -96,7 +96,7 @@ export default function DecisionCreatePage() {
       sessionStorage.removeItem(storageKey);
       if (replaySessionId) {
         await api.replayLab.submitDecision(replaySessionId, request);
-        navigate(`/replay-lab/${replaySessionId}`);
+        navigate(`/replay/${replaySessionId}`);
       } else {
         const created = await api.decisions.create(request);
         navigate(`/decisions/${created.id}`);

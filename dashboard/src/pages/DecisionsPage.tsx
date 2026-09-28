@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import CompanyLogo from "../components/market/CompanyLogo";
 import { api } from "../api/client";
 import type { DecisionSummary } from "../types/decision";
 
@@ -68,7 +69,7 @@ export default function DecisionsPage() {
         <section className="decision-list">
           {items.map((item) => (
             <Link className="decision-list__row" to={`/decisions/${item.id}`} key={item.id}>
-              <div><strong>{item.symbol}</strong><span>{item.direction ?? "LEGACY"} / {item.intent ?? "JOURNAL"}</span></div>
+              <div className="decision-list__identity"><CompanyLogo symbol={item.symbol} size="small" /><span><strong>{item.symbol}</strong><span>{item.direction ?? "LEGACY"} / {item.intent ?? "JOURNAL"}</span></span></div>
               <div><span>Evidence</span><strong>{item.evidence_summary ?? "Legacy snapshot"}</strong></div>
               <div><span>Aligned / Conflict</span><strong>{item.evidence_counts.aligned ?? 0} / {item.evidence_counts.conflicting ?? 0}</strong></div>
               <div><span>As of</span><strong>{new Date(item.source_as_of ?? item.timestamp).toLocaleDateString("en-IN")}</strong></div>

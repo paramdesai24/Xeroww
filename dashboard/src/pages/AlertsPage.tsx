@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { normalizeError, type AppError } from "../api/errors";
 import SymbolAutocomplete from "../components/SymbolAutocomplete";
+import CompanyLogo from "../components/market/CompanyLogo";
 import { EmptyState, ErrorNotice, FieldError, SuccessNotice } from "../components/ui";
 import { ALERT_TYPES, conditionSummary } from "../features/alerts/conditionFormatters";
 import type { Alert, AlertEvaluationSummary } from "../types/platform";
@@ -143,9 +144,9 @@ export default function AlertsPage() {
           const latest = alert.latest_evaluation;
           const status = !alert.enabled ? "Paused" : latest?.data_quality_status === "error" ? "Check failed" : latest?.triggered ? "Triggered" : "Monitoring";
           return <article className="alerts-row" key={alert.id}>
-            <div className="alerts-row__main"><strong>{alert.symbol}</strong><span className="alerts-row__condition">{conditionSummary(alert)}</span><span className={`alerts-status alerts-status--${status.toLowerCase().replace(" ", "-")}`}>{status}</span></div>
+            <div className="alerts-row__main"><CompanyLogo symbol={alert.symbol} size="small" /><strong>{alert.symbol}</strong><span className="alerts-row__condition">{conditionSummary(alert)}</span><span className={`alerts-status alerts-status--${status.toLowerCase().replace(" ", "-")}`}>{status}</span></div>
             <p>{latest ? latest.message : "Not checked yet"}<small>{latest ? `${new Date(latest.evaluated_at).toLocaleString()} · ${latest.data_quality_status}` : "On-demand check"}</small></p>
-            <div className="workspace-row-actions alerts-row__actions"><button onClick={() => void run(() => api.alerts.evaluate(alert.id), `${alert.symbol} checked.`)} disabled={busy || !alert.enabled}>Check</button><button onClick={() => void openHistory(alert)}>History</button><button onClick={() => openEditor(alert)}>Edit</button><button onClick={() => void run(() => api.alerts.update(alert.id, { enabled: !alert.enabled }), alert.enabled ? "Alert paused." : "Alert resumed.")} disabled={busy}>{alert.enabled ? "Pause" : "Resume"}</button><button onClick={() => navigate(`/market/${encodeURIComponent(alert.symbol)}`)}>Market</button><button onClick={() => decision(alert)}>Decision</button><button className="alerts-delete" onClick={() => { if (window.confirm(`Delete ${alert.symbol} alert and its history?`)) void run(() => api.alerts.delete(alert.id), "Alert deleted."); }} disabled={busy}>Delete</button></div>
+            <div className="workspace-row-actions alerts-row__actions"><button onClick={() => void run(() => api.alerts.evaluate(alert.id), `${alert.symbol} checked.`)} disabled={busy || !alert.enabled}>Check</button><button onClick={() => void openHistory(alert)}>History</button><button onClick={() => openEditor(alert)}>Edit</button><button onClick={() => void run(() => api.alerts.update(alert.id, { enabled: !alert.enabled }), alert.enabled ? "Alert paused." : "Alert resumed.")} disabled={busy}>{alert.enabled ? "Pause" : "Resume"}</button><button onClick={() => navigate(`/stocks/${encodeURIComponent(alert.symbol.replace(/\.NS$/, ""))}`)}>Market</button><button onClick={() => decision(alert)}>Decision</button><button className="alerts-delete" onClick={() => { if (window.confirm(`Delete ${alert.symbol} alert and its history?`)) void run(() => api.alerts.delete(alert.id), "Alert deleted."); }} disabled={busy}>Delete</button></div>
           </article>;
         })}</div>}
     </section>

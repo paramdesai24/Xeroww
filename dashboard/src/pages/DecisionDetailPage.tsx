@@ -38,7 +38,7 @@ export default function DecisionDetailPage() {
     <main className="decision-page">
       <header className="decision-page__header">
         <div><p className="decision-eyebrow">Immutable decision #{decision.id}</p><h1>{decision.symbol}</h1><p>{decision.direction ?? "LEGACY"} / {decision.intent} / {decision.holding_period ?? "Unspecified horizon"}</p></div>
-        <div className="decision-header-actions"><Link className="decision-secondary-action" to={`/market/${encodeURIComponent(decision.symbol)}`}>Open Market</Link><span className={`decision-status decision-status--${decision.status.toLowerCase()}`}>{decision.status}</span></div>
+        <div className="decision-header-actions"><Link className="decision-secondary-action" to={`/stocks/${encodeURIComponent(decision.symbol.replace(/\.NS$/, ""))}`}>Open Stock</Link><span className={`decision-status decision-status--${decision.status.toLowerCase()}`}>{decision.status}</span></div>
       </header>
       {error && <div className="decision-error">{error}</div>}
       {decision.ticket_version === 0 && <div className="decision-warning">This earlier journal entry may have an incomplete analytical snapshot.</div>}

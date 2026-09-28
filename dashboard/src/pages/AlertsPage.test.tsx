@@ -33,7 +33,7 @@ describe("AlertsPage", () => {
     expect(screen.getByTestId("route")).toHaveTextContent("source=ALERT");
     expect(screen.getByTestId("route")).toHaveTextContent("alertId=1");
     fireEvent.click(screen.getByText("Market"));
-    expect(screen.getByTestId("route")).toHaveTextContent("/market/RELIANCE.NS");
+    expect(screen.getByTestId("route")).toHaveTextContent("/stocks/RELIANCE");
   });
 
   it("loads evaluation history only when requested", async () => {
