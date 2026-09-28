@@ -304,6 +304,7 @@ class AnalyticsOrchestrator:
         return [
             {
                 "time": str(c.get("time", "")),
+                "chart_time": c.get("chart_time"),
                 "open": round(float(c.get("open", 0.0)), 2),
                 "high": round(float(c.get("high", 0.0)), 2),
                 "low": round(float(c.get("low", 0.0)), 2),
