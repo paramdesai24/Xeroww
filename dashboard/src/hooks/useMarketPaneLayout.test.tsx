@@ -19,4 +19,11 @@ describe("Market pane layout storage", () => {
       collapsed: { watchlist: true, center: false, analytics: true },
     });
   });
+
+  it("caps oversized saved watchlists so the chart retains space", () => {
+    expect(readMarketPaneLayout(JSON.stringify({
+      version: 1, watchlistWidth: 420, analyticsWidth: 380,
+      collapsed: { watchlist: false, center: false, analytics: false },
+    })).watchlistWidth).toBe(252);
+  });
 });

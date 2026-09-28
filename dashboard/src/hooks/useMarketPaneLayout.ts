@@ -13,10 +13,11 @@ const STORAGE_KEY = "xeroww.market-panes.v1";
 const RAIL = 32;
 const HANDLE = 6;
 const MIN_WATCHLIST = 180;
+const MAX_WATCHLIST = 252;
 const MIN_CENTER = 440;
 const MIN_ANALYTICS = 280;
 const defaults: MarketPaneLayoutState = {
-  watchlistWidth: 224,
+  watchlistWidth: 208,
   analyticsWidth: 380,
   collapsed: { watchlist: false, center: false, analytics: false },
 };
@@ -28,7 +29,7 @@ export function readMarketPaneLayout(raw: string | null): MarketPaneLayoutState 
     if (value?.version !== 1 || !Number.isFinite(value.watchlistWidth) || !Number.isFinite(value.analyticsWidth)) return defaults;
     if (!value.collapsed || ["watchlist", "center", "analytics"].some((key) => typeof value.collapsed[key] !== "boolean")) return defaults;
     return {
-      watchlistWidth: Math.max(MIN_WATCHLIST, value.watchlistWidth),
+      watchlistWidth: bound(value.watchlistWidth, MIN_WATCHLIST, MAX_WATCHLIST),
       analyticsWidth: Math.max(MIN_ANALYTICS, value.analyticsWidth),
       collapsed: {
         watchlist: value.collapsed.watchlist,
@@ -71,7 +72,7 @@ export function useMarketPaneLayout() {
   const rightHandle = !layout.collapsed.analytics && !layout.collapsed.center ? HANDLE : 0;
   const preferredRight = layout.collapsed.analytics ? rightRail : bound(layout.analyticsWidth, MIN_ANALYTICS, available - MIN_WATCHLIST - MIN_CENTER - leftHandle - rightHandle);
   const leftLimit = available - MIN_CENTER - preferredRight - leftHandle - rightHandle;
-  const leftWidth = layout.collapsed.watchlist ? leftRail : bound(layout.watchlistWidth, MIN_WATCHLIST, leftLimit);
+  const leftWidth = layout.collapsed.watchlist ? leftRail : bound(layout.watchlistWidth, MIN_WATCHLIST, Math.min(MAX_WATCHLIST, leftLimit));
   const rightLimit = available - MIN_CENTER - leftWidth - leftHandle - rightHandle;
   const rightWidth = layout.collapsed.analytics ? rightRail : bound(layout.analyticsWidth, MIN_ANALYTICS, rightLimit);
 
@@ -115,7 +116,9 @@ export function useMarketPaneLayout() {
       const opposite = pane === "watchlist" ? "analytics" : "watchlist";
       const oppositeWidth = current.collapsed[opposite] ? RAIL : pane === "watchlist" ? rightWidth : leftWidth;
       const minimum = pane === "watchlist" ? MIN_WATCHLIST : MIN_ANALYTICS;
-      const maximum = Math.max(minimum, available - oppositeWidth - MIN_CENTER - HANDLE * (current.collapsed[opposite] ? 1 : 2));
+      const maximum = pane === "watchlist"
+        ? Math.min(MAX_WATCHLIST, Math.max(minimum, available - oppositeWidth - MIN_CENTER - HANDLE * (current.collapsed[opposite] ? 1 : 2)))
+        : Math.max(minimum, available - oppositeWidth - MIN_CENTER - HANDLE * (current.collapsed[opposite] ? 1 : 2));
       const width = bound(requestedWidth, minimum, maximum);
       return pane === "watchlist" ? { ...current, watchlistWidth: width } : { ...current, analyticsWidth: width };
     });
@@ -127,7 +130,7 @@ export function useMarketPaneLayout() {
 
   return [workspaceRef, {
     containerWidth, layout, columns, leftWidth, rightWidth,
-    leftMax: Math.max(MIN_WATCHLIST, leftLimit), rightMax: Math.max(MIN_ANALYTICS, rightLimit), dragging,
+    leftMax: Math.min(MAX_WATCHLIST, Math.max(MIN_WATCHLIST, leftLimit)), rightMax: Math.max(MIN_ANALYTICS, rightLimit), dragging,
     setDragging, resizePane, commitResize, togglePane, resetLayout,
   }] as const;
 }
