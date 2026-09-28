@@ -30,11 +30,11 @@ class Settings:
         ).split(",")
     ]
 
-    # Database — defaults to SQLite for zero-config local dev; set DATABASE_URL for PostgreSQL
+    # SQLite is the local default. Alembic owns schema changes in every environment.
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./xeroww.db")
     AUTO_CREATE_TABLES: bool = os.getenv(
         "AUTO_CREATE_TABLES",
-        "true" if os.getenv("APP_ENV", "development") == "development" else "false",
+        "false",
     ).strip().lower() in {"1", "true", "yes", "on"}
 
     # Market data provider selection

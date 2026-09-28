@@ -8,8 +8,8 @@ SQLite is used by default for local development.
 
 Upgrade Path:
   - Set DATABASE_URL=postgresql+psycopg2://user:pass@host/db in .env
-  - Tables are auto-created on application startup via lifespan event
-  - For production: use Alembic for managed migrations
+  - Run Alembic migrations before starting the application
+  - AUTO_CREATE_TABLES is opt-in for disposable databases only
 """
 
 import os

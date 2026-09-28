@@ -49,7 +49,7 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle handler."""
-    # Local development convenience only. Production schemas are managed by Alembic.
+    # Opt-in convenience for disposable databases. Alembic owns normal schemas.
     if settings.AUTO_CREATE_TABLES:
         create_all_tables()
 

@@ -112,7 +112,7 @@ class MockMarketProvider:
 
     def get_quote(self, symbol: str):
         symbol = symbol.upper()
-        if not symbol.endswith(".NS"):
+        if not symbol.startswith("^") and not symbol.endswith(".NS"):
             symbol += ".NS"
         price = self.MOCK_PRICES.get(symbol, 1000.0)
         return {
@@ -147,6 +147,8 @@ class MockMarketProvider:
 
     def normalize_symbol(self, symbol: str) -> str:
         s = symbol.strip().upper()
+        if s.startswith("^"):
+            return s
         return s if s.endswith(".NS") else f"{s}.NS"
 
 

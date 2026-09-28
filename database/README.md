@@ -12,14 +12,13 @@ Alembic is the schema authority. `database/schema.sql` is an incomplete historic
 
 ## Local development
 
-The default development configuration uses `sqlite:///./xeroww.db` and may create tables automatically when `AUTO_CREATE_TABLES=true`.
+The default development configuration uses `sqlite:///./xeroww.db`. Run migrations before starting the API. Automatic table creation is disabled by default and should be enabled only for disposable local databases because it can create tables ahead of Alembic.
 
-To exercise the migration path explicitly:
+From the repository root, apply and inspect the migration state:
 
 ```bash
 alembic upgrade head
-alembic downgrade base
-alembic upgrade head
+alembic current
 ```
 
 ## PostgreSQL
