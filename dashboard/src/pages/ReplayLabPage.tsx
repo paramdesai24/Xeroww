@@ -22,11 +22,11 @@ export default function ReplayLabPage() {
   const exit = async () => { if (!state || id === null) return; setBusy(true); try { const next = await api.replayLab.exit(id, state.version, "EVIDENCE", "Exited because the visible evidence no longer supported the plan."); setState(next); } catch (reason) { setError(reason instanceof Error ? reason.message : "Exit failed"); } finally { setBusy(false); } };
   const latest = state?.candles.at(-1);
   const decisionUrl = useMemo(() => state ? `/decisions/new?source=REPLAY&replaySessionId=${id}&symbol=${encodeURIComponent(state.symbol)}&asOf=${encodeURIComponent(state.current_market_time)}&capital=${state.starting_capital}&period=${encodeURIComponent(state.timeframe)}` : "#", [state, id]);
-  if (id === null) return <PageErrorState title="Invalid replay session" message="This replay session link is invalid." actionHref="/replay-lab" actionLabel="Back to Replay Lab" />;
+  if (id === null) return <PageErrorState title="Invalid replay session" message="This replay session link is invalid." actionHref="/replay" actionLabel="Back to Replay Lab" />;
   if (!state) return <main className="decision-page"><div className={error ? "decision-error" : "decision-empty"}>{error || "Loading replay session..."}</div></main>;
   const dateLabel = state.calendar_date_hidden ? `Candle ${state.visible_step + 1}` : new Date(state.current_market_time).toLocaleString("en-IN");
   return <main className="decision-page intelligence-page">
-    <header className="decision-page__header"><div><p className="decision-eyebrow">Replay session {state.id}</p><h1>{state.symbol_hidden ? "Hidden Instrument" : state.symbol}</h1><p>{dateLabel} · {state.timeframe} · {state.remaining_bars} bars remain</p></div><div className="decision-header-actions"><Link className="decision-secondary-action" to="/replay-lab">Sessions</Link>{state.status === "COMPLETED" && <Link className="decision-primary-action" to={`/replay-lab/${id}/review`}>Review</Link>}</div></header>
+    <header className="decision-page__header"><div><p className="decision-eyebrow">Replay session {state.id}</p><h1>{state.symbol_hidden ? "Hidden Instrument" : state.symbol}</h1><p>{dateLabel} · {state.timeframe} · {state.remaining_bars} bars remain</p></div><div className="decision-header-actions"><Link className="decision-secondary-action" to="/replay">Sessions</Link>{state.status === "COMPLETED" && <Link className="decision-primary-action" to={`/replay/${id}/review`}>Review</Link>}</div></header>
     {error && <div className="decision-error">{error}</div>}
     <section className="intelligence-kpis">
       <article><span>Status</span><strong>{state.status.replaceAll("_", " ")}</strong></article>

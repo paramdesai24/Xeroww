@@ -10,9 +10,9 @@ export default function ReplaySessionSetupPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const update = <K extends keyof ReplaySessionCreate>(key: K, value: ReplaySessionCreate[K]) => setForm((current) => ({ ...current, [key]: value }));
-  const create = async () => { setBusy(true); setError(null); try { const created = await api.replayLab.create({ ...form, symbol: form.randomize_symbol ? null : form.symbol }); navigate(`/replay-lab/${created.id}`); } catch (reason) { setError(reason instanceof Error ? reason.message : "Session creation failed"); } finally { setBusy(false); } };
+  const create = async () => { setBusy(true); setError(null); try { const created = await api.replayLab.create({ ...form, symbol: form.randomize_symbol ? null : form.symbol }); navigate(`/replay/${created.id}`); } catch (reason) { setError(reason instanceof Error ? reason.message : "Session creation failed"); } finally { setBusy(false); } };
   return <main className="decision-page intelligence-page">
-    <header className="decision-page__header"><div><p className="decision-eyebrow">Replay setup</p><h1>Configure a Session</h1><p>Randomization reduces hindsight bias. Hidden dates keep the exercise focused on visible evidence.</p></div><Link className="decision-secondary-action" to="/replay-lab">Back</Link></header>
+    <header className="decision-page__header"><div><p className="decision-eyebrow">Replay setup</p><h1>Configure a Session</h1><p>Randomization reduces hindsight bias. Hidden dates keep the exercise focused on visible evidence.</p></div><Link className="decision-secondary-action" to="/replay">Back</Link></header>
     {error && <div className="decision-error">{error}</div>}
     <section className="decision-form intelligence-form">
       <div className="decision-form__grid">
