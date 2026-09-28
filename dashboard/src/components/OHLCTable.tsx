@@ -13,6 +13,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
   if (!candles || candles.length === 0) return null;
 
   const recent10 = candles.slice(-10).reverse();
+  const repeatedDates = new Set(recent10.map((candle) => candle.time).filter((time, index, all) => all.indexOf(time) !== index));
 
   return (
     <div
@@ -61,7 +62,7 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
             </tr>
           </TableHeader>
           <TableBody>
-            {recent10.map((c) => {
+            {recent10.map((c, index) => {
               const isBullish = c.close >= c.open;
               const isSelected = selectedDate === c.time;
               const change = c.close - c.open;
@@ -70,12 +71,12 @@ export default function OHLCTable({ candles, selectedDate, onSelectCandle }: OHL
 
               return (
                 <TableRow
-                  key={c.time}
+                  key={`${c.time}-${c.chart_time ?? index}`}
                   isSelected={isSelected}
                   onClick={() => onSelectCandle && onSelectCandle(c)}
                 >
                   <TableCell className="text-label text-[var(--text-secondary)]">
-                    {c.time}
+                    {c.time}{repeatedDates.has(c.time) && c.chart_time != null ? ` ${new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(c.chart_time * 1000))}` : ""}
                   </TableCell>
                   <TableCell numeric className="text-label">
                     ₹{c.open.toFixed(2)}

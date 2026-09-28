@@ -14,7 +14,6 @@ export function WatchlistHeader({ lists, active, asOf, refreshing, onSelect, onA
 }) {
   return <header className="workspace-header watchlist-header">
     <div>
-      <p className="decision-eyebrow">Market monitoring</p>
       <h1 className="type-page-title">Watchlists</h1>
       <p className="type-body">{active ? `${active.item_count ?? 0} symbols · ${refreshing ? "Refreshing quotes" : formatFreshness(asOf, "Checked")}` : "Track the companies that matter to you."}</p>
     </div>

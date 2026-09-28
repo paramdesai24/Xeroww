@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../../api/client";
 import type { StockMeta } from "../../../types/market";
+import CompanyLogo from "../../../components/market/CompanyLogo";
 import { searchSymbols } from "../../../utils/symbolSearch";
 import { FieldError } from "../../../components/ui";
 import { useDialogFocus } from "../hooks/useDialogFocus";
@@ -32,7 +33,7 @@ export function SymbolPickerDrawer({ existing, busy, onClose, onAdd }: {
       <header><div><p className="decision-eyebrow">NIFTY 50 catalogue</p><h2 id="watchlist-picker-title" className="type-section-title">Add Symbol</h2></div><button onClick={onClose} aria-label="Close symbol picker">Close</button></header>
       <div className="workspace-drawer__body">
         <label>Company or ticker<input value={query} onChange={(event) => { setQuery(event.target.value); setSelected(null); setError(null); }} placeholder="Search a company" /></label>
-        {query.trim() && <div className="watchlist-picker-results" role="listbox" aria-label="Company matches">{matches.length ? matches.map((stock) => <button role="option" aria-selected={selected?.symbol === stock.symbol} className={selected?.symbol === stock.symbol ? "is-selected" : ""} key={stock.symbol} onClick={() => { setSelected(stock); setQuery(stock.display_name); setError(null); }}><strong>{stock.display_name}</strong><span>{stock.symbol}</span></button>) : <p className="type-meta">No supported companies match.</p>}</div>}
+        {query.trim() && <div className="watchlist-picker-results" role="listbox" aria-label="Company matches">{matches.length ? matches.map((stock) => <button role="option" aria-selected={selected?.symbol === stock.symbol} className={selected?.symbol === stock.symbol ? "is-selected" : ""} key={stock.symbol} onClick={() => { setSelected(stock); setQuery(stock.display_name); setError(null); }}><CompanyLogo symbol={stock.symbol} size="small" /><strong>{stock.display_name}</strong><span>{stock.symbol}</span></button>) : <p className="type-meta">No supported companies match.</p>}</div>}
         {selected && <div className="trade-preview"><span>{selected.display_name} · NSE</span><strong>{selected.symbol}</strong></div>}
         <p className="workspace-note">Quotes may be delayed. This list tracks symbols only.</p>
         {known && <FieldError message="This symbol is already tracked." />}

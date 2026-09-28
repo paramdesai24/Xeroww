@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { api } from "../api/client";
 import type { StockMeta } from "../types/market";
 import { searchSymbols } from "../utils/symbolSearch";
+import CompanyLogo from "./market/CompanyLogo";
 
 interface SymbolAutocompleteProps {
   value: string;
@@ -81,7 +82,7 @@ export default function SymbolAutocomplete({ value, onChange }: SymbolAutocomple
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => select(stock)}
             >
-              <span><strong>{stock.display_name}</strong><small>{stock.sector}</small></span>
+              <span className="symbol-autocomplete__identity"><CompanyLogo symbol={stock.symbol} size="small" /><span><strong>{stock.display_name}</strong><small>{stock.sector}</small></span></span>
               <code>{stock.symbol.replace(".NS", "")}</code>
             </button>
           )) : <p>No supported company matches “{value.trim()}”.</p>}

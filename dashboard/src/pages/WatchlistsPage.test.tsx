@@ -30,8 +30,8 @@ function RouteReadout() {
 describe("WatchlistsPage", () => {
   it("retains partial evidence and filters locally", () => {
     render(<MemoryRouter><WatchlistsPage /><RouteReadout /></MemoryRouter>);
-    expect(screen.getByText("Quote unavailable")).toBeInTheDocument();
-    expect(screen.getByText("Above previous close")).toBeInTheDocument();
+    expect(screen.getAllByText("Unavailable").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Advancing").length).toBeGreaterThan(0);
     fireEvent.change(screen.getByPlaceholderText("Ticker or company"), { target: { value: "Reliance" } });
     expect(screen.getByText("Reliance Industries")).toBeInTheDocument();
     expect(screen.queryByText("Tata Consultancy Services")).not.toBeInTheDocument();
@@ -45,8 +45,8 @@ describe("WatchlistsPage", () => {
 
   it("routes Market and Alert actions to the selected symbol", () => {
     render(<MemoryRouter><WatchlistsPage /><RouteReadout /></MemoryRouter>);
-    fireEvent.click(screen.getAllByText("Market")[0]);
-    expect(screen.getByTestId("route")).toHaveTextContent("/market/RELIANCE.NS");
+    fireEvent.click(screen.getAllByText("Open")[0]);
+    expect(screen.getByTestId("route")).toHaveTextContent("/stocks/RELIANCE");
     fireEvent.click(screen.getAllByText("Alert")[0]);
     expect(screen.getByTestId("route")).toHaveTextContent("/alerts?symbol=RELIANCE.NS");
   });

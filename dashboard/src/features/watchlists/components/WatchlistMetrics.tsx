@@ -1,13 +1,14 @@
 import type { WatchlistSnapshotRow } from "../../../types/platform";
+import { MetricCard } from "../../../components/ui";
 
 export function WatchlistMetrics({ rows }: { rows: WatchlistSnapshotRow[] }) {
   const advancing = rows.filter((row) => row.available && (row.change ?? 0) > 0).length;
   const declining = rows.filter((row) => row.available && (row.change ?? 0) < 0).length;
   const unavailable = rows.filter((row) => !row.available).length;
   return <section className="watchlist-metrics" aria-label="Watchlist breadth">
-    <article><span className="type-label">Symbols tracked</span><strong className="type-metric">{rows.length}</strong><small className="type-meta">Current watchlist</small></article>
-    <article><span className="type-label">Advancing</span><strong className="type-metric is-positive">{advancing}</strong><small className="type-meta">Positive day move</small></article>
-    <article><span className="type-label">Declining</span><strong className="type-metric is-negative">{declining}</strong><small className="type-meta">Negative day move</small></article>
-    <article><span className="type-label">Unavailable</span><strong className="type-metric">{unavailable}</strong><small className="type-meta">Quote not returned</small></article>
+    <MetricCard label="Symbols tracked" value={rows.length} note="Current watchlist" />
+    <MetricCard label="Advancing" value={advancing} note="Positive day move" tone="positive" />
+    <MetricCard label="Declining" value={declining} note="Negative day move" tone="negative" />
+    <MetricCard label="Unavailable" value={unavailable} note="Quote not returned" />
   </section>;
 }
