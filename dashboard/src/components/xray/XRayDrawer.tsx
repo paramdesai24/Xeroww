@@ -50,7 +50,7 @@ export function XRayDrawer({
         id="xray-inspection-drawer"
         aria-label="X-Ray Forensic Inspection"
         aria-hidden={!isOpen}
-        className={`fixed top-0 right-0 bottom-0 z-40 w-[420px] max-w-[95vw] xl:w-[460px] bg-[#000000] border-l border-[#232323] border-t-2 border-t-[#1E90FF] shadow-2xl flex flex-col min-h-0 overflow-hidden transform transition-transform duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`themed-overlay fixed top-0 right-0 bottom-0 z-40 w-[420px] max-w-[95vw] xl:w-[460px] bg-[#000000] border-l border-[#232323] border-t-2 border-t-[#1E90FF] shadow-2xl flex flex-col min-h-0 overflow-hidden transform transition-transform duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

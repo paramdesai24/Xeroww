@@ -38,7 +38,7 @@ export default function EventDiffModal({ symbol, onClose }: Props) {
   return (
     <div
       id="event-diff-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
+      className="themed-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
     >
       <div className="bg-[#000000] border border-[#1E2538] w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}

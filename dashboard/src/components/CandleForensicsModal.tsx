@@ -39,9 +39,9 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
   return (
     <div
       id="candle-forensics-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
+      className="themed-overlay candle-forensics fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
     >
-      <div className="bg-[#000000] border border-[#1E2538] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      <div className="candle-forensics__panel bg-[#000000] border border-[#1E2538] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="px-4 py-3 bg-[#0B0E14] border-b border-[#1E2538] flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -140,6 +140,11 @@ export default function CandleForensicsModal({ symbol, timestamp, onClose }: Pro
                     </div>
                     <div className="text-label font-mono text-[#64748B]">₹{data.anatomy.lower_shadow}</div>
                   </div>
+                </div>
+                <div className="forensics-geometry" role="img" aria-label={`Body ${data.anatomy.body_ratio_pct}%, upper shadow ${data.anatomy.upper_shadow_ratio_pct}%, lower shadow ${data.anatomy.lower_shadow_ratio_pct}%`}>
+                  <span className="forensics-geometry__upper" style={{ width: `${data.anatomy.upper_shadow_ratio_pct}%` }} />
+                  <span className="forensics-geometry__body" style={{ width: `${data.anatomy.body_ratio_pct}%` }} />
+                  <span className="forensics-geometry__lower" style={{ width: `${data.anatomy.lower_shadow_ratio_pct}%` }} />
                 </div>
               </div>
 
