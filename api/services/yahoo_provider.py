@@ -53,6 +53,33 @@ WATCHLIST: list[dict[str, str]] = NIFTY50
 # Build a quick lookup map
 SYMBOL_META: dict[str, dict[str, str]] = {s["symbol"]: s for s in WATCHLIST}
 
+INDEX_META: dict[str, dict[str, str]] = {
+    "^NSEI": {
+        "symbol": "^NSEI",
+        "display_name": "NIFTY 50",
+        "exchange": "NSE",
+        "sector": "Broad Market Index",
+    },
+    "^BSESN": {
+        "symbol": "^BSESN",
+        "display_name": "SENSEX",
+        "exchange": "BSE",
+        "sector": "Broad Market Index",
+    },
+    "^NSEBANK": {
+        "symbol": "^NSEBANK",
+        "display_name": "NIFTY BANK",
+        "exchange": "NSE",
+        "sector": "Banking Index",
+    },
+    "^INDIAVIX": {
+        "symbol": "^INDIAVIX",
+        "display_name": "INDIA VIX",
+        "exchange": "NSE",
+        "sector": "Volatility Index",
+    },
+}
+
 
 class YahooFinanceProvider(MarketDataProvider):
     """
@@ -82,7 +109,7 @@ class YahooFinanceProvider(MarketDataProvider):
         """
         symbol = self.normalize_symbol(symbol)
         self._validate_symbol(symbol)
-        meta = SYMBOL_META[symbol]
+        meta = SYMBOL_META.get(symbol) or INDEX_META[symbol]
 
         ticker = yf.Ticker(symbol)
         price, prev_close, day_high, day_low, volume, market_cap = None, None, None, None, 0, None
@@ -176,6 +203,7 @@ class YahooFinanceProvider(MarketDataProvider):
         for ts, row in df.iterrows():
             candles.append({
                 "time": ts.strftime("%Y-%m-%d"),       # TradingView Lightweight Charts format
+                "chart_time": int(ts.timestamp()),
                 "open": round(float(row["Open"]), 2),
                 "high": round(float(row["High"]), 2),
                 "low": round(float(row["Low"]), 2),
@@ -192,14 +220,15 @@ class YahooFinanceProvider(MarketDataProvider):
         interval: str = "1d",
     ) -> list[dict[str, Any]]:
         """Fetch adjusted benchmark history without treating it as a tradable stock."""
-        if symbol != "^NSEI":
-            raise ValueError("Only the configured NIFTY 50 benchmark is supported.")
+        if symbol not in INDEX_META:
+            raise ValueError("The requested benchmark index is not supported.")
         df = yf.Ticker(symbol).history(period=period, interval=interval, auto_adjust=True)
         if df.empty:
             raise RuntimeError(f"No benchmark data returned for {symbol}.")
         return [
             {
                 "time": ts.strftime("%Y-%m-%d"),
+                "chart_time": int(ts.timestamp()),
                 "open": round(float(row["Open"]), 2),
                 "high": round(float(row["High"]), 2),
                 "low": round(float(row["Low"]), 2),
@@ -214,16 +243,18 @@ class YahooFinanceProvider(MarketDataProvider):
     # ---------------------------------------------------------------------------
 
     def normalize_symbol(self, symbol: str) -> str:
-        """Ensure symbol has the .NS suffix for NSE lookup."""
+        """Normalize equities and preserve Yahoo's caret-prefixed index symbols."""
         s = symbol.strip().upper()
+        if s in INDEX_META:
+            return s
         if not s.endswith(".NS"):
             s = f"{s}.NS"
         return s
 
     def _validate_symbol(self, symbol: str) -> None:
         """Raise ValueError if the symbol is not in the Xeroww watchlist."""
-        if symbol not in SYMBOL_META:
-            valid = ", ".join(SYMBOL_META.keys())
+        if symbol not in SYMBOL_META and symbol not in INDEX_META:
+            valid = ", ".join([*SYMBOL_META.keys(), *INDEX_META.keys()])
             raise ValueError(
                 f"Symbol '{symbol}' is not in the Xeroww watchlist. "
                 f"Valid symbols: {valid}"
