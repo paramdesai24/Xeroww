@@ -9,6 +9,7 @@ import CandleAnatomy from "./components/CandleAnatomy";
 import PatternCard from "./components/PatternCard";
 import MarketRegimeCard from "./components/MarketRegimeCard";
 import SignalAlignmentCard from "./components/SignalAlignmentCard";
+import IntelligenceSnapshotCard from "./components/IntelligenceSnapshotCard";
 import SupportResistancePanel from "./components/SupportResistancePanel";
 import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
 import ReplayControlBar from "./components/ReplayControlBar";
@@ -48,17 +49,22 @@ const AuthModal = lazy(() => import("./components/AuthModal"));
 const CandleForensicsModal = lazy(() => import("./components/CandleForensicsModal"));
 const EventDiffModal = lazy(() => import("./components/EventDiffModal"));
 const MarketBreadthModal = lazy(() => import("./components/MarketBreadthModal"));
+const HomePage = lazy(() => import("./pages/HomePage"));
+const MarketsPage = lazy(() => import("./pages/MarketsPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 const lazyFallback = (
-  <div className="flex-1 flex items-center justify-center bg-[#000000] text-xs text-[#64748B]">
+  <div className="flex-1 flex items-center justify-center bg-[var(--canvas)] text-xs text-[var(--text-tertiary)]">
     Loading module...
   </div>
 );
 
-function marketSymbolFromPath(path: string): string | null {
-  if (!path.startsWith("/market/")) return null;
+function stockSymbolFromPath(path: string): string | null {
+  const prefix = path.startsWith("/stocks/") ? "/stocks/" : path.startsWith("/market/") ? "/market/" : null;
+  if (!prefix) return null;
   try {
-    const symbol = decodeURIComponent(path.slice("/market/".length)).toUpperCase();
+    const raw = decodeURIComponent(path.slice(prefix.length)).toUpperCase();
+    const symbol = raw.endsWith(".NS") ? raw : `${raw}.NS`;
     return /^[A-Z0-9&-]+\.NS$/.test(symbol) ? symbol : null;
   } catch {
     return null;
@@ -70,13 +76,16 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
-  const activeModule: Module = path.startsWith("/watchlists") ? "WATCHLISTS"
+  const activeModule: Module = path === "/" ? "HOME"
+    : path.startsWith("/markets") || path === "/market" ? "MARKETS"
+    : path.startsWith("/stocks/") || path.startsWith("/market/") ? "STOCK"
+    : path.startsWith("/watchlists") ? "WATCHLISTS"
     : path.startsWith("/portfolio") ? "PORTFOLIO"
-    : path.startsWith("/replay-lab") ? "REPLAY_LAB"
+    : path.startsWith("/replay") ? "REPLAY"
     : path.startsWith("/alerts") ? "ALERTS"
     : path.startsWith("/decisions") ? "JOURNAL"
-    : path.startsWith("/system") ? "SYSTEM"
-    : "MARKET";
+    : path.startsWith("/settings") || path.startsWith("/system") ? "SETTINGS"
+    : "HOME";
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"STRUCTURE" | "CONTEXT" | "ANATOMY" | "EVENTS">("STRUCTURE");
   const [marketWorkspaceRef, marketPanes] = useMarketPaneLayout();
@@ -106,18 +115,19 @@ export default function App() {
   }, [replayEvents, currentReplayStep]);
 
   // Market terminal state
-  const routedSymbol = marketSymbolFromPath(path);
-  const marketActive = activeModule === "MARKET" && routedSymbol !== null;
+  const routedSymbol = stockSymbolFromPath(path);
+  const marketActive = activeModule === "STOCK" && routedSymbol !== null;
   const activeSymbol = routedSymbol ?? "RELIANCE.NS";
+  const [chartRange, setChartRange] = useState({ label: "1M", period: "1mo", interval: "1d" });
   const { stocks, quote, ohlc, pattern, structure, loading, error, refresh } =
-    useMarketData(activeSymbol, marketActive);
+    useMarketData(activeSymbol, marketActive, chartRange.period, chartRange.interval);
 
   useEffect(() => {
-    if (path === "/" || path === "/market") {
-      navigate("/market/RELIANCE.NS", { replace: true });
-      return;
-    }
-  }, [path, navigate]);
+    if (path === "/market") navigate("/markets", { replace: true });
+    else if (path.startsWith("/market/") && routedSymbol) navigate(`/stocks/${routedSymbol.replace(/\.NS$/, "")}`, { replace: true });
+    else if (path === "/replay-lab" || path.startsWith("/replay-lab/")) navigate(path.replace("/replay-lab", "/replay"), { replace: true });
+    else if (path === "/system") navigate("/settings/system", { replace: true });
+  }, [path, navigate, routedSymbol]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -216,39 +226,40 @@ export default function App() {
   };
 
   const handleModuleChange = (mod: Module) => {
-    const protectedModules: Module[] = ["WATCHLISTS", "PORTFOLIO", "REPLAY_LAB", "ALERTS", "JOURNAL"];
+    const protectedModules: Module[] = ["WATCHLISTS", "PORTFOLIO", "REPLAY", "ALERTS", "JOURNAL", "SETTINGS"];
     if (protectedModules.includes(mod) && !auth.isAuthenticated) {
       setShowAuthModal(true);
     }
     const routes: Record<Module, string> = {
-      MARKET: `/market/${encodeURIComponent(activeSymbol)}`,
+      HOME: "/",
+      MARKETS: "/markets",
+      STOCK: `/stocks/${encodeURIComponent(activeSymbol.replace(/\.NS$/, ""))}`,
       WATCHLISTS: "/watchlists",
       PORTFOLIO: "/portfolio",
-      REPLAY_LAB: "/replay-lab",
+      REPLAY: "/replay",
       ALERTS: "/alerts",
       JOURNAL: "/decisions",
-      SYSTEM: "/system",
+      SETTINGS: "/settings",
     };
     navigate(routes[mod]);
   };
 
   // Auth gate — refined quant gate
   const renderAuthGate = (moduleName: string) => (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#000000] p-6">
-      <div className="w-full max-w-sm border border-[#1E2538] bg-[#0B0E14] p-8 text-center flex flex-col items-center gap-3.5 shadow-2xl">
-        <span className="w-2 h-2 rounded-full bg-[#1E90FF] block animate-pulse" />
-        <div className="text-sm font-semibold text-[#F8FAFC]">
+    <div className="flex-1 flex flex-col items-center justify-center bg-[var(--canvas)] p-6">
+      <div className="w-full max-w-sm border border-[var(--border-default)] bg-[var(--surface)] p-8 text-center flex flex-col items-center gap-3.5 shadow-2xl">
+        <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] block animate-pulse" />
+        <div className="text-sm font-semibold text-[var(--text-primary)]">
           {moduleName} requires authentication
         </div>
-        <p className="text-xs text-[#94A3B8] leading-relaxed m-0">
-          Access to multi-tenant persistence — custom watchlists, simulated
-          portfolios, alert engines, and decision audits — requires a
+        <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
+          Access to custom watchlists, simulated portfolios, alert engines, and decision audits requires a
           verified session.
         </p>
         <button
           id="gate-auth-btn"
           onClick={() => setShowAuthModal(true)}
-          className="mt-2 px-5 py-2 text-xs font-semibold bg-[#1E90FF] hover:bg-[#1C86EE] text-white transition-colors"
+          className="mt-2 px-5 py-2 text-xs font-semibold bg-[var(--accent-primary)] text-white transition-colors"
         >
           Sign In / Register
         </button>
@@ -257,20 +268,23 @@ export default function App() {
   );
 
   return (
-    <div className="app-shell flex flex-col bg-[#000000] text-[#F8FAFC] overflow-hidden select-none">
+    <div className="app-shell flex flex-col bg-[var(--canvas)] text-[var(--text-primary)] overflow-hidden select-none">
       {/* Top Module Navigator */}
       <ModuleNav
         activeModule={activeModule}
         onModuleChange={handleModuleChange}
+        onOpenSymbol={(symbol) => navigate(`/stocks/${encodeURIComponent(symbol.replace(/\.NS$/, ""))}`)}
+        onOpenBreadth={() => setShowBreadthModal(true)}
         user={auth.user}
         onLogout={auth.logout}
         onLogin={() => setShowAuthModal(true)}
-        onOpenBreadth={() => setShowBreadthModal(true)}
       />
 
       {/* Main Terminal Body */}
       <div className="app-body flex flex-1 min-h-0 overflow-hidden">
-        {activeModule === "MARKET" && path.startsWith("/market/") && !routedSymbol && <PageErrorState title="Invalid market symbol" message="Choose a supported stock from Market or Watchlists." actionHref="/market/RELIANCE.NS" actionLabel="Open Market" />}
+        {activeModule === "HOME" && <Suspense fallback={lazyFallback}><HomePage /></Suspense>}
+        {activeModule === "MARKETS" && <Suspense fallback={lazyFallback}><MarketsPage /></Suspense>}
+        {activeModule === "STOCK" && !routedSymbol && <PageErrorState title="Invalid stock symbol" message="Choose a supported stock from Markets or search." actionHref="/stocks/RELIANCE" actionLabel="Open Reliance" />}
         {marketActive && (
           <div
             ref={marketWorkspaceRef}
@@ -285,7 +299,7 @@ export default function App() {
               <Sidebar
                 stocks={stocks}
                 activeSymbol={activeSymbol}
-                onSelectSymbol={(symbol) => navigate(`/market/${encodeURIComponent(symbol)}`)}
+                onSelectSymbol={(symbol) => navigate(`/stocks/${encodeURIComponent(symbol.replace(/\.NS$/, ""))}`)}
                 onCollapse={() => marketPanes.togglePane("watchlist")}
               />
               <button className="market-pane__rail" type="button" aria-label="Show Watchlist" aria-controls="market-watchlist-content" aria-expanded={false} title="Show Watchlist" onClick={() => marketPanes.togglePane("watchlist")}>Watchlist</button>
@@ -326,6 +340,7 @@ export default function App() {
               )}
               <ChartPanel
                 symbol={activeSymbol}
+                stock={stocks.find((stock) => stock.symbol === activeSymbol) ?? null}
                 quote={isReplayMode && replayState?.current_candle ? {
                   ...quote!,
                   price: replayState.current_candle.close,
@@ -363,6 +378,11 @@ export default function App() {
                   }
                   navigate(`/decisions/new?${query.toString()}`);
                 }}
+                onAddWatchlist={() => navigate(`/watchlists?symbol=${encodeURIComponent(activeSymbol)}`)}
+                onCreateAlert={() => navigate(`/alerts?symbol=${encodeURIComponent(activeSymbol)}`)}
+                onShare={() => void navigator.clipboard?.writeText(window.location.href)}
+                timeframe={chartRange.label}
+                onTimeframeChange={(label, period, interval) => setChartRange({ label, period, interval })}
                 onOpenDiff={() => setShowDiffModal(true)}
                 onOpenForensics={() => setShowForensicsModal(true)}
                 isXRayOpen={xray.isDrawerOpen}
@@ -392,10 +412,10 @@ export default function App() {
 
             {/* Right: Analytics Sidebar */}
             <div className="market-pane market-pane--analytics" data-collapsed={marketPanes.layout.collapsed.analytics}>
-            <aside id="market-analytics-content" className="analytics-panel shrink-0 bg-[#000000] border-l border-[#1E2538] flex flex-col min-h-0 overflow-hidden">
+            <aside id="market-analytics-content" className="analytics-panel shrink-0 bg-[var(--canvas)] border-l border-[var(--border-default)] flex flex-col min-h-0 overflow-hidden">
               {/* Tab selector */}
               {/* Tab selector */}
-              <div className="analytics-panel__tabs flex items-center border-b border-[#1E2538] bg-[#05070B] shrink-0">
+              <div className="analytics-panel__tabs flex items-center border-b border-[var(--border-default)] bg-[var(--surface)] shrink-0">
                 {(isReplayMode
                   ? (["EVENTS", "STRUCTURE", "CONTEXT", "ANATOMY"] as const)
                   : (["STRUCTURE", "CONTEXT", "ANATOMY"] as const)
@@ -407,8 +427,8 @@ export default function App() {
                       onClick={() => setSidebarTab(tab)}
                       className={`flex-1 h-9 text-xs font-medium transition-colors border-b-2 flex items-center justify-center gap-1.5 whitespace-nowrap ${
                         active
-                          ? "text-[#F8FAFC] bg-[#0B0E14] border-b-[#1E90FF] font-semibold"
-                          : "text-[#64748B] hover:text-[#94A3B8] border-b-transparent"
+                          ? "text-[var(--text-primary)] bg-[var(--surface-elevated)] border-b-[var(--accent-primary)] font-semibold"
+                          : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] border-b-transparent"
                       }`}
                     >
                       <span>
@@ -432,7 +452,7 @@ export default function App() {
               </div>
 
               {/* Analytics body */}
-              <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3 bg-[#000000] overscroll-contain">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3 bg-[var(--canvas)] overscroll-contain">
                 {sidebarTab === "EVENTS" && isReplayMode ? (
                   <EventTimeline
                     events={replayEvents}
@@ -491,15 +511,10 @@ export default function App() {
                     </div>
                   ) : (
                     <>
+                      <IntelligenceSnapshotCard structure={structure} />
+                      <details className="intelligence-details"><summary>Explore the full technical evidence</summary><div>
                       <MarketRegimeCard regime={structure?.market_regime ?? null} loading={loading} />
                       <SignalAlignmentCard alignment={structure?.signal_alignment ?? null} loading={loading} />
-                      {/* Market context and synthesis */}
-                      <FuzzyExplainCard
-                        report={fuzzyReport}
-                        loading={fuzzyLoading}
-                        error={fuzzyError}
-                        onRefresh={fetchFuzzyReport}
-                      />
                       <PatternCard pattern={structure?.detected_patterns?.[0] ? {
                         symbol: structure.symbol,
                         display_name: structure.symbol.replace(".NS", ""),
@@ -516,6 +531,7 @@ export default function App() {
                       } : pattern} />
                       <SupportResistancePanel sr={structure?.support_resistance ?? null} />
                       <VolumeAnalyticsPanel volume={structure?.volume ?? null} />
+                      </div></details>
                     </>
                   )
                 ) : (
@@ -586,23 +602,21 @@ export default function App() {
           </Suspense>
         ) : renderAuthGate("Decision Workbench"))}
 
-        {activeModule === "REPLAY_LAB" && (auth.isAuthenticated ? (
+        {activeModule === "REPLAY" && (auth.isAuthenticated ? (
           <Suspense fallback={lazyFallback}>
             <Routes>
-              <Route path="/replay-lab" element={<ReplaySessionListPage />} />
-              <Route path="/replay-lab/new" element={<ReplaySessionSetupPage />} />
-              <Route path="/replay-lab/analytics" element={<ReplayAnalyticsPage />} />
-              <Route path="/replay-lab/:sessionId/review" element={<ReplayReviewPage />} />
-              <Route path="/replay-lab/:sessionId" element={<ReplayLabPage />} />
-              <Route path="/replay-lab/*" element={<ReplaySessionListPage />} />
+              <Route path="/replay" element={<ReplaySessionListPage />} />
+              <Route path="/replay/new" element={<ReplaySessionSetupPage />} />
+              <Route path="/replay/analytics" element={<ReplayAnalyticsPage />} />
+              <Route path="/replay/:sessionId/review" element={<ReplayReviewPage />} />
+              <Route path="/replay/:sessionId" element={<ReplayLabPage />} />
+              <Route path="/replay/*" element={<ReplaySessionListPage />} />
             </Routes>
           </Suspense>
         ) : renderAuthGate("Replay and Behaviour Lab"))}
 
-        {activeModule === "SYSTEM" && (
-          <Suspense fallback={lazyFallback}><SystemView user={auth.user} /></Suspense>
-        )}
-        {!path.startsWith("/market") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/replay-lab") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/system") && path !== "/" && (
+        {activeModule === "SETTINGS" && (path === "/settings/system" ? <Suspense fallback={lazyFallback}><SystemView user={auth.user} /></Suspense> : auth.isAuthenticated ? <Suspense fallback={lazyFallback}><SettingsPage /></Suspense> : renderAuthGate("Settings"))}
+        {!["/", "/markets", "/market", "/system"].includes(path) && !path.startsWith("/stocks/") && !path.startsWith("/market/") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/replay") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/settings") && (
           <Suspense fallback={lazyFallback}><NotFoundPage /></Suspense>
         )}
       </div>

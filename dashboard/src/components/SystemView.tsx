@@ -1055,7 +1055,7 @@ export default function SystemView({ user }: Props) {
 
       {/* 6. Raw JSON Telemetry Modal */}
       {rawModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
+        <div className="themed-overlay fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
           <div className="bg-[#0D0D0D] border border-[var(--border-strong)] rounded max-w-2xl w-full max-h-[80vh] flex flex-col p-4 gap-3">
             <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-2">
               <span className="text-xs font-mono font-bold text-[var(--text-primary)]">

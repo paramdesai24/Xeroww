@@ -42,7 +42,7 @@ export default function AuthModal({ auth, onClose }: Props) {
   return (
     <div
       id="auth-modal-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
+      className="themed-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-none p-4 select-none"
     >
       <div
         id="auth-modal"

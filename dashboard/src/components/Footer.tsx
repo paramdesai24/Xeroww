@@ -1,5 +1,5 @@
 // src/components/Footer.tsx
-// Xeroww pipeline status rail — minimal, factual, never decorative.
+// Xeroww pipeline status rail: minimal, factual, never decorative.
 // Real application health. Not marketing copy.
 
 import { useEffect, useState } from "react";
@@ -37,29 +37,22 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer
-      className="status-footer bg-[#000000] border-t border-[#1E2538] flex items-center px-4 justify-between shrink-0 select-none text-label font-mono text-[#64748B]"
-    >
-      <div className="status-footer__primary flex items-center gap-3">
-        <span className="status-footer__provider">Feed: <span className="text-[#94A3B8] font-medium">{health?.data_provider ?? "Yahoo Finance"}</span></span>
-        <span className="status-footer__separator text-[#334155]">·</span>
-        <span className="flex items-center gap-1.5">
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 ${
-              operational ? "bg-[#22C55E]" : "bg-[#EF4444]"
-            }`}
-          />
-          <span className={operational ? "text-[#22C55E] font-medium" : "text-[#EF4444] font-medium"}>
-            Engine: {operational ? "Operational" : "Degraded"}
-          </span>
+    <footer className="status-footer">
+      <div className="status-footer__primary">
+        <span className="status-footer__provider"><span className="status-footer__label">Feed</span><span className="status-footer__value">{health?.data_provider ?? "Yahoo Finance"}</span></span>
+        <span className="status-footer__separator" aria-hidden="true">·</span>
+        <span className="status-footer__state" role="status">
+          <span className={`status-footer__dot ${operational ? "is-operational" : "is-degraded"}`} />
+          <span className="status-footer__label">Engine</span>
+          <span className="status-footer__value">{operational ? "Operational" : "Degraded"}</span>
         </span>
-        <span className="status-footer__separator text-[#334155]">·</span>
-        <span className="status-footer__database">DB: <span className={operational ? "text-[#94A3B8]" : "text-[#EF4444]"}>{operational ? "Connected" : "Unreachable"}</span></span>
+        <span className="status-footer__separator" aria-hidden="true">·</span>
+        <span className="status-footer__database"><span className="status-footer__label">DB</span><span className="status-footer__value">{operational ? "Connected" : "Unreachable"}</span></span>
       </div>
 
-      <div className="status-footer__secondary hidden md:flex items-center gap-2 text-[#475569]">
+      <div className="status-footer__secondary">
         <span>Xeroww Quantitative Workstation</span>
-        <span className="text-[#334155]">·</span>
+        <span className="status-footer__separator" aria-hidden="true">·</span>
         <span>Deterministic Empirical Analysis</span>
       </div>
     </footer>
