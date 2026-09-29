@@ -1,8 +1,8 @@
-# Xeroww Architecture V0.11
+# Xeroww Architecture
 
 ## Overview
 
-Xeroww V0.11 combines a strict **provider abstraction** with an immutable Decision Workbench, a persisted Replay Lab, and point-in-time Portfolio Intelligence.
+Xeroww combines a strict **provider abstraction** with an immutable Decision Workbench, a persisted Replay Lab, and point-in-time Portfolio Intelligence.
 No route, service, or frontend component directly imports `yfinance`.
 This boundary allows a future provider implementation to be introduced without changing route contracts. Kafka, Spark, and Snowflake are roadmap concepts, not active runtime components.
 
@@ -14,7 +14,7 @@ The market provider exposes a centralized NIFTY 50 constituent catalogue. Decisi
 
 ---
 
-## V0.9 Data Flow
+## Current Data Flow
 
 ```text
                     ┌─────────────────────────┐
@@ -76,7 +76,7 @@ The server reconstructs replay evidence only from bars at or before the requeste
 
 ## Future Evolution
 
-### V1 — Kafka Integration
+### Kafka Integration
 ```text
 Yahoo Finance → Kafka Producer → Kafka Topic (market.ohlc)
                                       │
@@ -89,7 +89,7 @@ Yahoo Finance → Kafka Producer → Kafka Topic (market.ohlc)
 ```
 This is a target design. A production migration would also require transport configuration, operational telemetry, failure handling, and integration tests.
 
-### V2 — Spark Processing
+### Stream Processing
 ```text
 Kafka Topic → Spark Streaming → Processed OHLC + Signals
                                       │
@@ -98,7 +98,7 @@ Kafka Topic → Spark Streaming → Processed OHLC + Signals
                               (implements MarketDataProvider)
 ```
 
-### V3 - Lakehouse Analytics
+### Lakehouse Analytics
 ```text
 Spark -> Iceberg/Parquet -> AnalyticalMarketProvider -> FastAPI -> React
 ```
@@ -107,7 +107,7 @@ Spark -> Iceberg/Parquet -> AnalyticalMarketProvider -> FastAPI -> React
 
 ## Module Boundaries
 
-| Layer | Module | V0 Implementation | V1+ Replacement |
+| Layer | Module | Current Implementation | Future Replacement |
 |---|---|---|---|
 | Data Fetch | `yahoo_provider.py` | yfinance | KafkaMarketProvider |
 | API Contract | `market_provider.py` | ABC, unchanged | ABC, unchanged |

@@ -21,7 +21,7 @@ We enforce a strict physical and logical boundary between Market Data and User D
 ### Positive
 - Prevents cross-tenant data leakage and authorization tampering (OWASP BOLA/IDOR protection).
 - Relational schema remains clean, small, and easily backuppable without bloating from millions of time-series ticks.
-- Paves the way for V1.0 architecture where market data streams flow into columnar time-series storage (Apache Iceberg / ClickHouse) while relational state stays in PostgreSQL.
+- Paves the way for a future architecture where market data streams flow into columnar time-series storage such as Apache Iceberg or ClickHouse while relational state stays in PostgreSQL.
 
 ### Negative
 - Joining user transactions with historical market quotes requires application-level coordination rather than single SQL joins.

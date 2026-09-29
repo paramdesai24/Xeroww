@@ -15,7 +15,7 @@ The concrete `YahooFinanceProvider` normalizes Yahoo Finance responses. Routes r
 ### Positive
 - Direct swapping of upstream market providers (e.g., Kite Connect or mock test providers) without touching analytics algorithms or endpoints.
 - Simplifies unit testing via mock provider fixtures without network dependencies.
-- Preserves an explicit seam for a future streaming or warehouse-backed provider. Those systems are not deployed in V0.8.
+- Preserves an explicit seam for a future streaming or warehouse-backed provider. Those systems are not deployed in the current runtime.
 
 ### Negative
 - Requires normalization overhead for vendor-specific payload variations.

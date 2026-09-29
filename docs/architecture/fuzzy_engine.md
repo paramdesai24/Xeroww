@@ -1,6 +1,6 @@
 # Fuzzy Explainability Engine — Architecture
 
-> **Xeroww v0.8** | Classical Mamdani Fuzzy Inference System
+> **Xeroww** | Classical Mamdani Fuzzy Inference System
 
 ---
 

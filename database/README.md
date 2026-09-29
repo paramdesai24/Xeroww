@@ -4,9 +4,9 @@
 
 Xeroww persists users, watchlists, portfolios, alerts, decision tickets, decision amendments, replay sessions, replay events, replay executions, replay results, portfolio snapshots, portfolio snapshot holdings, risk policies, annotations, and optional market records through SQLAlchemy. Local development defaults to SQLite. Docker Compose uses PostgreSQL 16 with Psycopg 3.
 
-V0.9 evolves the existing `decision_journal_entries` table into the canonical decision-ticket store and adds `decision_ticket_amendments`. Ticket fields and captured evidence are immutable after submission. Notes, target changes, invalidation changes, and lifecycle transitions are appended as separate amendment rows.
+The Decision Workbench evolves the existing `decision_journal_entries` table into the canonical decision-ticket store and adds `decision_ticket_amendments`. Ticket fields and captured evidence are immutable after submission. Notes, target changes, invalidation changes, and lifecycle transitions are appended as separate amendment rows.
 
-V0.10 links replay decisions to a durable replay session and append-only replay event sequence. V0.11 stores each portfolio valuation as an immutable header plus normalized holding rows. Formula outputs reference the snapshot and version used for calculation.
+The Replay and Behaviour Lab links replay decisions to a durable replay session and append-only replay event sequence. Portfolio Intelligence stores each portfolio valuation as an immutable header plus normalized holding rows. Formula outputs reference the snapshot and version used for calculation.
 
 Alembic is the schema authority. `database/schema.sql` is an incomplete historical reference and must not be used to initialize the application database.
 

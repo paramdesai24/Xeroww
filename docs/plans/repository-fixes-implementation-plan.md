@@ -128,7 +128,7 @@ The main design objective is to make this architecture consistent and honest bef
 - Backend version comes from `APP_VERSION`, defaulting to `0.8.0`.
 - Frontend package version becomes `0.8.0`.
 - Frontend display version comes from a Vite build-time constant derived from `package.json`, with `VITE_APP_VERSION` as an optional override.
-- Remove hard-coded `v0.6` and `0.1.0` labels from components and config.
+- Remove hard-coded hard-coded product release labels from components and config.
 
 ### 4.9 CQRS and event terminology
 
@@ -491,7 +491,7 @@ Required corrections:
 - Current fixed five-symbol NSE universe.
 - SQLite development and PostgreSQL deployment behavior.
 - Alembic migration commands.
-- Fuzzy V0.8 feature documentation.
+- Fuzzy engine feature documentation.
 - Clear current versus future architecture sections.
 - Remove broker-execution roadmap language that conflicts with the canonical project identity.
 - Describe simulated portfolios as decision review and accounting context, not the product identity.

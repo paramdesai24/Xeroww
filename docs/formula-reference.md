@@ -1,4 +1,4 @@
-# Xeroww V0.11 Formula Reference
+# Xeroww Formula Reference
 
 All portfolio results are calculated from immutable observed snapshots. Each API metric includes a formula identifier, formula version, observation window, observation count, data quality state, and limitations.
 

@@ -1,10 +1,10 @@
-# Xeroww V0.9 Decision Workbench Implementation Plan
+# Xeroww Decision Workbench Implementation Plan
 
 ## 1. Purpose
 
-This plan defines the implementation of Xeroww V0.9 as a cross-page Decision Workbench. The release will connect the existing market analysis, fuzzy explainability, candle forensics, journal, replay, and portfolio capabilities into a disciplined decision workflow.
+This plan defines the implementation of Xeroww Decision Workbench as a cross-page Decision Workbench. The release will connect the existing market analysis, fuzzy explainability, candle forensics, journal, replay, and portfolio capabilities into a disciplined decision workflow.
 
-V0.9 will not be implemented as one oversized journal page. It will introduce dedicated routes for the decision list, decision creation, and decision detail, with contextual entry points from the Market, Replay, and Portfolio workspaces.
+Decision Workbench will not be implemented as one oversized journal page. It will introduce dedicated routes for the decision list, decision creation, and decision detail, with contextual entry points from the Market, Replay, and Portfolio workspaces.
 
 The core lifecycle is:
 
@@ -20,7 +20,7 @@ Observe market evidence
 
 ## 2. Product Outcomes
 
-V0.9 must deliver the following user outcomes:
+Decision Workbench must deliver the following user outcomes:
 
 1. A user can start a decision from the current Market symbol, the current Replay candle, a Portfolio holding, or the Decisions workspace.
 2. A user can define a structured cash-equity decision instead of entering only a free-text thesis.
@@ -29,7 +29,7 @@ V0.9 must deliver the following user outcomes:
 5. The backend, not the browser, captures the authoritative market snapshot and provenance.
 6. The submitted decision remains immutable. Later changes are stored as append-only amendments.
 7. The user can inspect the complete original snapshot on a dedicated detail page.
-8. Existing V0.8 journal entries remain readable and existing journal API consumers do not break.
+8. Existing legacy journal entries remain readable and existing journal API consumers do not break.
 
 ## 3. Scope
 
@@ -48,15 +48,15 @@ V0.9 must deliver the following user outcomes:
 - Tenant isolation for all decision data.
 - Responsive desktop, tablet, and mobile layouts.
 - Backend and frontend regression coverage.
-- Version updates from V0.8 to V0.9 after the feature is complete.
+- Version updates from legacy to Decision Workbench after the feature is complete.
 
 ### 3.2 Out of scope
 
 - Broker connectivity or real order placement.
 - Automatic trade execution from a Decision Ticket.
 - Futures, options, margin, leverage, or short-selling workflows.
-- Persisted replay sessions and behavioural scoring. Those belong to V0.10.
-- Portfolio equity curves, portfolio optimization, covariance, or attribution. Those belong to V0.11.
+- Persisted replay sessions and behavioural scoring. Those belong to Replay and Behaviour Lab.
+- Portfolio equity curves, portfolio optimization, covariance, or attribution. Those belong to Portfolio Intelligence.
 - New RSI, MACD, Bollinger, ADX, CPR, Fibonacci, or Dow Theory engines.
 - A single unexplained technical or fundamental score.
 - Kafka, Spark, Iceberg, WebSocket streaming, or external event infrastructure.
@@ -102,7 +102,7 @@ The implementation must preserve these boundaries and avoid moving business calc
 
 ### 5.1 Evolve the journal aggregate
 
-The existing `decision_journal_entries` table will remain the aggregate root and database table. It will be extended into the V0.9 Decision Ticket rather than replaced with an unrelated table.
+The existing `decision_journal_entries` table will remain the aggregate root and database table. It will be extended into the Decision Workbench Decision Ticket rather than replaced with an unrelated table.
 
 Reasons:
 
@@ -111,7 +111,7 @@ Reasons:
 - Existing thesis review and journal event integration can be evolved incrementally.
 - The product retains one decision history instead of splitting journal entries and tickets.
 
-The Python model may be renamed to `DecisionTicket` only if a compatibility alias named `DecisionJournalEntry` is retained during V0.9. The physical table must not be renamed in this release.
+The Python model may be renamed to `DecisionTicket` only if a compatibility alias named `DecisionJournalEntry` is retained during Decision Workbench. The physical table must not be renamed in this release.
 
 ### 5.2 Canonical decisions API with journal compatibility
 
@@ -120,7 +120,7 @@ New functionality will use `/decisions` as the canonical API namespace. Existing
 Compatibility rules:
 
 - Existing legacy entries have `ticket_version = 0`.
-- New V0.9 entries have `ticket_version = 1`.
+- New Decision Workbench entries have `ticket_version = 1`.
 - Legacy entries remain readable from both the old journal view contract and the new decision detail adapter.
 - Legacy thesis editing continues only for version 0 entries.
 - `/journal/{id}` must reject thesis mutation for version 1 entries with HTTP 409.
@@ -129,7 +129,7 @@ Compatibility rules:
 
 ### 5.3 Submitted decisions are immutable
 
-No server-side draft row is required in V0.9. A draft exists in the browser until submission.
+No server-side draft row is required in Decision Workbench. A draft exists in the browser until submission.
 
 After submission, the following fields never change:
 
@@ -177,7 +177,7 @@ For live mode, the client sends the candle timestamp shown during preview. If th
 
 ### 5.5 No opaque master score
 
-Evidence will remain individually inspectable. V0.9 may present a rule-count summary, but it must not calculate a mysterious composite score.
+Evidence will remain individually inspectable. Decision Workbench may present a rule-count summary, but it must not calculate a mysterious composite score.
 
 Allowed evidence summaries:
 
@@ -196,12 +196,12 @@ Direction and intent are separate:
 - Direction: `BULLISH`, `BEARISH`, or `NEUTRAL`
 - Intent: `ENTER`, `ADD`, `HOLD`, `REDUCE`, `EXIT`, `WATCH`, or `AVOID`
 
-V0.9 validation rules:
+Decision Workbench validation rules:
 
 - `ENTER` and `ADD` require `BULLISH` direction.
 - `BEARISH` decisions may use `REDUCE`, `EXIT`, `WATCH`, or `AVOID`.
 - `NEUTRAL` decisions may use `HOLD`, `WATCH`, or `AVOID`.
-- V0.9 does not interpret a bearish decision as a short sale.
+- Decision Workbench does not interpret a bearish decision as a short sale.
 - Position sizing is available only for `ENTER` and `ADD`.
 
 This makes the product useful for cash equities without accidentally introducing derivatives or short-selling semantics.
@@ -257,7 +257,7 @@ Primary navigation becomes:
 - Decisions
 - System
 
-V0.9 does not add separate top-level Replay Lab navigation because replay remains part of Market until V0.10.
+Decision Workbench does not add separate top-level Replay Lab navigation because replay remains part of Market until Replay and Behaviour Lab.
 
 ### 6.4 Contextual entry points
 
@@ -285,7 +285,7 @@ The backend truncates the candle history at `asOf`. It must not use indicators c
 
 Add a `Review Decision` action on each holding row and a contextual action above the simulated trade form. It navigates with `symbol`, `source=portfolio`, and `portfolioId`.
 
-This action does not execute a simulated trade and does not require a Decision Ticket before trading in V0.9.
+This action does not execute a simulated trade and does not require a Decision Ticket before trading in Decision Workbench.
 
 #### Decisions workspace
 
@@ -302,7 +302,7 @@ It contains:
 - Sort by newest, oldest, confidence, and symbol.
 - A responsive table on desktop.
 - Compact decision cards on mobile.
-- Legacy badge for migrated V0.8 entries.
+- Legacy badge for migrated legacy entries.
 - Evidence summary label and visible aligned/conflict counts.
 - Snapshot data-quality state.
 - Direct links to the detail page and Market symbol.
@@ -368,7 +368,7 @@ The detail page is the permanent audit view and contains:
 - `Open Market` action for the symbol.
 - Existing objective thesis review, clearly separated from the immutable original snapshot.
 
-Legacy entries show available legacy fields and an explicit note that their V0.8 snapshot may be incomplete.
+Legacy entries show available legacy fields and an explicit note that their legacy snapshot may be incomplete.
 
 ## 7. Domain Model and Database Migration
 
@@ -382,7 +382,7 @@ Add nullable columns so legacy rows remain valid:
 | `direction` | String or enum | Bullish, bearish, neutral |
 | `intent` | String or enum | Enter, add, hold, reduce, exit, watch, avoid |
 | `holding_period` | String or enum | Intraday, swing, positional, long-term research |
-| `setup_type` | String(80) | Controlled free text in V0.9 |
+| `setup_type` | String(80) | Controlled free text in Decision Workbench |
 | `entry_trigger` | Text | Required for enter/add |
 | `entry_zone_low` | Numeric(18,4) | Money-safe storage |
 | `entry_zone_high` | Numeric(18,4) | Money-safe storage |
@@ -392,7 +392,7 @@ Add nullable columns so legacy rows remain valid:
 | `max_risk_pct` | Numeric(7,4) | Percentage of selected capital base |
 | `max_allocation_pct` | Numeric(7,4) | Optional capital cap |
 | `confidence` | Integer | User confidence from 1 to 5 |
-| `change_mind_condition` | Text | Required for V0.9 tickets |
+| `change_mind_condition` | Text | Required for Decision Workbench tickets |
 | `portfolio_id` | Integer foreign key, nullable | Set null on portfolio deletion |
 | `source_context` | String or enum | Manual, market, replay, portfolio |
 | `source_as_of` | DateTime, nullable | Actual eligible market timestamp |
@@ -406,7 +406,7 @@ Add nullable columns so legacy rows remain valid:
 | `closed_at` | DateTime, nullable | Lifecycle completion timestamp |
 | `version` | Integer, non-null default 1 | Optimistic concurrency for lifecycle changes |
 
-Continue using `context_snapshot` as the authoritative immutable analytical snapshot in V0.9. Renaming the physical column is unnecessary and would add migration risk.
+Continue using `context_snapshot` as the authoritative immutable analytical snapshot in Decision Workbench. Renaming the physical column is unnecessary and would add migration risk.
 
 Add indexes for:
 
@@ -432,7 +432,7 @@ Create an append-only table:
 | `to_status` | String, nullable | Required for status transition |
 | `created_at` | DateTime | Immutable creation time |
 
-No update or delete endpoint is provided for amendments in V0.9.
+No update or delete endpoint is provided for amendments in Decision Workbench.
 
 ### 7.3 Legacy backfill
 
@@ -627,7 +627,7 @@ Responsibilities:
 
 - Tenant-scoped list and detail queries.
 - Preview orchestration.
-- V0.9 validation.
+- Decision Workbench validation.
 - Snapshot rebuilding on submission.
 - Preview candle consistency check.
 - Evidence-key verification.
@@ -642,7 +642,7 @@ Allowed status transitions:
 
 - OPEN to CLOSED
 - OPEN to CANCELLED
-- CLOSED and CANCELLED are terminal in V0.9
+- CLOSED and CANCELLED are terminal in Decision Workbench
 
 Every transition requires a reason, inserts a status amendment, increments `version`, and sets `closed_at` where applicable.
 
@@ -909,7 +909,7 @@ User opens detail page
 - Validate direction and intent combinations.
 - Require structured plan fields for enter/add.
 - Allow watch, avoid, hold, reduce, and exit tickets to omit position-sizing fields where not meaningful.
-- Require `change_mind_condition` for all V0.9 tickets.
+- Require `change_mind_condition` for all Decision Workbench tickets.
 - Require conflict review before submission.
 - Verify that the selected portfolio belongs to the current user.
 - Verify that evidence keys exist in the server-generated snapshot.
@@ -953,7 +953,7 @@ Frontend errors must preserve the draft and provide an actionable recovery path.
 - Use summary DTOs for list pages.
 - Lazy-load decision pages and the large snapshot inspector.
 - Cancel stale preview requests in the browser.
-- Do not add Redis-specific decision state in V0.9.
+- Do not add Redis-specific decision state in Decision Workbench.
 - Measure preview latency. A reasonable local target is p95 under 500 ms on cached candle data, excluding first provider fetch.
 
 ## 14. Security and Privacy
@@ -1048,7 +1048,7 @@ Use `MemoryRouter` for route tests and mocked API responses. Continue testing th
 3. Start from a Portfolio holding, verify the portfolio is preselected, and inspect the allocation cap.
 4. Create a WATCH ticket with insufficient data after acknowledgement.
 5. Attempt to edit a submitted ticket and confirm the UI offers an amendment instead.
-6. Close a ticket, verify the amendment timeline, and confirm it cannot be reopened in V0.9.
+6. Close a ticket, verify the amendment timeline, and confirm it cannot be reopened in Decision Workbench.
 7. Sign in as a second user and verify the first user's ticket cannot be discovered or opened.
 8. Open deep links directly in development and Docker deployment.
 
@@ -1140,7 +1140,7 @@ Use `MemoryRouter` for route tests and mocked API responses. Continue testing th
 ### 16.5 Documentation files to modify
 
 - `README.md`
-  - Describe V0.9 Decision Workbench and route flow.
+  - Describe Decision Workbench and route flow.
 - `docs/architecture.md`
   - Document snapshot generation, immutability, and amendments.
 - `docs/architecture/event_sourcing.md`
@@ -1198,11 +1198,11 @@ Use `MemoryRouter` for route tests and mocked API responses. Continue testing th
 4. Verify desktop widths at 1920, 1440, and 1024 pixels.
 5. Verify tablet and mobile widths at 768 and 390 pixels.
 6. Verify live, replay, portfolio, legacy, insufficient-data, and cross-tenant scenarios.
-7. Update documentation and version labels to V0.9 only after all checks pass.
+7. Update documentation and version labels to Decision Workbench only after all checks pass.
 
 ## 18. Definition of Done
 
-V0.9 is complete only when:
+Decision Workbench is complete only when:
 
 - Decisions have dedicated list, create, and detail routes.
 - The Market, Replay, Portfolio, and Decisions pages can start the same typed workflow.
@@ -1217,11 +1217,11 @@ V0.9 is complete only when:
 - Backend and frontend automated tests pass.
 - Alembic migration checks pass.
 - Responsive visual verification passes.
-- Documentation accurately distinguishes V0.9 from future V0.10 and V0.11 capabilities.
+- Documentation accurately distinguishes Decision Workbench from future Current capabilities.
 
-## 19. Deferred Follow-up for V0.10
+## 19. Deferred Follow-up for Replay and Behaviour Lab
 
-The V0.9 model deliberately creates the seams needed by Replay and Behaviour Lab:
+The Decision Workbench model deliberately creates the seams needed by Replay and Behaviour Lab:
 
 - Stable decision IDs
 - Immutable initial plans
@@ -1232,4 +1232,4 @@ The V0.9 model deliberately creates the seams needed by Replay and Behaviour Lab
 - Explicit evidence selections and conflicts
 - Deterministic risk snapshots
 
-V0.10 can associate these tickets with persisted replay sessions and compute process metrics without redesigning or mutating the original V0.9 decisions.
+Replay and Behaviour Lab can associate these tickets with persisted replay sessions and compute process metrics without redesigning or mutating the original Decision Workbench decisions.

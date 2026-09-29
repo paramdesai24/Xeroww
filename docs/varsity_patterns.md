@@ -52,7 +52,7 @@ The session is entirely controlled by one side — buyers or sellers.
 
 ---
 
-## Xeroww V0 Detection Thresholds
+## Xeroww Detection Thresholds
 
 | Parameter | Value | Description |
 |---|---|---|
@@ -63,7 +63,7 @@ These values are defined as constants in `api/services/pattern_service.py` and c
 
 ---
 
-## Planned V1 Patterns
+## Planned Patterns
 
 - Doji (indecision)
 - Hammer / Hanging Man

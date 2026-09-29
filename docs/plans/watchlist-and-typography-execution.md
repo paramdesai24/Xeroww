@@ -2,7 +2,7 @@
 
 ## Architecture
 
-Apply `version-free-ui-and-typography-plan.md` and Chunk 2 of `portfolio-watchlists-alerts-experience-plan.md` together. Keep Watchlist ownership and symbol persistence in `WatchlistService`. Add a snapshot assembler that reads owned watchlist items, enriches each from the existing cached market data service, and returns partial results when providers fail. The UI uses a route-level workspace with one state hook, small display components, and the shared error primitives. Shared typography roles live in CSS variables and classes, with matching chart and SVG mappings where CSS cannot apply.
+Apply `ui-terminology-and-typography-plan.md` and Chunk 2 of `portfolio-watchlists-alerts-experience-plan.md` together. Keep Watchlist ownership and symbol persistence in `WatchlistService`. Add a snapshot assembler that reads owned watchlist items, enriches each from the existing cached market data service, and returns partial results when providers fail. The UI uses a route-level workspace with one state hook, small display components, and the shared error primitives. Shared typography roles live in CSS variables and classes, with matching chart and SVG mappings where CSS cannot apply.
 
 ## Interfaces and data flow
 

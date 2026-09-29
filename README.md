@@ -1,4 +1,4 @@
-# Xeroww (V0.11)
+# Xeroww
 
 > **Deterministic Financial Intelligence & Market Structure Platform**
 >
@@ -31,15 +31,15 @@
 12. [Deterministic Demo Seeding](#12-deterministic-demo-seeding)
 13. [Testing Strategy & Resilience](#13-testing-strategy--resilience)
 14. [Architecture Decision Records (ADRs)](#14-architecture-decision-records-adrs)
-15. [Roadmap: The Path to Xeroww V1.0](#15-roadmap-the-path-to-xeroww-v10)
+15. [Roadmap: Distributed Architecture](#15-roadmap-distributed-architecture)
 
 ---
 
 ## 1. Executive Summary & Philosophy
 
-Xeroww is a deterministic financial intelligence and decision-support platform. V0.11 combines the immutable Decision Workbench with an authenticated Replay and Behaviour Lab and point-in-time Portfolio Intelligence. The platform explains observed conditions, process quality, portfolio performance, attribution, and risk without issuing predictions or trade recommendations.
+Xeroww is a deterministic financial intelligence and decision-support platform. The current product combines the immutable Decision Workbench with an authenticated Replay and Behaviour Lab and point-in-time Portfolio Intelligence. The platform explains observed conditions, process quality, portfolio performance, attribution, and risk without issuing predictions or trade recommendations.
 
-### V0.10 and V0.11 capabilities
+### Current capabilities
 
 - Persisted Replay Lab sessions with a server-owned candle cursor and a mandatory decision gate.
 - One-candle progression, conservative execution rules, append-only events, process scoring, and private behaviour observations.
@@ -51,7 +51,7 @@ Xeroww is a deterministic financial intelligence and decision-support platform. 
 ### Core Philosophy
 - **Deterministic Analytics Only**: Zero machine learning hallucinations, zero black-box "confidence scores", and zero automated trade recommendations. Financial decisions belong to human intelligence; mathematical market conditions belong to Xeroww.
 - **Auditable & Point-in-Time Accurate**: Replay simulations and analytics strictly prevent look-ahead bias. Historical states are mathematically reproducible.
-- **V1.0 Extension Seams**: Provider and event-bus interfaces identify future integration points. Kafka, Spark, Iceberg, and network streaming are not part of the current runtime.
+- **Future Extension Seams**: Provider and event-bus interfaces identify future integration points. Kafka, Spark, Iceberg, and network streaming are not part of the current runtime.
 
 ---
 
@@ -85,7 +85,7 @@ graph TD
 
         subgraph Services ["Service & Engine Layer"]
             S_Market["MarketDataService"]
-            S_Pattern["PatternEngine V2 (Varsity)"]
+            S_Pattern["Varsity-aligned Pattern Engine"]
             S_Struct["MarketStructureEngine"]
             S_Replay["HistoricalReplayEngine"]
             S_Portfolio["PortfolioService"]
@@ -164,7 +164,7 @@ graph TD
 - **Client-Timed Playback**: The dashboard advances through REST replay snapshots at configurable speeds (1x, 5x, 10x). No WebSocket replay endpoint is currently deployed.
 - **Synchronized Context**: At every tick, indicators, volume profiles, detected patterns, and alert conditions recalculate strictly up to that point.
 
-### 5.2 Pattern Engine V2 (Zerodha Varsity Standards)
+### 5.2 Varsity-aligned Pattern Engine (Zerodha Varsity Standards)
 Detects classic Japanese candlestick formations with strict mathematical thresholds:
 - **Single-Candle**: Bullish Marubozu, Bearish Marubozu, Doji, Spinning Top, Hammer, Hanging Man.
 - **Multi-Candle**: Bullish & Bearish Engulfing, Bullish & Bearish Harami, Morning Star, Evening Star.
@@ -223,7 +223,7 @@ Xeroww guarantees consistent error envelopes across all HTTP 4xx/5xx responses:
 | `POST` | `/auth/logout` | Revoke active JWT token | Yes |
 | `GET` | `/quote/{symbol}` | Near real-time market quote | No |
 | `GET` | `/ohlc/{symbol}` | Historical OHLCV candle series | No |
-| `GET` | `/patterns/{symbol}` | Pattern Engine V2 scan | No |
+| `GET` | `/patterns/{symbol}` | Varsity-aligned Pattern Engine scan | No |
 | `GET` | `/market-structure/{symbol}` | Swings, trends, and support/resistance | No |
 | `GET` | `/replay/{symbol}/timeline` | Load a historical replay timeline | No |
 | `GET` | `/replay/{symbol}/step/{step}` | Retrieve a point-in-time replay snapshot | No |
@@ -476,15 +476,15 @@ Key architectural decisions are documented under [`docs/adr/`](docs/adr/):
 
 ---
 
-## 15. Roadmap: The Path to Xeroww V1.0
+## 15. Roadmap: Distributed Architecture
 
-Xeroww V0.8 is a modular monolith. Distributed streaming remains a proposed V1.0 direction and is not deployed today.
+Xeroww is a modular monolith. Distributed streaming remains a proposed future direction and is not deployed today.
 
 ```text
-Current (V0.8):
+Current Runtime:
 Market Provider ──> CacheService / In-Memory ──> Service Calculators ──> FastAPI ──> Client
 
-V1.0 Distributed Target:
+Distributed Target:
 Market Provider ──> Kafka Ingestion Pipeline
                          │
                          ├──> Apache Spark Streaming (Real-time Candle & Structure Windows)
@@ -494,7 +494,7 @@ Market Provider ──> Kafka Ingestion Pipeline
                          └──> WebSocket Event Dispatcher ──> Client Terminals
 ```
 
-### Planned V1.0 Milestones:
+### Planned Distributed Architecture Milestones:
 1. **Kafka Market Ingestion**: Ingest live order book ticks and trade prints into distributed partitioned Kafka topics.
 2. **Spark Structured Streaming**: Shift multi-timeframe rolling aggregations and fractal swing detection into cluster computing jobs.
 3. **Analytical Lakehouse Storage**: Store multi-year tick history in Apache Iceberg on object storage for ultra-fast point-in-time backtesting.

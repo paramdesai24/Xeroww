@@ -223,11 +223,26 @@ export default function ChartPanel({
     }) : ({ time, value: bar.close }));
 
     seriesRef.current.setData(data as any);
-    volumeSeriesRef.current?.setData(chartBars.map(({ bar, time }) => ({
+    const volumeData = chartBars.map(({ bar, time }) => ({
       time,
       value: bar.volume,
       color: bar.close >= bar.open ? (resolvedTheme === "light" ? "#16803A33" : "#22C55E44") : (resolvedTheme === "light" ? "#C6282833" : "#EF444444"),
-    })));
+    }));
+    let volumeAnimationFrame = 0;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      volumeSeriesRef.current?.setData(volumeData);
+    } else {
+      const startedAt = performance.now();
+      volumeSeriesRef.current?.setData(volumeData.map((point) => ({ ...point, value: 0 })));
+      const animateVolume = (now: number) => {
+        const progress = Math.min(1, (now - startedAt) / 180);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        volumeSeriesRef.current?.setData(volumeData.map((point) => ({ ...point, value: point.value * eased })));
+        if (progress < 1) volumeAnimationFrame = requestAnimationFrame(animateVolume);
+      };
+      volumeAnimationFrame = requestAnimationFrame(animateVolume);
+    }
 
     const handleCrosshairMove = (param: MouseEventParams) => {
       const matched = param.time ? chartBars.find((item) => String(item.time) === String(param.time))?.bar ?? null : null;
@@ -248,6 +263,7 @@ export default function ChartPanel({
     chartRef.current.subscribeClick(handleCandleClick);
 
     return () => {
+      cancelAnimationFrame(volumeAnimationFrame);
       chartRef.current?.unsubscribeClick(handleCandleClick);
       chartRef.current?.unsubscribeCrosshairMove(handleCrosshairMove);
     };
@@ -309,18 +325,33 @@ export default function ChartPanel({
 
     const closes = chartBars.map(({ bar }) => bar.close);
     const times = chartBars.map(({ time }) => time);
+    const animationFrames: number[] = [];
+    const animateOpacity = (series: ISeriesApi<"Line">, red: number, green: number, blue: number, target: number) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        series.applyOptions({ color: `rgba(${red}, ${green}, ${blue}, ${target})` });
+        return;
+      }
+      const startedAt = performance.now();
+      const frame = (now: number) => {
+        const progress = Math.min(1, (now - startedAt) / 180);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        series.applyOptions({ color: `rgba(${red}, ${green}, ${blue}, ${target * eased})` });
+        if (progress < 1) animationFrames.push(requestAnimationFrame(frame));
+      };
+      animationFrames.push(requestAnimationFrame(frame));
+    };
 
     // Fast MAs: EMA 9 & EMA 20
     if (showFastMA) {
       // Compute EMA 9 (secondary electric blue)
       const ema9GlowSeries = chart.addSeries(LineSeries, {
-        color: "rgba(59, 130, 246, 0.18)",
+        color: "rgba(59, 130, 246, 0)",
         lineWidth: 4,
         priceLineVisible: false,
         lastValueVisible: false,
       });
       const ema9Series = chart.addSeries(LineSeries, {
-        color: "#3B82F6",
+        color: "rgba(59, 130, 246, 0)",
         lineWidth: 2,
         title: "EMA 9",
       });
@@ -333,17 +364,19 @@ export default function ChartPanel({
       }
       ema9GlowSeries.setData(ema9Data);
       ema9Series.setData(ema9Data);
+      animateOpacity(ema9GlowSeries, 59, 130, 246, .18);
+      animateOpacity(ema9Series, 59, 130, 246, 1);
       maSeriesRef.current.push(ema9GlowSeries, ema9Series);
 
       // Compute EMA 20 (Dodger Blue primary)
       const ema20GlowSeries = chart.addSeries(LineSeries, {
-        color: "rgba(30, 144, 255, 0.14)",
+        color: "rgba(30, 144, 255, 0)",
         lineWidth: 4,
         priceLineVisible: false,
         lastValueVisible: false,
       });
       const ema20Series = chart.addSeries(LineSeries, {
-        color: "#1E90FF",
+        color: "rgba(30, 144, 255, 0)",
         lineWidth: 2,
         title: "EMA 20",
       });
@@ -356,6 +389,8 @@ export default function ChartPanel({
       }
       ema20GlowSeries.setData(ema20Data);
       ema20Series.setData(ema20Data);
+      animateOpacity(ema20GlowSeries, 30, 144, 255, .14);
+      animateOpacity(ema20Series, 30, 144, 255, 1);
       maSeriesRef.current.push(ema20GlowSeries, ema20Series);
     }
 
@@ -391,6 +426,7 @@ export default function ChartPanel({
         maSeriesRef.current.push(sma200Series);
       }
     }
+    return () => animationFrames.forEach(cancelAnimationFrame);
   }, [showFastMA, showSlowMA, chartBars, resolvedTheme, chartType]);
 
   const positive = (quote?.change_pct ?? 0) > 0;

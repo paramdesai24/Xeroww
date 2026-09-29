@@ -1,6 +1,6 @@
-# V0.11 Portfolio Intelligence
+# Portfolio Intelligence
 
-V0.11 adds a compact portfolio intelligence workspace alongside the replay and behaviour lab.
+Portfolio Intelligence adds a compact portfolio intelligence workspace alongside the replay and behaviour lab.
 
 ## Included
 

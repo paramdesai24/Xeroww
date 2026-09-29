@@ -42,7 +42,7 @@ Never let the project become:
 
 The differentiator is systems + explainability, not visual indicators.
 
-## Current implemented state: V0.11
+## Current implemented state
 
 The current product has moved beyond a market dashboard into three connected decision-support workflows:
 
@@ -110,7 +110,7 @@ This preserves authenticity and creates a documented engineering journey.
 
 # 3. End Goal
 
-## Xeroww V3
+## Xeroww long-term end state
 
 > A distributed, event-driven, explainable quantitative market intelligence platform capable of replaying, interpreting, and reasoning over financial markets in real time.
 
@@ -201,7 +201,7 @@ Dow Theory
 
 |
 
-Structural regime v2
+Enhanced structural regime
 
 |
 |

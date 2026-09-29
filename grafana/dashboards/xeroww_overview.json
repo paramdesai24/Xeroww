@@ -152,11 +152,11 @@
   ],
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["xeroww", "financial-intelligence", "v0.6"],
+  "tags": ["xeroww", "financial-intelligence", "operations"],
   "time": {
     "from": "now-15m",
     "to": "now"
   },
-  "title": "Xeroww V0.6 Operational Intelligence",
+  "title": "Xeroww Operational Intelligence",
   "uid": "xeroww-overview"
 }

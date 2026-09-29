@@ -15,6 +15,7 @@ import VolumeAnalyticsPanel from "./components/VolumeAnalyticsPanel";
 import ReplayControlBar from "./components/ReplayControlBar";
 import Footer from "./components/Footer";
 import MarketResizeHandle from "./components/MarketResizeHandle";
+import PremiumCursor from "./components/PremiumCursor";
 
 // Domain components
 import { XRayDrawer } from "./components/xray";
@@ -269,6 +270,7 @@ export default function App() {
 
   return (
     <div className="app-shell flex flex-col bg-[var(--canvas)] text-[var(--text-primary)] overflow-hidden select-none">
+      <PremiumCursor />
       {/* Top Module Navigator */}
       <ModuleNav
         activeModule={activeModule}

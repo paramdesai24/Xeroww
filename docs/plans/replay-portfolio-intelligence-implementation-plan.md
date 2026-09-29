@@ -1,15 +1,15 @@
-# Xeroww V0.10 and V0.11 Implementation Plan
+# Xeroww Replay and Portfolio Intelligence Implementation Plan
 
 ## 1. Purpose
 
 This plan defines one coordinated implementation program for:
 
-- V0.10 Replay and Behaviour Lab
-- V0.11 Portfolio Intelligence
+- Replay and Behaviour Lab
+- Portfolio Intelligence
 
 The two capabilities will be designed and implemented together because they share the same core requirements: immutable decisions, point-in-time market state, durable event history, reproducible calculations, explicit formulas, tenant isolation, and compact explainability.
 
-The public release should move to V0.11 only after both milestones pass their definitions of done. Internally, Replay Lab remains the first milestone because portfolio-level decision impact depends on trustworthy session, decision, and valuation records.
+The public release should move to Portfolio Intelligence milestone only after both milestones pass their definitions of done. Internally, Replay Lab remains the first milestone because portfolio-level decision impact depends on trustworthy session, decision, and valuation records.
 
 The combined product flow is:
 
@@ -41,7 +41,7 @@ The completed program must allow a user to:
 
 ## 3. Scope
 
-### 3.1 V0.10 scope
+### 3.1 Replay and Behaviour Lab scope
 
 - Authenticated Replay Lab session creation, list, resume, active session, review, and analytics pages.
 - Server-selected randomized symbol and randomized eligible starting date.
@@ -57,7 +57,7 @@ The completed program must allow a user to:
 - Reproducibility metadata, candle fingerprint, analytics version, and scoring version.
 - Session save, resume, completion, and review.
 
-### 3.2 V0.11 scope
+### 3.2 Portfolio Intelligence milestone scope
 
 - Point-in-time portfolio snapshots and normalized snapshot holdings.
 - Portfolio equity curve from persisted valuations.
@@ -67,7 +67,7 @@ The completed program must allow a user to:
 - Single-stock and sector concentration.
 - Correlation matrix, covariance matrix, portfolio volatility, beta, and component risk contribution.
 - Configurable portfolio risk policy and explainable warnings.
-- Pre-decision portfolio impact inside the V0.9 Decision Workbench preview.
+- Pre-decision portfolio impact inside the Decision Workbench preview.
 - Compact portfolio overview with deeper dedicated analysis routes.
 
 ### 3.3 Shared scope
@@ -265,7 +265,7 @@ Detailed performance, attribution, risk, history, and formula views belong to ta
 - Full analysis overlays must be scrollable, keyboard accessible, and closable with Escape.
 - Tables must collapse nonessential columns rather than force horizontal overflow where possible.
 
-## 7. V0.10 Domain Model
+## 7. Replay and Behaviour Lab Domain Model
 
 ### 7.1 ReplaySession
 
@@ -561,7 +561,7 @@ Tests must prove:
 
 ### 10.1 Cash-equity boundary
 
-V0.10 supports long cash-equity entries only. Bearish or neutral decisions may be recorded as `WATCH`, `AVOID`, `REDUCE`, or `EXIT`, but they do not open short positions.
+Replay and Behaviour Lab supports long cash-equity entries only. Bearish or neutral decisions may be recorded as `WATCH`, `AVOID`, `REDUCE`, or `EXIT`, but they do not open short positions.
 
 ### 10.2 Entry activation
 
@@ -758,7 +758,7 @@ expectancy_r = mean(realized_r across eligible completed sessions)
 
 Always display sample size. Suppress grouped conclusions below the configured minimum sample count.
 
-## 14. V0.11 Portfolio Domain Model
+## 14. Portfolio Intelligence milestone Portfolio Domain Model
 
 ### 14.1 PortfolioSnapshot
 
@@ -879,7 +879,7 @@ Use XIRR over dated external cash flows:
 
 - Initial capital is an outflow at portfolio creation.
 - Terminal portfolio value is an inflow at the observation end.
-- Current V0.11 has no intermediate external flows unless a later cash-flow ledger is introduced.
+- Current Portfolio Intelligence milestone has no intermediate external flows unless a later cash-flow ledger is introduced.
 
 Return unavailable with a precise explanation if the cash-flow signs do not permit a stable solution.
 
@@ -919,7 +919,7 @@ Recovery duration is the number of calendar days and observed valuation points f
 turnover = sum(abs(trade_value)) / average_portfolio_value
 ```
 
-Expose whether one-way or two-way turnover is used. V0.11 uses the formula above and labels it explicitly.
+Expose whether one-way or two-way turnover is used. Portfolio Intelligence milestone uses the formula above and labels it explicitly.
 
 ### 15.9 Average holding period
 
@@ -1473,8 +1473,8 @@ Portfolio:
 
 ### 28.4 Migration tests
 
-- Upgrade from the current V0.9 head.
-- Downgrade to the V0.9 head on a disposable database.
+- Upgrade from the current Decision Workbench head.
+- Downgrade to the Decision Workbench head on a disposable database.
 - SQLite and PostgreSQL-compatible enum and constraint behavior.
 - Existing Decision Tickets and portfolios remain readable.
 - Foreign keys and indexes exist.
@@ -1592,11 +1592,11 @@ Portfolio:
 5. Run security, cross-tenant, concurrency, idempotency, and no-look-ahead checks.
 6. Run visual QA for all target widths.
 7. Update documentation and architecture diagrams.
-8. Update the version to V0.11 only after both milestones pass.
+8. Update the version to Portfolio Intelligence milestone only after both milestones pass.
 
 ## 30. Delivery Checkpoints
 
-### Checkpoint A: V0.10 backend complete
+### Checkpoint A: Replay and Behaviour Lab backend complete
 
 - Persisted sessions can be created, advanced, saved, resumed, and completed.
 - Future data cannot leak through session APIs.
@@ -1604,19 +1604,19 @@ Portfolio:
 - Every action is durably recorded.
 - Process and outcome calculations are separate and reproducible.
 
-### Checkpoint B: V0.10 product complete
+### Checkpoint B: Replay and Behaviour Lab product complete
 
 - Compact Replay Lab pages are usable across target widths.
 - Review and cross-session analytics are inspectable.
 - Behaviour observations are private, neutral, and sample-aware.
 
-### Checkpoint C: V0.11 backend complete
+### Checkpoint C: Portfolio Intelligence milestone backend complete
 
 - Portfolio history is persisted as point-in-time snapshots.
 - Performance, attribution, and risk formulas reconcile and expose metadata.
 - Decision previews can calculate and freeze portfolio impact.
 
-### Checkpoint D: V0.11 product complete
+### Checkpoint D: Portfolio Intelligence milestone product complete
 
 - Portfolio overview remains compact.
 - Detailed analytics are available through dedicated routes and overlays.

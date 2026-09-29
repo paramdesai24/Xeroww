@@ -24,20 +24,20 @@ The proposed type families remain Inter for interface language and IBM Plex Mono
 | Main navigation badge | `dashboard/src/components/ModuleNav.tsx` reads `config.app.version` | Remove badge, import, and related spacing. |
 | Alternate navbar badge | `dashboard/src/components/Navbar.tsx` reads `config.app.version` | Remove badge and unused import. |
 | Status footer | `dashboard/src/components/Footer.tsx` reads `config.app.version` | Remove version and redundant separator; keep operational status. |
-| Decision Journal eyebrow | `dashboard/src/pages/DecisionsPage.tsx` says `V0.9 Decision Workbench` | Replace with a timeless section label. |
-| System console badge | `dashboard/src/components/SystemView.tsx` says `SRE CONSOLE v0.8` | Replace with `System operations` or remove if redundant. |
-| Authentication modal footer | `dashboard/src/components/AuthModal.tsx` says `XEROWW V0.6` | Remove version while preserving the simulation disclaimer. |
-| Legacy decision notice | `dashboard/src/pages/DecisionDetailPage.tsx` says `Legacy V0.8 journal entry` | Explain the actual condition: this older entry may lack an analytical snapshot. Keep the `ticket_version` condition. |
+| Decision Journal eyebrow | `dashboard/src/pages/DecisionsPage.tsx` contains a release-labelled Decision Workbench heading | Replace with a timeless section label. |
+| System console badge | `dashboard/src/components/SystemView.tsx` contains a release-labelled SRE console heading | Replace with `System operations` or remove if redundant. |
+| Authentication modal footer | `dashboard/src/components/AuthModal.tsx` contains a release-labelled product name | Remove the release label while preserving the simulation disclaimer. |
+| Legacy decision notice | `dashboard/src/pages/DecisionDetailPage.tsx` labels older entries by product release | Explain the actual condition: this older entry may lack an analytical snapshot. Keep the `ticket_version` condition. |
 | Frontend configuration | `dashboard/src/config.ts` defines `app.version` with `VITE_APP_VERSION` | Remove UI release configuration after all readers are removed. |
 | API health payload | `api/routes/health.py` returns `version` | Remove release field and update `dashboard/src/types/market.ts` plus contract tests. |
 | API root payload | `api/main.py` returns `version` | Remove public release field and update any tests or consumers. |
 | API docs and startup | `api/main.py` sets FastAPI `version=settings.APP_VERSION` and prints version | Remove release branding from startup and public OpenAPI metadata. Check FastAPI's implicit default and set a neutral API description or blank version only if supported cleanly. |
 | Internal release setting | `api/core/config.py` defines `APP_VERSION` | Remove after its runtime uses are gone. |
-| API error copy | `api/services/decision_service.py` and `api/services/journal_service.py` mention `V0.9` | Replace with current behavior based copy, preserving error codes and status codes. |
-| Client annotation payload | `dashboard/src/components/JournalView.tsx` sends `xeroww-terminal-v0.8` | Replace with a stable client identifier; verify server treats it as an opaque string. |
+| API error copy | `api/services/decision_service.py` and `api/services/journal_service.py` mention a product release | Replace with current behavior based copy, preserving error codes and status codes. |
+| Client annotation payload | `dashboard/src/components/JournalView.tsx` sends a release-labelled client identifier | Replace with a stable client identifier; verify server treats it as an opaque string. |
 | Source comments and docstrings | `dashboard/src/App.tsx`, `dashboard/src/api/client.ts`, `dashboard/src/index.css`, multiple API modules | Replace release-history comments with feature or domain descriptions; put historical context in nonserved documentation if useful. |
 
-Perform a final repository-wide audit, including static assets, HTML, environment examples, scripts, and templates. Search separately for product release patterns (`v0.x`, `V1.0`, `APP_VERSION`, `VITE_APP_VERSION`, `config.app.version`) and for literal `version` uses. Review each match in context.
+Perform a final repository-wide audit, including static assets, HTML, environment examples, scripts, and templates. Search separately for numbered product release labels, release configuration keys, and literal `version` uses. Review each match in context.
 
 Keep technical version identifiers that are necessary for dependency resolution, migrations, persisted data, concurrency, or analytical provenance. This includes package and lockfile versions, Docker image tags, Alembic revisions, `expected_version`, `ticket_version`, `schema_version`, formula or scoring versions, and domain event versions. These are data contracts, not release labels. Do not delete or rename them solely for copy cleanup. If one appears in the UI, remove only its presentation unless the user needs that provenance to evaluate a result. Preserve any such provenance in an opt-in technical detail view rather than a primary card.
 

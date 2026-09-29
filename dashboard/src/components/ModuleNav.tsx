@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { UserProfile } from "../types/auth";
 import GlobalSearch from "./GlobalSearch";
 import ThemeToggle from "./ThemeToggle";
@@ -25,10 +26,26 @@ const PRIMARY: Array<{ id: Module; label: string }> = [
 
 export default function ModuleNav({ activeModule, onModuleChange, onOpenSymbol, onOpenBreadth, user, onLogout, onLogin }: Props) {
   const { resolvedTheme } = useTheme();
+  const [scrolled, setScrolled] = useState(false);
   const compactLogo = resolvedTheme === "light" ? "/xeroww-logo-light.png" : "/xeroww-logo.png";
   const fullLogo = resolvedTheme === "light" ? "/xeroww-logo-long-light.png" : "/xeroww-logo-long.png";
 
-  return <nav id="module-nav" className="module-nav" aria-label="Primary navigation">
+  useEffect(() => {
+    const update = (event?: Event) => {
+      const target = event?.target;
+      const nestedOffset = target instanceof HTMLElement ? target.scrollTop : 0;
+      setScrolled(window.scrollY > 8 || nestedOffset > 8);
+    };
+    update();
+    document.addEventListener("scroll", update, { capture: true, passive: true });
+    window.addEventListener("scroll", update, { passive: true });
+    return () => {
+      document.removeEventListener("scroll", update, true);
+      window.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  return <nav id="module-nav" className={`module-nav${scrolled ? " is-scrolled" : ""}`} aria-label="Primary navigation">
     <button className="module-nav__brand" type="button" onClick={() => onModuleChange("HOME")} aria-label="Xeroww home">
       <img src={compactLogo} alt="" className="module-nav__logo module-nav__logo--compact" />
       <img src={fullLogo} alt="Xeroww" className="module-nav__logo module-nav__logo--full" />
