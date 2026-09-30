@@ -11,19 +11,29 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from api.core.config import settings
-from api.services.market_provider import MarketDataProvider
-from api.services.yahoo_provider import YahooFinanceProvider
+from api.services.market_provider import InstrumentRecord, MarketDataProvider
 from api.services.cache_service import get_cache_service, CacheService
 
 
 class MarketDataService:
     def __init__(
         self,
-        provider: MarketDataProvider | None = None,
+        provider: MarketDataProvider,
         cache: CacheService | None = None,
     ):
-        self.provider = provider or YahooFinanceProvider()
+        self.provider = provider
         self.cache = cache or get_cache_service()
+
+    def normalize_symbol(self, symbol: str) -> str:
+        """Normalize a symbol through the configured provider boundary."""
+        return self.provider.normalize_symbol(symbol)
+
+    def get_instrument(self, symbol: str) -> InstrumentRecord:
+        """Return application metadata for a supported instrument."""
+        try:
+            return self.provider.get_instrument(self.normalize_symbol(symbol))
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     def get_stocks(self) -> list[dict[str, Any]]:
         cache_key = "stocks:nifty50:v1"
@@ -41,7 +51,7 @@ class MarketDataService:
             )
 
     def get_quote(self, symbol: str) -> dict[str, Any]:
-        normalized = self.provider.normalize_symbol(symbol)
+        normalized = self.normalize_symbol(symbol)
         cache_key = f"quote:{normalized}"
         cached = self.cache.get(cache_key)
         if cached:
@@ -70,7 +80,7 @@ class MarketDataService:
         period: str = "1mo",
         interval: str = "1d",
     ) -> tuple[str, list[dict[str, Any]]]:
-        normalized = self.provider.normalize_symbol(symbol)
+        normalized = self.normalize_symbol(symbol)
         cache_key = f"candles:{normalized}:{period}:{interval}"
         try:
             cached = self.cache.get(cache_key)

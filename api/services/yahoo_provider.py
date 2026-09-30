@@ -10,13 +10,17 @@ Replacing this file (with a KafkaMarketProvider, for example) upgrades the entir
 from datetime import datetime
 from pathlib import Path
 import threading
-from typing import Any
-
 import yfinance as yf
 
 from api.core.config import settings
 from api.data.nifty50 import NIFTY50
-from api.services.market_provider import MarketDataProvider
+from api.services.market_provider import (
+    CandleRecord,
+    InstrumentRecord,
+    MarketDataProvider,
+    MarketDataProviderMetadata,
+    QuoteRecord,
+)
 
 
 _cache_setup_lock = threading.Lock()
@@ -92,11 +96,20 @@ class YahooFinanceProvider(MarketDataProvider):
     def __init__(self) -> None:
         _configure_yfinance_cache()
 
-    def get_stocks(self) -> list[dict[str, Any]]:
+    @property
+    def metadata(self) -> MarketDataProviderMetadata:
+        return MarketDataProviderMetadata(provider_id="yahoo", display_name="Yahoo Finance")
+
+    def get_instrument(self, symbol: str) -> InstrumentRecord:
+        normalized = self.normalize_symbol(symbol)
+        self._validate_symbol(normalized)
+        return SYMBOL_META.get(normalized) or INDEX_META[normalized]
+
+    def get_stocks(self) -> list[InstrumentRecord]:
         """Return the supported NIFTY 50 constituent universe."""
         return WATCHLIST
 
-    def get_quote(self, symbol: str) -> dict[str, Any]:
+    def get_quote(self, symbol: str) -> QuoteRecord:
         """
         Fetch the latest quote for the symbol using yfinance.
         Uses fast_info with automatic fallback to recent history for 100% reliability.
@@ -169,7 +182,7 @@ class YahooFinanceProvider(MarketDataProvider):
         symbol: str,
         period: str = "1mo",
         interval: str = "1d",
-    ) -> list[dict[str, Any]]:
+    ) -> list[CandleRecord]:
         """
         Fetch historical OHLCV candles from Yahoo Finance.
 
@@ -199,7 +212,7 @@ class YahooFinanceProvider(MarketDataProvider):
                 "The market may be closed or the symbol may be invalid."
             )
 
-        candles: list[dict[str, Any]] = []
+        candles: list[CandleRecord] = []
         for ts, row in df.iterrows():
             candles.append({
                 "time": ts.strftime("%Y-%m-%d"),       # TradingView Lightweight Charts format
@@ -218,7 +231,7 @@ class YahooFinanceProvider(MarketDataProvider):
         symbol: str = "^NSEI",
         period: str = "1y",
         interval: str = "1d",
-    ) -> list[dict[str, Any]]:
+    ) -> list[CandleRecord]:
         """Fetch adjusted benchmark history without treating it as a tradable stock."""
         if symbol not in INDEX_META:
             raise ValueError("The requested benchmark index is not supported.")

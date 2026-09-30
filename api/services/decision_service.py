@@ -90,7 +90,7 @@ class DecisionService:
                     self.db, self.user_id, self.market_data
                 ).latest(data.portfolio_id)
                 policy = PortfolioRiskPolicyService(self.db, self.user_id).get(data.portfolio_id)
-                normalized_symbol = self.market_data.provider.normalize_symbol(data.symbol)
+                normalized_symbol = self.market_data.normalize_symbol(data.symbol)
                 impact = PortfolioImpactService(self.market_data).build(
                     snapshot,
                     policy,

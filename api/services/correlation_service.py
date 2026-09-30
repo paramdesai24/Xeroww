@@ -44,8 +44,7 @@ class CorrelationService:
         self.market_data = market_data
 
     def _normalize_symbol(self, symbol: str) -> str:
-        provider = getattr(self.market_data, "provider", self.market_data)
-        return provider.normalize_symbol(symbol)
+        return self.market_data.normalize_symbol(symbol)
 
     def _get_candles(self, symbol: str, period: str) -> tuple[str, list[dict[str, Any]]]:
         if hasattr(self.market_data, "get_candles"):

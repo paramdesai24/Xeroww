@@ -37,8 +37,7 @@ class ThesisReviewService:
         try:
             symbol, candles = self._get_candles(entry.symbol)
         except Exception:
-            provider = getattr(self.market_data, "provider", self.market_data)
-            symbol = provider.normalize_symbol(entry.symbol)
+            symbol = self.market_data.normalize_symbol(entry.symbol)
             candles = []
 
         if not candles:

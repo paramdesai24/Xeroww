@@ -21,6 +21,7 @@ from api.database.session import Base, get_db
 from api.main import app
 from api.core.config import settings
 from api.services.cache_service import get_cache_service
+from api.services.market_provider import MarketDataProviderMetadata
 
 # Increase rate limits for test suite so sequential runs do not trigger 429
 settings.RATE_LIMIT_UNAUTH_RPM = 100000
@@ -96,6 +97,12 @@ def client(db: Session) -> TestClient:
 class MockMarketProvider:
     """Returns deterministic fake market data for unit tests."""
 
+    INDEX_NAMES = {
+        "^NSEI": "NIFTY 50",
+        "^BSESN": "SENSEX",
+        "^NSEBANK": "NIFTY BANK",
+        "^INDIAVIX": "INDIA VIX",
+    }
     MOCK_PRICES = {
         "RELIANCE.NS": 2500.0,
         "TCS.NS": 3800.0,
@@ -104,11 +111,24 @@ class MockMarketProvider:
         "ICICIBANK.NS": 1200.0,
     }
 
+    @property
+    def metadata(self):
+        return MarketDataProviderMetadata(provider_id="test", display_name="Test Provider")
+
     def get_stocks(self):
         return [
             {"symbol": s, "display_name": s, "exchange": "NSE", "sector": "Test"}
             for s in self.MOCK_PRICES
         ]
+
+    def get_instrument(self, symbol: str):
+        normalized = self.normalize_symbol(symbol)
+        return {
+            "symbol": normalized,
+            "display_name": self.INDEX_NAMES.get(normalized, normalized),
+            "exchange": "NSE",
+            "sector": "Test",
+        }
 
     def get_quote(self, symbol: str):
         symbol = symbol.upper()
