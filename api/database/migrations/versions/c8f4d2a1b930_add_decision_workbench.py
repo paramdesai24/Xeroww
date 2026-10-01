@@ -26,6 +26,12 @@ def upgrade() -> None:
         "OBSERVATION", "THESIS_REVISION", "RISK_REVISION", "STATUS_CHANGE", name="amendmenttype"
     )
 
+    # PostgreSQL requires named enum types to exist before ALTER TABLE can
+    # reference them. checkfirst keeps this compatible with pre-created schemas.
+    decision_direction.create(bind, checkfirst=True)
+    decision_intent.create(bind, checkfirst=True)
+    decision_source.create(bind, checkfirst=True)
+
     with op.batch_alter_table("decision_journal_entries") as batch_op:
         batch_op.add_column(sa.Column("ticket_version", sa.Integer(), server_default="0", nullable=False))
         batch_op.add_column(sa.Column("direction", decision_direction, nullable=True))
