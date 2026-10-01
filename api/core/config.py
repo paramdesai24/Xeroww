@@ -93,6 +93,22 @@ class Settings:
     RATE_LIMIT_UNAUTH_RPM: int = int(os.getenv("RATE_LIMIT_UNAUTH_RPM", "600"))
     RATE_LIMIT_AUTH_RPM: int = int(os.getenv("RATE_LIMIT_AUTH_RPM", "1800"))
 
+    # Optional Kafka market-data ingestion pipeline
+    KAFKA_BOOTSTRAP_SERVERS: str = os.getenv(
+        "KAFKA_BOOTSTRAP_SERVERS",
+        "localhost:19092,localhost:29092,localhost:39092",
+    )
+    KAFKA_MARKET_DATA_TOPIC: str = os.getenv("KAFKA_MARKET_DATA_TOPIC", "market-data")
+    KAFKA_CONSUMER_GROUP: str = os.getenv("KAFKA_CONSUMER_GROUP", "xeroww-market-data")
+    KAFKA_PRODUCER_CLIENT_ID: str = os.getenv("KAFKA_PRODUCER_CLIENT_ID", "xeroww-market-data-producer")
+    KAFKA_CONSUMER_CLIENT_ID: str = os.getenv("KAFKA_CONSUMER_CLIENT_ID", "xeroww-market-data-consumer")
+    KAFKA_REQUEST_TIMEOUT_MS: int = int(os.getenv("KAFKA_REQUEST_TIMEOUT_MS", "10000"))
+    KAFKA_DELIVERY_TIMEOUT_MS: int = int(os.getenv("KAFKA_DELIVERY_TIMEOUT_MS", "30000"))
+    KAFKA_RETRIES: int = int(os.getenv("KAFKA_RETRIES", "3"))
+    KAFKA_POLL_TIMEOUT_SECONDS: float = float(os.getenv("KAFKA_POLL_TIMEOUT_SECONDS", "1.0"))
+    KAFKA_TOPIC_PARTITIONS: int = int(os.getenv("KAFKA_TOPIC_PARTITIONS", "6"))
+    KAFKA_TOPIC_REPLICATION_FACTOR: int = int(os.getenv("KAFKA_TOPIC_REPLICATION_FACTOR", "3"))
+
 
 # Singleton instance — import this everywhere
 settings = Settings()

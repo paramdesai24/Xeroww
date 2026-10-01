@@ -1,0 +1,14 @@
+.git
+.github
+.agents
+.codex
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+api/venv
+dashboard/node_modules
+dashboard/dist
+*.db
+*.log
+.coverage
+htmlcov

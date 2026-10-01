@@ -1,3 +1,34 @@
+x-kafka-common: &kafka-common
+  image: apache/kafka:4.3.1
+  restart: unless-stopped
+  networks:
+    - xeroww-network
+  healthcheck:
+    test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+    interval: 15s
+    timeout: 30s
+    retries: 12
+    start_period: 30s
+
+x-kafka-environment: &kafka-environment
+  KAFKA_PROCESS_ROLES: broker,controller
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: 2
+  KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+  KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+  KAFKA_MIN_INSYNC_REPLICAS: 2
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  KAFKA_LOG_DIRS: /var/lib/kafka/data
+  CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+
 services:
   # ----------------------------------------------------------------------------
   # PostgreSQL 16 — Relational store for user, portfolio, watchlist, and journal
@@ -43,6 +74,71 @@ services:
       timeout: 3s
       retries: 5
       start_period: 3s
+
+  # ----------------------------------------------------------------------------
+  # Kafka 4 KRaft cluster - three combined broker/controller nodes
+  # ----------------------------------------------------------------------------
+  kafka-1:
+    <<: *kafka-common
+    hostname: kafka-1
+    container_name: xeroww-kafka-1
+    environment:
+      <<: *kafka-environment
+      KAFKA_NODE_ID: 1
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:9092,EXTERNAL://localhost:19092
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
+    ports:
+      - "${KAFKA_BROKER_1_PORT:-19092}:9094"
+
+  kafka-2:
+    <<: *kafka-common
+    hostname: kafka-2
+    container_name: xeroww-kafka-2
+    environment:
+      <<: *kafka-environment
+      KAFKA_NODE_ID: 2
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2:9092,EXTERNAL://localhost:29092
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
+    ports:
+      - "${KAFKA_BROKER_2_PORT:-29092}:9094"
+
+  kafka-3:
+    <<: *kafka-common
+    hostname: kafka-3
+    container_name: xeroww-kafka-3
+    environment:
+      <<: *kafka-environment
+      KAFKA_NODE_ID: 3
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-3:9092,EXTERNAL://localhost:39092
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
+    ports:
+      - "${KAFKA_BROKER_3_PORT:-39092}:9094"
+
+  kafka-init:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: xeroww-kafka-init
+    restart: "no"
+    command: ["python", "-m", "api.streaming.admin"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      KAFKA_MARKET_DATA_TOPIC: market-data
+      KAFKA_TOPIC_PARTITIONS: 6
+      KAFKA_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_REQUEST_TIMEOUT_MS: 30000
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    networks:
+      - xeroww-network
 
   # ----------------------------------------------------------------------------
   # Backend — FastAPI Institutional Market Intelligence Platform
@@ -198,4 +294,10 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  kafka_1_data:
+    driver: local
+  kafka_2_data:
+    driver: local
+  kafka_3_data:
     driver: local
