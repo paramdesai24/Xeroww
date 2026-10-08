@@ -11,6 +11,7 @@ import os
 import secrets
 import tempfile
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -108,6 +109,13 @@ class Settings:
     KAFKA_POLL_TIMEOUT_SECONDS: float = float(os.getenv("KAFKA_POLL_TIMEOUT_SECONDS", "1.0"))
     KAFKA_TOPIC_PARTITIONS: int = int(os.getenv("KAFKA_TOPIC_PARTITIONS", "6"))
     KAFKA_TOPIC_REPLICATION_FACTOR: int = int(os.getenv("KAFKA_TOPIC_REPLICATION_FACTOR", "3"))
+    MARKET_DATA_WORKER_INTERVAL_SECONDS: float = float(
+        os.getenv("MARKET_DATA_WORKER_INTERVAL_SECONDS", "60")
+    )
+    MARKET_DATA_WORKER_SYMBOLS: str = os.getenv(
+        "MARKET_DATA_WORKER_SYMBOLS",
+        "RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,ICICIBANK.NS",
+    )
 
 
 # Singleton instance — import this everywhere

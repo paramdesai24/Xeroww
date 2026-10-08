@@ -4,15 +4,19 @@ x-kafka-common: &kafka-common
   networks:
     - xeroww-network
   healthcheck:
-    test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+    test: ["CMD-SHELL", "bash -ec ': > /dev/tcp/localhost/9092'"]
     interval: 15s
-    timeout: 30s
+    timeout: 5s
     retries: 12
-    start_period: 30s
+    start_period: 120s
 
 x-kafka-environment: &kafka-environment
+  KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
   KAFKA_PROCESS_ROLES: broker,controller
   KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+  KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS: 10000
+  KAFKA_CONTROLLER_QUORUM_FETCH_TIMEOUT_MS: 20000
+  KAFKA_CONTROLLER_QUORUM_ELECTION_TIMEOUT_MS: 5000
   KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
   KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
   KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
@@ -137,6 +141,210 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
+    networks:
+      - xeroww-network
+
+  market-data-worker:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: xeroww-market-data-worker
+    restart: unless-stopped
+    command: ["python", "-m", "api.streaming.worker"]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CACHE_QUOTE_TTL: 15
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      KAFKA_MARKET_DATA_TOPIC: market-data
+      KAFKA_PRODUCER_CLIENT_ID: xeroww-live-market-data-producer
+      KAFKA_REQUEST_TIMEOUT_MS: 30000
+      KAFKA_DELIVERY_TIMEOUT_MS: 30000
+      MARKET_DATA_WORKER_INTERVAL_SECONDS: ${MARKET_DATA_WORKER_INTERVAL_SECONDS:-60}
+      MARKET_DATA_WORKER_SYMBOLS: ${MARKET_DATA_WORKER_SYMBOLS:-RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,ICICIBANK.NS}
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - xeroww-network
+
+  spark-master:
+    build:
+      context: .
+      dockerfile: spark/Dockerfile
+    container_name: xeroww-spark-master
+    restart: unless-stopped
+    entrypoint: ["/opt/spark/bin/spark-class"]
+    command:
+      - org.apache.spark.deploy.master.Master
+      - --host
+      - spark-master
+      - --port
+      - "7077"
+      - --webui-port
+      - "8080"
+    environment:
+      SPARK_DAEMON_MEMORY: 192m
+    ports:
+      - "${SPARK_MASTER_UI_PORT:-18080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec ': > /dev/tcp/spark-master/7077'"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    networks:
+      - xeroww-network
+
+  spark-worker-1:
+    build:
+      context: .
+      dockerfile: spark/Dockerfile
+    container_name: xeroww-spark-worker-1
+    restart: unless-stopped
+    entrypoint: ["/opt/spark/bin/spark-class"]
+    command:
+      - org.apache.spark.deploy.worker.Worker
+      - --webui-port
+      - "8081"
+      - --cores
+      - "1"
+      - --memory
+      - 640m
+      - spark://spark-master:7077
+    environment:
+      SPARK_DAEMON_MEMORY: 192m
+      SPARK_WORKER_DIR: /opt/spark/work
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    volumes:
+      - spark_worker_1_data:/opt/spark/work
+      - spark_checkpoints:/opt/spark/checkpoints
+      - spark_output:/opt/spark/output
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - xeroww-network
+
+  spark-worker-2:
+    build:
+      context: .
+      dockerfile: spark/Dockerfile
+    container_name: xeroww-spark-worker-2
+    restart: unless-stopped
+    entrypoint: ["/opt/spark/bin/spark-class"]
+    command:
+      - org.apache.spark.deploy.worker.Worker
+      - --webui-port
+      - "8081"
+      - --cores
+      - "1"
+      - --memory
+      - 640m
+      - spark://spark-master:7077
+    environment:
+      SPARK_DAEMON_MEMORY: 192m
+      SPARK_WORKER_DIR: /opt/spark/work
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    volumes:
+      - spark_worker_2_data:/opt/spark/work
+      - spark_checkpoints:/opt/spark/checkpoints
+      - spark_output:/opt/spark/output
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - xeroww-network
+
+  spark-streaming:
+    build:
+      context: .
+      dockerfile: spark/Dockerfile
+    container_name: xeroww-spark-streaming
+    restart: unless-stopped
+    hostname: spark-streaming
+    entrypoint: ["/opt/spark/bin/spark-submit"]
+    command:
+      - --master
+      - spark://spark-master:7077
+      - --packages
+      - org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.9
+      - --conf
+      - spark.executor.instances=2
+      - --conf
+      - spark.executor.cores=1
+      - --conf
+      - spark.executor.memory=512m
+      - --conf
+      - spark.cores.max=2
+      - --conf
+      - spark.driver.memory=512m
+      - --conf
+      - spark.driver.host=spark-streaming
+      - --conf
+      - spark.driver.bindAddress=0.0.0.0
+      - --conf
+      - spark.driver.port=39000
+      - --conf
+      - spark.driver.blockManager.port=39001
+      - --conf
+      - spark.sql.shuffle.partitions=2
+      - --conf
+      - spark.network.timeout=300s
+      - --conf
+      - spark.executor.heartbeatInterval=30s
+      - --conf
+      - spark.jars.ivy=/opt/spark/ivy
+      - /app/spark/streaming_job.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      KAFKA_MARKET_DATA_TOPIC: market-data
+      SPARK_KAFKA_CONSUMER_GROUP: xeroww-spark-market-data
+      SPARK_CHECKPOINT_ROOT: /opt/spark/checkpoints
+      SPARK_OUTPUT_ROOT: /opt/spark/output
+      SPARK_QUERY_NAME: xeroww-market-features
+      SPARK_STARTING_OFFSETS: earliest
+      SPARK_TRIGGER_INTERVAL: 10 seconds
+      SPARK_FEATURE_WINDOW: 5 minutes
+      SPARK_FEATURE_SLIDE: 1 minute
+      SPARK_EVENT_WATERMARK: 2 minutes
+      SPARK_LOG_LEVEL: WARN
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      spark-master:
+        condition: service_healthy
+      spark-worker-1:
+        condition: service_healthy
+      spark-worker-2:
+        condition: service_healthy
+    volumes:
+      - spark_checkpoints:/opt/spark/checkpoints
+      - spark_ivy_cache:/opt/spark/ivy
+      - spark_output:/opt/spark/output
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 && test -f /opt/spark/checkpoints/features/metadata && test -f /opt/spark/checkpoints/rejected/metadata"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 300s
     networks:
       - xeroww-network
 
@@ -300,4 +508,14 @@ volumes:
   kafka_2_data:
     driver: local
   kafka_3_data:
+    driver: local
+  spark_checkpoints:
+    driver: local
+  spark_ivy_cache:
+    driver: local
+  spark_output:
+    driver: local
+  spark_worker_1_data:
+    driver: local
+  spark_worker_2_data:
     driver: local

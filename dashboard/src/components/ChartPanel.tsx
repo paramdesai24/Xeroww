@@ -40,6 +40,7 @@ interface ChartPanelProps {
   onOpenReplay?: () => void;
   onOpenDiff?: () => void;
   onOpenForensics?: () => void;
+  onOpenAnalytics?: () => void;
   onPlanDecision?: () => void;
   onAddWatchlist?: () => void;
   onCreateAlert?: () => void;
@@ -64,6 +65,7 @@ export default function ChartPanel({
   onOpenReplay,
   onOpenDiff,
   onOpenForensics,
+  onOpenAnalytics,
   onPlanDecision,
   onAddWatchlist,
   onCreateAlert,
@@ -571,6 +573,7 @@ export default function ChartPanel({
                 {onOpenReplay && <Pill onClick={onOpenReplay}>Replay</Pill>}
                 {onOpenDiff && <Pill onClick={onOpenDiff}>Diff</Pill>}
                 {onOpenForensics && <Pill onClick={onOpenForensics}>Forensics</Pill>}
+                {onOpenAnalytics && <Pill onClick={onOpenAnalytics}>History</Pill>}
                 {onToggleXRay && (
                   <button
                     id="trigger-xray-btn"

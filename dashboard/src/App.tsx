@@ -53,6 +53,7 @@ const MarketBreadthModal = lazy(() => import("./components/MarketBreadthModal"))
 const HomePage = lazy(() => import("./pages/HomePage"));
 const MarketsPage = lazy(() => import("./pages/MarketsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const AnalyticalFeaturesPage = lazy(() => import("./pages/AnalyticalFeaturesPage"));
 
 const lazyFallback = (
   <div className="flex-1 flex items-center justify-center bg-[var(--canvas)] text-xs text-[var(--text-tertiary)]">
@@ -77,8 +78,9 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
+  const analyticsActive = path.startsWith("/analytics/features/");
   const activeModule: Module = path === "/" ? "HOME"
-    : path.startsWith("/markets") || path === "/market" ? "MARKETS"
+    : analyticsActive || path.startsWith("/markets") || path === "/market" ? "MARKETS"
     : path.startsWith("/stocks/") || path.startsWith("/market/") ? "STOCK"
     : path.startsWith("/watchlists") ? "WATCHLISTS"
     : path.startsWith("/portfolio") ? "PORTFOLIO"
@@ -285,7 +287,7 @@ export default function App() {
       {/* Main Terminal Body */}
       <div className="app-body flex flex-1 min-h-0 overflow-hidden">
         {activeModule === "HOME" && <Suspense fallback={lazyFallback}><HomePage /></Suspense>}
-        {activeModule === "MARKETS" && <Suspense fallback={lazyFallback}><MarketsPage /></Suspense>}
+        {activeModule === "MARKETS" && <Suspense fallback={lazyFallback}>{analyticsActive ? <Routes><Route path="/analytics/features/:symbol" element={<AnalyticalFeaturesPage />} /></Routes> : <MarketsPage />}</Suspense>}
         {activeModule === "STOCK" && !routedSymbol && <PageErrorState title="Invalid stock symbol" message="Choose a supported stock from Markets or search." actionHref="/stocks/RELIANCE" actionLabel="Open Reliance" />}
         {marketActive && (
           <div
@@ -387,6 +389,7 @@ export default function App() {
                 onTimeframeChange={(label, period, interval) => setChartRange({ label, period, interval })}
                 onOpenDiff={() => setShowDiffModal(true)}
                 onOpenForensics={() => setShowForensicsModal(true)}
+                onOpenAnalytics={() => navigate(`/analytics/features/${encodeURIComponent(activeSymbol)}`)}
                 isXRayOpen={xray.isDrawerOpen}
                 onToggleXRay={xray.toggleDrawer}
                 onCollapse={() => marketPanes.togglePane("center")}
@@ -618,7 +621,7 @@ export default function App() {
         ) : renderAuthGate("Replay and Behaviour Lab"))}
 
         {activeModule === "SETTINGS" && (path === "/settings/system" ? <Suspense fallback={lazyFallback}><SystemView user={auth.user} /></Suspense> : auth.isAuthenticated ? <Suspense fallback={lazyFallback}><SettingsPage /></Suspense> : renderAuthGate("Settings"))}
-        {!["/", "/markets", "/market", "/system"].includes(path) && !path.startsWith("/stocks/") && !path.startsWith("/market/") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/replay") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/settings") && (
+        {!["/", "/markets", "/market", "/system"].includes(path) && !path.startsWith("/analytics/features/") && !path.startsWith("/stocks/") && !path.startsWith("/market/") && !path.startsWith("/watchlists") && !path.startsWith("/portfolio") && !path.startsWith("/replay") && !path.startsWith("/alerts") && !path.startsWith("/decisions") && !path.startsWith("/settings") && (
           <Suspense fallback={lazyFallback}><NotFoundPage /></Suspense>
         )}
       </div>

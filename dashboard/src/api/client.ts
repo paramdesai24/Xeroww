@@ -42,6 +42,7 @@ import type {
   PortfolioSnapshotList,
   RiskPolicy,
 } from "../types/portfolioIntelligence";
+import type { AnalyticalFeatureResponse } from "../types/analytics";
 
 const BASE_URL = config.apiBaseUrl;
 
@@ -119,6 +120,31 @@ export const api = {
 
   getPatterns: (symbol: string): Promise<PatternData> =>
     apiFetch<PatternData>(`/patterns/${encodeURIComponent(symbol)}`),
+
+  analytics: {
+    getFeatures: (
+      symbol: string,
+      startTime: Date,
+      endTime: Date,
+      limit = 500,
+    ): Promise<AnalyticalFeatureResponse> => {
+      const normalizedSymbol = symbol.trim().toUpperCase();
+      if (!normalizedSymbol || !Number.isFinite(startTime.getTime()) || !Number.isFinite(endTime.getTime())) {
+        return Promise.reject(new Error("Enter a valid symbol and UTC time range."));
+      }
+      if (endTime <= startTime || !Number.isInteger(limit) || limit < 1 || limit > 5000) {
+        return Promise.reject(new Error("Enter a valid bounded analytical query."));
+      }
+      const query = new URLSearchParams({
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        limit: String(limit),
+      });
+      return apiFetch<AnalyticalFeatureResponse>(
+        `/analytics/features/${encodeURIComponent(normalizedSymbol)}?${query.toString()}`,
+      );
+    },
+  },
 
   // -------------------------------------------------------------------------
   // Authentication

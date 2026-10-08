@@ -11,31 +11,48 @@ Or from the project root:
 """
 
 import sys
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 # Ensure project root is in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
 from api.core.config import settings
 from api.core.error_handlers import register_exception_handlers
 from api.database.session import create_all_tables
 
 # Market data routes
-from api.routes import health, stocks, quote, ohlc, patterns
-
 # Authenticated platform routes
-from api.routes import auth, watchlists, portfolios, alerts, journal, market_structure, replay, diff, forensics, annotations, intelligence, events, system_health
-
 # Decision, replay, and intelligence routes
-from api.routes import fuzzy
-from api.routes import decisions
-from api.routes import replay_sessions
-from api.routes import portfolio_intelligence
+from api.routes import (
+    alerts,
+    analytics_features,
+    annotations,
+    auth,
+    decisions,
+    diff,
+    events,
+    forensics,
+    fuzzy,
+    health,
+    intelligence,
+    journal,
+    market_structure,
+    ohlc,
+    patterns,
+    portfolio_intelligence,
+    portfolios,
+    quote,
+    replay,
+    replay_sessions,
+    stocks,
+    system_health,
+    watchlists,
+)
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env (if present)
@@ -84,9 +101,9 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-from api.core.tracing import TracingMiddleware
-from api.core.rate_limit import RateLimitMiddleware
 from api.core.metrics import PrometheusMetricsMiddleware, metrics_endpoint
+from api.core.rate_limit import RateLimitMiddleware
+from api.core.tracing import TracingMiddleware
 
 app.add_middleware(PrometheusMetricsMiddleware)
 app.add_middleware(RateLimitMiddleware)
@@ -119,6 +136,7 @@ app.include_router(stocks.router)
 app.include_router(quote.router)
 app.include_router(ohlc.router)
 app.include_router(patterns.router)
+app.include_router(analytics_features.router)
 
 # ---------------------------------------------------------------------------
 # Register authenticated platform routes
